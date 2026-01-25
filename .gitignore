@@ -1,0 +1,23 @@
+# Build directories
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+
+# Visual Studio
+*.suo
+*.user
+*.userosscache
+*.vcxproj.user
+*.pdb
+*.idb
+*.ilk
+*.obj
+*.exe
+*.log
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.vs/
