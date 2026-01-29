@@ -1,0 +1,530 @@
+#include <gtest/gtest.h>
+#include <stdads/string.h>
+
+// memchar tests
+TEST(MemchrTest, FindCharacter) {
+    const char* str = "Hello, World!";
+    const void* result = stdads::memchr(str, 'W', 13);
+    EXPECT_NE(result, nullptr);
+    EXPECT_EQ(*(static_cast<const char*>(result)), 'W');
+}
+
+TEST(MemchrTest, FindsExistingByte) {
+    const char buffer[] = "hello world";
+    const void* result = stdads::memchr(buffer, 'w', sizeof(buffer));
+    EXPECT_EQ(static_cast<const void*>(buffer + 6), result);
+}
+
+TEST(MemchrTest, FindsLastByte)
+{
+    const char buffer[] = "hello";
+    const void* result = stdads::memchr(buffer, 'o', sizeof(buffer));
+    EXPECT_EQ(static_cast<const void*>(buffer + 4), result);
+}
+
+TEST(MemchrTest, FindsFirstOccurrenceOnly) {
+    const char buffer[] = "banana";
+    const void* result = stdads::memchr(buffer, 'a', sizeof(buffer));
+    EXPECT_EQ(static_cast<const void*>(buffer + 1), result); // first 'a'
+}
+
+TEST(MemchrTest, ReturnsNullWhenNotFound) {
+    const char buffer[] = "abcdef";
+    const void* result = stdads::memchr(buffer, 'z', sizeof(buffer));
+    EXPECT_EQ(nullptr, result);
+}
+
+TEST(MemchrTest, RespectsLengthLimit) {
+    const char buffer[] = "hello world";
+
+    // Search only first 5 bytes: "hello"
+    const void* result = stdads::memchr(buffer, 'w', 5);
+    EXPECT_EQ(nullptr, result); // 'w' is outside search range
+}
+
+TEST(MemchrTest, WorksWithBinaryData) {
+    unsigned char buffer[] = {0x00, 0x10, 0xFF, 0x20, 0xFF};
+    const void* result = stdads::memchr(buffer, 0xFF, sizeof(buffer));
+    EXPECT_EQ(static_cast<const void*>(buffer + 2), result);
+}
+
+TEST(MemchrTest, FindsNullByte) {
+    const char buffer[] = {'a', 'b', '\0', 'c', 'd'};
+    const void* result = stdads::memchr(buffer, '\0', sizeof(buffer));
+    EXPECT_EQ(static_cast<const void*>(buffer + 2), result);
+}
+
+TEST(MemchrTest, ZeroLengthReturnsNull) {
+    const char buffer[] = "test";
+    const void* result = stdads::memchr(buffer, 't', 0);
+    EXPECT_EQ(nullptr, result);
+}
+
+TEST(MemchrTest, NullPointerWithZeroLength) {
+    const void* result = stdads::memchr(nullptr, 'a', 0);
+    EXPECT_EQ(nullptr, result);
+}
+
+
+// memcmp tests
+TEST(MemcmpTest, EqualBuffers) {
+    const char a[] = "hello";
+    const char b[] = "hello";
+    int result = stdads::memcmp(a, b, 5);
+    EXPECT_EQ(0, result);
+}
+
+TEST(MemcmpTest, RefrenceEquals)
+{
+    const char a[] = "hello";
+    int result = stdads::memcmp(a, a, 5);
+    EXPECT_EQ(0, result);
+}
+
+TEST(MemcmpTest, FirstLessThanSecond) {
+    const char a[] = "abc";
+    const char b[] = "abd";
+    int result = stdads::memcmp(a, b, 3);
+    EXPECT_LT(result, 0);  // 'c' < 'd'
+}
+
+TEST(MemcmpTest, FirstGreaterThanSecond) {
+    const char a[] = "abe";
+    const char b[] = "abd";
+    int result = stdads::memcmp(a, b, 3);
+    EXPECT_GT(result, 0);  // 'e' > 'd'
+}
+
+TEST(MemcmpTest, PartialCompareEqual) {
+    const char a[] = "hello123";
+    const char b[] = "hello999";
+    int result = stdads::memcmp(a, b, 5); // only compare "hello"
+    EXPECT_EQ(0, result);
+}
+
+TEST(MemcmpTest, RespectsLengthLimit) {
+    const char a[] = "abcXXX";
+    const char b[] = "abcYYY";
+    int result = stdads::memcmp(a, b, 3); // compare only "abc"
+    EXPECT_EQ(0, result);
+}
+
+TEST(MemcmpTest, BinaryDataComparison) {
+    unsigned char a[] = {0x01, 0x02, 0xFF};
+    unsigned char b[] = {0x01, 0x02, 0x10};
+    int result = stdads::memcmp(a, b, 3);
+    EXPECT_GT(result, 0);  // 0xFF > 0x10
+}
+
+TEST(MemcmpTest, FindsDifferenceAtCorrectIndex) {
+    unsigned char a[] = {0x10, 0x20, 0x30, 0x40};
+    unsigned char b[] = {0x10, 0x20, 0x31, 0x40};
+    int result = stdads::memcmp(a, b, 4);
+    EXPECT_LT(result, 0);  // 0x30 < 0x31
+}
+
+TEST(MemcmpTest, ZeroLengthReturnsEqual) {
+    const char a[] = "abc";
+    const char b[] = "xyz";
+    int result = stdads::memcmp(a, b, 0);
+    EXPECT_EQ(0, result);
+
+    result = stdads::memcmp(a, a, 0);
+    EXPECT_EQ(0, result);
+}
+
+TEST(MemcmpTest, NullptrWithZeroLength) {
+    int result = stdads::memcmp(nullptr, nullptr, 0);
+    EXPECT_EQ(0, result);
+}
+
+
+// memcpy tests
+TEST(MemcpyTest, BasicCopy) {
+    char src[] = "hello";
+    char dst[6] = {};
+    void* ret = stdads::memcpy(dst, src, 6);
+    EXPECT_EQ(dst, ret);
+    EXPECT_STREQ("hello", dst);
+}
+
+TEST(MemcpyTest, PartialCopy) {
+    char src[] = "hello";
+    char dst[6] = {};
+    stdads::memcpy(dst, src, 3);
+    EXPECT_EQ('h', dst[0]);
+    EXPECT_EQ('e', dst[1]);
+    EXPECT_EQ('l', dst[2]);
+}
+
+TEST(MemcpyTest, BinaryDataCopy) {
+    unsigned char src[] = {0x01, 0xFF, 0x10, 0x20};
+    unsigned char dst[4] = {};
+    stdads::memcpy(dst, src, 4);
+    EXPECT_EQ(0x01, dst[0]);
+    EXPECT_EQ(0xFF, dst[1]);
+    EXPECT_EQ(0x10, dst[2]);
+    EXPECT_EQ(0x20, dst[3]);
+}
+
+TEST(MemcpyTest, ZeroLengthCopy) {
+    char src[] = "hello";
+    char dst[] = "world";
+    stdads::memcpy(dst, src, 0);
+    EXPECT_STREQ("world", dst); // unchanged
+}
+
+TEST(MemcpyTest, LargeCopy) {
+    const size_t size = 1024;
+    unsigned char src[size];
+    unsigned char dst[size];
+
+    for (size_t i = 0; i < size; ++i)
+        src[i] = static_cast<unsigned char>(i % 256);
+
+    stdads::memcpy(dst, src, size);
+
+    for (size_t i = 0; i < size; ++i)
+        EXPECT_EQ(src[i], dst[i]);
+}
+
+TEST(MemcpyTest, ReturnsDestinationPointer) {
+    char src[] = "abc";
+    char dst[4];
+    void* ret = stdads::memcpy(dst, src, 4);
+    EXPECT_EQ(dst, ret);
+}
+
+TEST(MemcpyTest, NullptrWithZeroLength) {
+    void* ret = stdads::memcpy(nullptr, nullptr, 0);
+    EXPECT_EQ(nullptr, ret);
+}
+
+
+// memset tests
+TEST(MemsetTest, BasicSet) {
+    char buffer[10];
+    void* ret = stdads::memset(buffer, 'A', 10);
+
+    EXPECT_EQ(buffer, ret);
+    for (int i = 0; i < 10; ++i)
+        EXPECT_EQ('A', buffer[i]);
+}
+
+TEST(MemsetTest, PartialSet) {
+    char buffer[10] = {};
+    stdads::memset(buffer, 'B', 5);
+
+    for (int i = 0; i < 5; ++i)
+        EXPECT_EQ('B', buffer[i]);
+    for (int i = 5; i < 10; ++i)
+        EXPECT_EQ(0, buffer[i]);
+}
+
+TEST(MemsetTest, BinaryValueSet) {
+    unsigned char buffer[4];
+    stdads::memset(buffer, 0xFF, 4);
+
+    for (int i = 0; i < 4; ++i)
+        EXPECT_EQ(0xFF, buffer[i]);
+}
+
+TEST(MemsetTest, ZeroValueSet) {
+    char buffer[8];
+    stdads::memset(buffer, 0, 8);
+
+    for (int i = 0; i < 8; ++i)
+        EXPECT_EQ(0, buffer[i]);
+}
+
+TEST(MemsetTest, ZeroLengthDoesNothing) {
+    char buffer[5] = {'a','b','c','d','e'};
+    stdads::memset(buffer, 'X', 0);
+    EXPECT_EQ('a', buffer[0]);
+    EXPECT_EQ('b', buffer[1]);
+    EXPECT_EQ('c', buffer[2]);
+    EXPECT_EQ('d', buffer[3]);
+    EXPECT_EQ('e', buffer[4]);
+}
+
+TEST(MemsetTest, LargeBufferSet) {
+    const size_t size = 1024;
+    unsigned char buffer[size];
+    stdads::memset(buffer, 0xAB, size);
+
+    for (size_t i = 0; i < size; ++i)
+        EXPECT_EQ(0xAB, buffer[i]);
+}
+
+TEST(MemsetTest, ReturnsPointer) {
+    char buffer[4];
+    void* ret = stdads::memset(buffer, 1, 4);
+    EXPECT_EQ(buffer, ret);
+}
+
+TEST(MemsetTest, NullptrWithZeroLength) {
+    void* ret = stdads::memset(nullptr, 0, 0);
+    EXPECT_EQ(nullptr, ret);
+}
+
+
+// strcmp tests
+TEST(StrcmpTest, comparison) {
+    EXPECT_EQ(0, stdads::strcmp("", ""));
+    EXPECT_LT(stdads::strcmp("a", "b"), 0);
+    EXPECT_GT(stdads::strcmp("b", "a"), 0);
+    EXPECT_EQ(0, stdads::strcmp("test", "test"));
+    EXPECT_LT(stdads::strcmp("abc", "abcd"), 0);
+    EXPECT_GT(stdads::strcmp("abcd", "abc"), 0);
+}
+
+TEST(StrcmpTest, BothEmpty) {
+    const char* a = "";
+    const char* b = "";
+    int result = stdads::strcmp(a, b);
+    EXPECT_EQ(0, result);
+}
+
+TEST(StrcmpTest, EqualStrings) {
+    const char* a = "hello";
+    const char* b = "hello";
+    int result = stdads::strcmp(a, b);
+    EXPECT_EQ(0, result);
+}
+
+TEST(StrcmpTest, FirstLessThanSecond) {
+    const char* a = "abc";
+    const char* b = "abd";
+    int result = stdads::strcmp(a, b);
+    EXPECT_LT(result, 0);
+}
+
+TEST(StrcmpTest, FirstGreaterThanSecond) {
+    const char* a = "abe";
+    const char* b = "abd";
+    int result = stdads::strcmp(a, b);
+    EXPECT_GT(result, 0);
+}
+
+TEST(StrcmpTest, PrefixShorterIsLess) {
+    const char* a = "abc";
+    const char* b = "abcd";
+    int result = stdads::strcmp(a, b);
+    EXPECT_LT(result, 0);
+}
+
+TEST(StrcmpTest, PrefixLongerIsGreater) {
+    const char* a = "abcd";
+    const char* b = "abc";
+    int result = stdads::strcmp(a, b);
+    EXPECT_GT(result, 0);
+}
+
+TEST(StrcmpTest, CaseSensitivity) {
+    const char* a = "abc";
+    const char* b = "Abc";
+    int result = stdads::strcmp(a, b);
+    EXPECT_GT(result, 0); // 'a' > 'A' in ASCII
+}
+
+TEST(StrcmpTest, SpecialCharacters) {
+    const char* a = "a\nb";
+    const char* b = "a\tb";
+    int result = stdads::strcmp(a, b);
+    EXPECT_GT(result, 0); // '\n' (10) > '\t' (9)
+}
+
+TEST(StrcmpTest, EmbeddedNullTerminates) {
+    const char a[] = {'a', 'b', '\0', 'c'};
+    const char b[] = {'a', 'b', '\0', 'd'};
+    int result = stdads::strcmp(a, b);
+    EXPECT_EQ(0, result); // must stop at first '\0'
+}
+
+TEST(StrcmpTest, NullptrBoth) {
+    const char* a = nullptr;
+    const char* b = nullptr;
+    int result = stdads::strcmp(a, b);
+    EXPECT_EQ(0, result);
+}
+
+
+// strcpy tests
+TEST(StrcpyTest, BasicCopy) {
+    char src[] = "hello";
+    char dst[6] = {};
+    char* ret = stdads::strcpy(dst, src);
+    EXPECT_EQ(dst, ret);
+    EXPECT_STREQ("hello", dst);
+}
+
+TEST(StrcpyTest, EmptyStringCopy) {
+    char src[] = "";
+    char dst[1] = {'X'};
+    stdads::strcpy(dst, src);
+    EXPECT_EQ('\0', dst[0]);
+}
+
+TEST(StrcpyTest, SingleCharacterCopy) {
+    char src[] = "A";
+    char dst[2];
+    stdads::strcpy(dst, src);
+    EXPECT_EQ('A', dst[0]);
+    EXPECT_EQ('\0', dst[1]);
+}
+
+TEST(StrcpyTest, IncludesNullTerminator) {
+    char src[] = "abc";
+    char dst[4];
+    stdads::strcpy(dst, src);
+    EXPECT_EQ('a', dst[0]);
+    EXPECT_EQ('b', dst[1]);
+    EXPECT_EQ('c', dst[2]);
+    EXPECT_EQ('\0', dst[3]);  // must copy terminator
+}
+
+TEST(StrcpyTest, RefrenceEqual) {
+    char src[] = "abc";
+    stdads::strcpy(src, src);
+    EXPECT_EQ('a', src[0]);
+    EXPECT_EQ('b', src[1]);
+    EXPECT_EQ('c', src[2]);
+    EXPECT_EQ('\0', src[3]);  // must copy terminator
+}
+
+TEST(StrcpyTest, BinarySafeCopy) {
+    const char src[] = {'a', 'b', '\0', 'c', 'd', '\0'};
+    char dst[6];
+    stdads::strcpy(dst, src);
+    EXPECT_EQ('a', dst[0]);
+    EXPECT_EQ('b', dst[1]);
+    EXPECT_EQ('\0', dst[2]);  // stop at first null
+}
+
+TEST(StrcpyTest, LargeStringCopy) {
+    const size_t size = 1024;
+    char src[size];
+    char dst[size];
+
+    for (size_t i = 0; i < size - 1; ++i)
+        src[i] = 'A';
+    src[size - 1] = '\0';
+
+    stdads::strcpy(dst, src);
+    EXPECT_STREQ(src, dst);
+}
+
+TEST(StrcpyTest, ReturnsDestinationPointer) {
+    char src[] = "abc";
+    char dst[4];
+    char* ret = stdads::strcpy(dst, src);
+    EXPECT_EQ(dst, ret);
+}
+
+
+// strlen tests
+TEST(StrlenTest, EmptyString) {
+    const char* s = "";
+    size_t result = stdads::strlen(s);
+    EXPECT_EQ(0u, result);
+}
+
+TEST(StrlenTest, SingleCharacter) {
+    const char* s = "a";
+    size_t result = stdads::strlen(s);
+    EXPECT_EQ(1u, result);
+}
+
+TEST(StrlenTest, NormalString) {
+    const char* s = "hello";
+    size_t result = stdads::strlen(s);
+    EXPECT_EQ(5u, result);
+}
+
+TEST(StrlenTest, StringWithSpaces) {
+    const char* s = "hello world";
+    size_t result = stdads::strlen(s);
+    EXPECT_EQ(11u, result);
+}
+
+TEST(StrlenTest, StringWithSpecialCharacters) {
+    const char* s = "a\tb\nc";
+    size_t result = stdads::strlen(s);
+    EXPECT_EQ(5u, result); // '\t' and '\n' count as characters
+}
+
+TEST(StrlenTest, StopsAtNullTerminator) {
+    const char s[] = {'a', 'b', '\0', 'c', 'd'};
+    size_t result = stdads::strlen(s);
+    EXPECT_EQ(2u, result); // must stop at first '\0'
+}
+
+TEST(StrlenTest, LongString) {
+    const char* s = "abcdefghijklmnopqrstuvwxyz";
+    size_t result = stdads::strlen(s);
+    EXPECT_EQ(26u, result);
+}
+
+
+
+// String class tests
+TEST(StringConstructorTest, DefaultConstructor) {
+    stdads::string str;
+    EXPECT_EQ(0u, str.size());
+    EXPECT_STREQ("", str.c_str());
+}
+
+TEST(StringConstructorTest, CStrConstructor) {
+    const char* cstr = "Hello, World!";
+    stdads::string str(cstr);
+    EXPECT_EQ(13u, str.size());
+    EXPECT_STREQ(cstr, str.c_str());
+}
+
+TEST(StringConstructorTest, CopyConstructor) {
+    const char* cstr = "Test String";
+    stdads::string original(cstr);
+    stdads::string copy(original);
+    EXPECT_EQ(original.size(), copy.size());
+    EXPECT_STREQ(original.c_str(), copy.c_str());
+}
+
+TEST(StringEmptyTest, IsEmpty) {
+    stdads::string emptyStr;
+    EXPECT_TRUE(emptyStr.empty());
+
+    stdads::string nonEmptyStr("Not Empty");
+    EXPECT_FALSE(nonEmptyStr.empty());
+}
+
+TEST(StringEqualityTest, EqualityOperators) {
+    stdads::string str1("Test");
+    stdads::string str2("Test");
+    stdads::string str3("Different");
+
+    EXPECT_TRUE(str1 == str1);
+    EXPECT_FALSE(str1 != str1);
+
+    EXPECT_TRUE(str1 == str2);
+    EXPECT_FALSE(str1 != str2);
+    EXPECT_FALSE(str1 == str3);
+    EXPECT_TRUE(str1 != str3);
+
+    EXPECT_TRUE(str1 == "Test");
+    EXPECT_FALSE(str1 != "Test");
+    EXPECT_FALSE(str1 == "Different");
+    EXPECT_TRUE(str1 != "Different");
+}
+
+TEST(StringAssignmentTest, AssignmentOperators) {
+    stdads::string str1("Initial");
+    stdads::string str2;
+    str2 = str1;
+    EXPECT_EQ(str1.size(), str2.size());
+    EXPECT_STREQ(str1.c_str(), str2.c_str());
+
+    stdads::string str3;
+    str3 = "Assigned C-String";
+    EXPECT_EQ(17u, str3.size());
+    EXPECT_STREQ("Assigned C-String", str3.c_str());
+}

@@ -1,4 +1,4 @@
-#include <stdads/math.h>;
+#include <stdads/math.h>
 
 namespace stdads {
 
