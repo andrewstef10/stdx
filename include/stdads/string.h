@@ -61,6 +61,31 @@ namespace stdads {
     void* memset(void* ptr, int value, size_t num);
 
     /**
+     * @brief Concatentate strings
+     * 
+     * Appends a copy of the source string to the destination string.
+     * The terminating null character in destination is overwritten by the first character of source, and a null-character is included at the end of the new string formed by the concatenation of both in destination.
+     * destination and source shall not overlap.
+     *
+     * @param destination Pointer to the destination array, which should contain a C string, and be large enough to contain the concatenated resulting string.
+     * @param source C string to be appended. This should not overlap destination.
+     * @return destination is returned.
+     */
+    char* strcat(char* destination, const char* source);
+
+    /**
+     * @brief Locate first occurrence of character in string
+     * 
+     * Returns a pointer to the first occurrence of character in the C string str.
+     * The terminating null-character is considered part of the C string. Therefore, it can also be located in order to retrieve a pointer to the end of a string.
+     *
+     * @param str C string.
+     * @param character Character to be located. It is passed as its int promotion, but it is internally converted back to char for the comparison.
+     * @return A pointer to the first occurrence of character in str. If the character is not found, the function returns a null pointer.
+     */
+    const char* strchr(const char* str, int character);
+
+    /**
      * @brief Compares the C string str1 to the C string str2.
      *
      * This function starts comparing the first character of each string. If they are equal to each other, it continues with the following pairs until the characters differ or until a terminating null-character is reached.

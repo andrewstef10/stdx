@@ -268,6 +268,117 @@ TEST(MemsetTest, NullptrWithZeroLength) {
 }
 
 
+// strcat tests
+TEST(StrCatTest, AppendToEmptyString)
+{
+    char dest[32] = "";
+    const char src[] = "hello";
+    char* result = stdads::strcat(dest, src);
+    EXPECT_EQ(dest, result);
+    EXPECT_STREQ("hello", dest);
+}
+
+TEST(StrCatTest, AppendNonEmptyStrings)
+{
+    char dest[32] = "hello";
+    const char src[] = " world";
+    stdads::strcat(dest, src);
+    EXPECT_STREQ("hello world", dest);
+}
+
+TEST(StrCatTest, AppendSingleCharacter)
+{
+    char dest[8] = "a";
+    const char src[] = "b";
+    stdads::strcat(dest, src);
+    EXPECT_STREQ("ab", dest);
+}
+
+TEST(StrCatTest, AppendEmptySource)
+{
+    char dest[16] = "hello";
+    const char src[] = "";
+    stdads::strcat(dest, src);
+    EXPECT_STREQ("hello", dest);
+}
+
+TEST(StrCatTest, AppendToLongerString)
+{
+    char dest[64] = "The quick ";
+    const char src[] = "brown fox";
+    stdads::strcat(dest, src);
+    EXPECT_STREQ("The quick brown fox", dest);
+}
+
+
+// strchar tests
+TEST(StrChrTest, FindsCharacterAtBeginning)
+{
+    const char str[] = "hello";
+    const char* result = stdads::strchr(str, 'h');
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ('h', *result);
+    EXPECT_EQ(str, result);
+}
+
+TEST(StrChrTest, FindsCharacterInMiddle)
+{
+    const char str[] = "hello";
+    const char* result = stdads::strchr(str, 'l');
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ('l', *result);
+    EXPECT_EQ(&str[2], result);
+}
+
+TEST(StrChrTest, FindsCharacterAtEnd)
+{
+    const char str[] = "hello";
+    const char* result = stdads::strchr(str, 'o');
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ('o', *result);
+    EXPECT_EQ(&str[4], result);
+}
+
+TEST(StrChrTest, ReturnsFirstOccurrence)
+{
+    const char str[] = "banana";
+    const char* result = stdads::strchr(str, 'a');
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ(&str[1], result);
+}
+
+TEST(StrChrTest, CharacterNotFoundReturnsNullptr)
+{
+    const char str[] = "hello";
+    const char* result = stdads::strchr(str, 'z');
+    EXPECT_EQ(nullptr, result);
+}
+
+TEST(StrChrTest, FindsNullTerminator)
+{
+    const char str[] = "hello";
+    const char* result = stdads::strchr(str, '\0');
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ('\0', *result);
+    EXPECT_EQ(str + 5, result);
+}
+
+TEST(StrChrTest, EmptyString)
+{
+    const char str[] = "";
+    const char* result = stdads::strchr(str, 'a');
+    EXPECT_EQ(nullptr, result);
+}
+
+TEST(StrChrTest, EmptyStringFindNullTerminator)
+{
+    const char str[] = "";
+    const char* result = stdads::strchr(str, '\0');
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ(str, result);
+}
+
+
 // strcmp tests
 TEST(StrcmpTest, comparison) {
     EXPECT_EQ(0, stdads::strcmp("", ""));

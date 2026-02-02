@@ -62,6 +62,41 @@ namespace stdads {
         return ptr;
     }
 
+    char* strcat(char* destination, const char* source)
+    {
+        char* dest = destination; // save a copy so destination can be returned
+        while (*dest != '\0') { ++dest; } // find the end of the dest string
+
+        while (*source != '\0')
+        {
+            *dest = *source;
+            ++source;
+            ++dest;
+        }
+        *dest = '\0';
+
+        return destination;
+    }
+
+    const char* strchr(const char* str, int character)
+    {
+        while (*str != '\0')
+        {
+            if (*str == static_cast<char>(character))
+            {
+                return str;
+            }
+            ++str;
+        }
+
+        // check for null term
+        if (*str == static_cast<char>(character))
+        {
+            return str;
+        }
+        return nullptr; // char not found
+    }
+
     int strcmp(const char* str1, const char* str2)
     {
         // If both pointers are to the same location, they are equal
@@ -94,7 +129,7 @@ namespace stdads {
             ++source;
         }
         
-        *dest = *source; // copy null term
+        *dest = '\0'; // copy null term
         return destination;
     }
 
@@ -121,22 +156,15 @@ namespace stdads {
     , data_(new char[other.size_ + 1])
     
     {
-        for (size_t i = 0; i < size_; ++i) 
-        {
-            data_[i] = other.data_[i];
-        }
-        data_[size_] = '\0';
+        memcpy(data_, other.data_, size_ + 1);
     }
 
     string::string(const char* cstr)
     : size_(strlen(cstr))
+    , data_(0)
     {
         data_ = new char[size_ + 1];
-        for (size_t i = 0; i < size_; ++i) 
-        {
-            data_[i] = cstr[i];
-        }
-        data_[size_] = '\0';
+        memcpy(data_, cstr, size_ + 1);
     }
 
     string::~string()
@@ -150,61 +178,34 @@ namespace stdads {
         {
             return false;
         }
-        for (size_t i = 0; i < size_; ++i) 
-        {
-            if (data_[i] != other.data_[i]) 
-            {
-                return false;
-            }
-        }
-        return true;
+        return memcmp(data_, other.data_, size_ + 1) == 0;
     }
 
     bool string::operator==(const char* cstr) const
     {
-        size_t cstr_len = strlen(cstr);
-        if (size_ != cstr_len) 
-        {
-            return false;
-        }
-        for (size_t i = 0; i < size_; ++i) 
-        {
-            if (data_[i] != cstr[i]) 
-            {
-                return false;
-            }
-        }
-        return true;
+        return memcmp(data_, cstr, size_ + 1) == 0;
     }
 
     string& string::operator=(const string& other)
     {
-        if (this != &other && strcmp(data_, other.data_) != 0)
+        if (this != &other)
         {
             delete[] data_;
             size_ = other.size_;
             data_ = new char[size_ + 1];
-            for (size_t i = 0; i < size_; ++i) 
-            {
-                data_[i] = other.data_[i];
-            }
-            data_[size_] = '\0';
+            memcpy(data_, other.data_, size_ + 1);
         }
         return *this;
     }
 
     string& string::operator=(const char* cstr)
     {
-        if (strcmp(data_, cstr) != 0)
+        if (data_ != cstr)
         {
             delete[] data_;
             size_ = strlen(cstr);
             data_ = new char[size_ + 1];
-            for (size_t i = 0; i < size_; ++i) 
-            {
-                data_[i] = cstr[i];
-            }
-            data_[size_] = '\0';
+            memcpy(data_, cstr, size_ + 1);
         }
         return *this;
     }
