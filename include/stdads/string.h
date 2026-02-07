@@ -127,24 +127,196 @@ namespace stdads {
 
     class string {
     public:
-        string();                        // default ""
-        string(const string& other);     // copy constructor
-        string(const char* cstr);        // from C string
-        ~string();                       
+        // Constructors //
 
-        bool operator==(const string& other) const;
-        bool operator==(const char* cstr) const;
-        bool operator!=(const string& other) const { return !(*this == other); }
-        bool operator!=(const char* cstr) const { return !(*this == cstr); }
+        /**
+         * @brief Default constructor.
+         *
+         * Creates an empty string.
+         */
+        string();
+
+        /**
+         * @brief Copy constructor.
+         *
+         * @param other String to copy.
+         */
+        string(const string& other);
+
+        /**
+         * @brief C string constructor.
+         *
+         * @param cstr C string.
+         */
+        string(const char* cstr);
+
+        /**
+         * @brief Character constructor.
+         *
+         * @param c A character.
+         */
+        string(char c);
+
+        /**
+         * @brief Destructor.
+         */
+        ~string();
+
+
+        // Assignment operators //
+
+        /**
+         * @brief Assigns a new value to the string, replacing its current contents.
+         *
+         * @param other String object to copy if different from *this.
+         * @return Refrence to this string object
+         */
         string& operator=(const string& other);
+
+        /**
+         * @brief Assigns a new value to the string, replacing its current contents.
+         *
+         * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied as the new value for the string.
+         * @return Refrence to this string object
+         */
         string& operator=(const char* cstr);
 
-        size_t size() const { return size_; }
-        bool empty() const { return size_ == 0; }
-        // char& operator[](size_t i);
-        // const char& operator[](size_t i) const;
+        /**
+         * @brief Assigns a new value to the string, replacing its current contents.
+         *
+         * @param c A character. The string value is set to a single copy of this character.
+         * @return Refrence to this string object
+         */
+        string& operator=(char c);
 
+
+        // Equality operators //
+
+        /**
+         * @brief String Equality Operator
+         *
+         * @param other Other string object to compare *this to.
+         * @return True if *this string has the same content as other
+         */
+        bool operator==(const string& other) const;
+
+        /**
+         * @brief C String Equality Operator
+         *
+         * @param cstr Other C String to compare *this to.
+         * @return True if *this string has the same content as cstr
+         */
+        bool operator==(const char* cstr) const;
+
+        /**
+         * @brief Character Equality Operator
+         *
+         * @param c Other Character to compare *this to.
+         * @return True if *this string is equal to Character c
+         */
+        bool operator==(char c) const;
+
+        /**
+         * @brief String Inequality Operator
+         *
+         * @param other Other string object to compare *this to.
+         * @return True if *this string does not have the same content as other
+         */
+        bool operator!=(const string& other) const { return !(*this == other); }
+
+        /**
+         * @brief C String Inequality Operator
+         *
+         * @param cstr Other C String to compare *this to.
+         * @return True if *this string does not have the same content as cstr
+         */
+        bool operator!=(const char* cstr) const { return !(*this == cstr); }
+
+        /**
+         * @brief Character Inequality Operator
+         *
+         * @param c Other Character to compare *this to.
+         * @return True if *this string is not equal to Character c
+         */
+        bool operator!=(char c) const { return !(*this == c); }
+
+
+        // Capacity //
+
+        /**
+         * @brief Returns the length of the string, in terms of bytes.
+         * 
+         * This is the number of actual bytes that conform the contents of the string, which is not necessarily equal to its storage capacity.
+         *
+         * @return The number of bytes in the string.
+         */
+        size_t size() const { return size_; }
+
+        /**
+         * @brief Returns whether the string is empty (i.e. whether its length is 0).
+         *
+         * @return true if the string length is 0, false otherwise.
+         */
+        bool empty() const { return size_ == 0; }
+
+
+        // Element access //
+
+        /**
+         * @brief Get contents as a C String.
+         * 
+         * Returns a pointer to an array that contains a null-terminated sequence of characters (i.e., a C-string) representing the current value of the string object.
+         *
+         * @return A pointer to the c-string representation of the string object's value.
+         */
         const char* c_str() const { return data_; }
+
+        // char& operator[](size_t i) { return data_[i]; }
+        // const char& operator[](size_t i) const { return data_[i]; }
+        // char& at(size_t i) { return data_[i]; }
+        // const char& at(size_t i) const { return data_[i]; }
+        // char& back() { return data_[size_ - 1]; }
+        // const char& back() const { return data_[size_ - 1]; }
+        // char& front() { return data_[0]; };
+        // const char& front() const { return data_[0]; };
+
+
+        // Modifiers //
+
+        /**
+         * @brief Addition Assignment Operator.
+         * 
+         * Extends the string by appending additional characters at the end of its current value.
+         *
+         * @param other A string object, whose value is copied at the end.
+         * @return Refrence to this string object
+         */
+        string& operator+=(const string& other);
+
+        /**
+         * @brief Addition Assignment Operator.
+         * 
+         * Extends the string by appending additional characters at the end of its current value.
+         *
+         * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the string.
+         * @return Refrence to this string object
+         */
+        string& operator+=(const char* cstr);
+
+        /**
+         * @brief Addition Assignment Operator.
+         * 
+         * Extends the string by appending additional character at the end of its current value.
+         *
+         * @param c A character, which is appended to the current value of the string.
+         * @return Refrence to this string object
+         */
+        string& operator+=(char c);
+
+        /**
+         * @brief Erases the contents of the string, which becomes an empty string (with a length of 0 characters).
+         */
+        void clear();
 
     private:
         char* data_;
