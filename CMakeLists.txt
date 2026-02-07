@@ -9,6 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ---- Library ----
 add_library(stdads
     src/math.cpp
+    src/string.cpp
 )
 
 target_include_directories(stdads
@@ -32,6 +33,7 @@ FetchContent_MakeAvailable(googletest)
 # ---- Tests ----
 add_executable(stdads_tests
     tests/test_math.cpp
+    tests/test_string.cpp
 )
 
 target_link_libraries(stdads_tests

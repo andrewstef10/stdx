@@ -1,30 +1,43 @@
-#include <stdads/math.h>;
+#include <stdads/math.h>
 
 namespace stdads {
 
-    float fabs(float value)
-    {
-        if (value < 0.0f)
-        {
-            return -value;
-        }
-        return value;
-    }
+    float abs(float value)              { return (value < 0.0f) ? -value : value; }
+    double abs(double value)            { return (value < 0.0) ? -value : value; }
+    long double abs(long double value)  { return (value < 0.0L) ? -value : value; }
+    int abs(int value)                  { return (value < 0) ? -value : value; }
+    long abs(long value)                { return (value < 0) ? -value : value; }
+    long long abs(long long value)      { return (value < 0) ? -value : value; }
 
     float pow(float base, int exp)
     {
         float result = 1.0f;
-        float abs_exp = fabs(exp);
-        for (int i = 0; i < abs_exp; ++i)
+        int abs_exp = abs(exp);
+        while (abs_exp > 0) 
         {
-            result *= base;
+            if (abs_exp & 1) 
+            {
+                result *= base;
+            }
+            base *= base;
+            abs_exp >>= 1;
         }
+        return (exp < 0) ? 1.0f / result : result;
+    }
 
-        if (exp < 0)
+    double pow(double base, int exp)
+    {
+        double result = 1.0;
+        int abs_exp = abs(exp);
+        while (abs_exp > 0) 
         {
-            result = 1.0f / result;
+            if (abs_exp & 1) 
+            {
+                result *= base;
+            }
+            base *= base;
+            abs_exp >>= 1;
         }
-
-        return result;
+        return (exp < 0) ? 1.0 / result : result;
     }
 }
