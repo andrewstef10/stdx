@@ -121,7 +121,7 @@ namespace stdads {
             return destination;
         }
         
-        char* dest = destination; // save of copy of dest to interate
+        char* dest = destination; // save of copy of dest to iterate
         while (*source != '\0')
         {
             *dest = *source;

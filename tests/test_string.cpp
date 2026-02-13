@@ -74,7 +74,7 @@ TEST(MemcmpTest, EqualBuffers) {
     EXPECT_EQ(0, result);
 }
 
-TEST(MemcmpTest, RefrenceEquals)
+TEST(MemcmpTest, ReferenceEquals)
 {
     const char a[] = "hello";
     int result = stdads::memcmp(a, a, 5);
@@ -481,7 +481,7 @@ TEST(StrcpyTest, IncludesNullTerminator) {
     EXPECT_EQ('\0', dst[3]);  // must copy terminator
 }
 
-TEST(StrcpyTest, RefrenceEqual) {
+TEST(StrcpyTest, ReferenceEqual) {
     char src[] = "abc";
     stdads::strcpy(src, src);
     EXPECT_EQ('a', src[0]);
@@ -675,7 +675,7 @@ TEST(StringAssignmentTest, AssignSameCStringContent)
 
     EXPECT_EQ(5u, s.size());
     EXPECT_STREQ("hello", s.c_str());
-    EXPECT_EQ(s.c_str(), before); // buffer should be resued
+    EXPECT_EQ(s.c_str(), before); // buffer should be reused
 }
 
 TEST(StringAssignmentTest, AssignFromChar)
