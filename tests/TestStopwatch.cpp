@@ -105,14 +105,22 @@ TEST(StopWatchTest, MeasuresApproximately100ms)
 {
     stdads::Stopwatch sw;
 
+    std::chrono::steady_clock::time_point realStart = std::chrono::steady_clock::now();
     sw.Start();
+
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    std::chrono::steady_clock::time_point realEnd = std::chrono::steady_clock::now();
     sw.Stop();
 
+    // Compare against actual steady_clock start and end time to combat OS scheduling differences
+    double expectedElapsedTimeSec = std::chrono::duration<double>(realEnd - realStart).count();
     double elapsedTimeSec = sw.GetElapsedTimeSec();
+    EXPECT_NEAR(expectedElapsedTimeSec, elapsedTimeSec, 0.001); // 1ms tolerance
+
+    long long expectedElapsedTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(realEnd - realStart).count();
     long long elapsedTimeMs = sw.GetElapsedTime<std::chrono::milliseconds>().count();
-    EXPECT_NEAR(elapsedTimeSec, 0.1, 0.02); // 20ms tolerance
-    EXPECT_NEAR(elapsedTimeMs, 100, 20); // 20ms tolerance
+    EXPECT_NEAR(expectedElapsedTimeMs, elapsedTimeMs, 1); // 1ms tolerance
 }
 
 TEST(StopWatchTest, CopyConstructorAndAssignmentOperator)
