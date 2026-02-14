@@ -13,7 +13,7 @@ namespace stdads {
      * 
      * @param ptr Pointer to the block of memory to be searched
      * @param value Value to be located. The value is passed as an int, but the function performs a byte per byte search using the unsigned char conversion of this value.
-     * @param num Number of bytes to be analized
+     * @param num Number of bytes to be analyzed
      * @return A pointer to the first occurrence of value in the block of memory pointed by ptr.
      *         If the value is not found, the function returns a null pointer.
      */
@@ -63,7 +63,7 @@ namespace stdads {
     void* memset(void* ptr, int value, size_t num);
 
     /**
-     * @brief Concatentate strings
+     * @brief Concatenate strings
      * 
      * Appends a copy of the source string to the destination string.
      * The terminating null character in destination is overwritten by the first character of source, and a null-character is included at the end of the new string formed by the concatenation of both in destination.
@@ -171,7 +171,7 @@ namespace stdads {
          * @brief Assigns a new value to the string, replacing its current contents.
          *
          * @param other String object to copy if different from *this.
-         * @return Refrence to this string object
+         * @return Reference to this string object
          */
         string& operator=(const string& other);
 
@@ -179,7 +179,7 @@ namespace stdads {
          * @brief Assigns a new value to the string, replacing its current contents.
          *
          * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied as the new value for the string.
-         * @return Refrence to this string object
+         * @return Reference to this string object
          */
         string& operator=(const char* cstr);
 
@@ -187,7 +187,7 @@ namespace stdads {
          * @brief Assigns a new value to the string, replacing its current contents.
          *
          * @param c A character. The string value is set to a single copy of this character.
-         * @return Refrence to this string object
+         * @return Reference to this string object
          */
         string& operator=(char c);
 
@@ -291,7 +291,7 @@ namespace stdads {
          * Extends the string by appending additional characters at the end of its current value.
          *
          * @param other A string object, whose value is copied at the end.
-         * @return Refrence to this string object
+         * @return Reference to this string object
          */
         string& operator+=(const string& other);
 
@@ -301,7 +301,7 @@ namespace stdads {
          * Extends the string by appending additional characters at the end of its current value.
          *
          * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the string.
-         * @return Refrence to this string object
+         * @return Reference to this string object
          */
         string& operator+=(const char* cstr);
 
@@ -311,7 +311,7 @@ namespace stdads {
          * Extends the string by appending additional character at the end of its current value.
          *
          * @param c A character, which is appended to the current value of the string.
-         * @return Refrence to this string object
+         * @return Reference to this string object
          */
         string& operator+=(char c);
 

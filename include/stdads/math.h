@@ -19,7 +19,7 @@ namespace stdads {
     /**
      * @brief Raises a number to a power
      *
-     * This function rasies the base to the exponent exp.
+     * This function raises the base to the exponent exp.
      *
      * @param base Base value
      * @param exp Exponent value

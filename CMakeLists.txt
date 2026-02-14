@@ -10,6 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(stdads
     src/math.cpp
     src/string.cpp
+    src/Stopwatch.cpp
 )
 
 target_include_directories(stdads
@@ -34,6 +35,7 @@ FetchContent_MakeAvailable(googletest)
 add_executable(stdads_tests
     tests/test_math.cpp
     tests/test_string.cpp
+    tests/TestStopwatch.cpp
 )
 
 target_link_libraries(stdads_tests
