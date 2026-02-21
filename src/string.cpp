@@ -1,4 +1,4 @@
-#include <stdads/string.h>
+#include <stdads/String.h>
 
 namespace stdads {
 
@@ -65,7 +65,7 @@ namespace stdads {
     char* strcat(char* destination, const char* source)
     {
         char* dest = destination; // save a copy so destination can be returned
-        while (*dest != '\0') { ++dest; } // find the end of the dest string
+        while (*dest != '\0') { ++dest; } // find the end of the dest String
 
         while (*source != '\0')
         {
@@ -145,133 +145,133 @@ namespace stdads {
     }
 
 
-    string::string()
-    : size_(0)
-    , data_(new char[1]{'\0'})
-    {
-    }
+    // String::String()
+    // : size_(0)
+    // , data_(new char[1]{'\0'})
+    // {
+    // }
 
-    string::string(const string& other)
-    : size_(other.size_)
-    , data_(new char[other.size_ + 1])
-    {
-        memcpy(data_, other.data_, size_ + 1);
-    }
+    // String::String(const String& other)
+    // : size_(other.size_)
+    // , data_(new char[other.size_ + 1])
+    // {
+    //     memcpy(data_, other.data_, size_ + 1);
+    // }
 
-    string::string(const char* cstr)
-    : size_(strlen(cstr))
-    , data_(0)
-    {
-        data_ = new char[size_ + 1];
-        memcpy(data_, cstr, size_ + 1);
-    }
+    // String::String(const char* cstr)
+    // : size_(strlen(cstr))
+    // , data_(0)
+    // {
+    //     data_ = new char[size_ + 1];
+    //     memcpy(data_, cstr, size_ + 1);
+    // }
 
-    string::string(char c)
-    : size_(1)
-    , data_(new char[2])
-    {
-        data_[0] = c;
-        data_[1] = '\0';
-    }
+    // String::String(char c)
+    // : size_(1)
+    // , data_(new char[2])
+    // {
+    //     data_[0] = c;
+    //     data_[1] = '\0';
+    // }
 
-    string::~string()
-    {
-        delete[] data_;
-    }
+    // String::~String()
+    // {
+    //     delete[] data_;
+    // }
 
-    string& string::operator=(const string& other)
-    {
-        if (this != &other)
-        {
-            delete[] data_;
-            size_ = other.size_;
-            data_ = new char[size_ + 1];
-            memcpy(data_, other.data_, size_ + 1);
-        }
-        return *this;
-    }
+    // String& String::operator=(const String& other)
+    // {
+    //     if (this != &other)
+    //     {
+    //         delete[] data_;
+    //         size_ = other.size_;
+    //         data_ = new char[size_ + 1];
+    //         memcpy(data_, other.data_, size_ + 1);
+    //     }
+    //     return *this;
+    // }
 
-    string& string::operator=(const char* cstr)
-    {
-        if (data_ != cstr)
-        {
-            delete[] data_;
-            size_ = strlen(cstr);
-            data_ = new char[size_ + 1];
-            memcpy(data_, cstr, size_ + 1);
-        }
-        return *this;
-    }
+    // String& String::operator=(const char* cstr)
+    // {
+    //     if (data_ != cstr)
+    //     {
+    //         delete[] data_;
+    //         size_ = strlen(cstr);
+    //         data_ = new char[size_ + 1];
+    //         memcpy(data_, cstr, size_ + 1);
+    //     }
+    //     return *this;
+    // }
 
-    string& string::operator=(char c)
-    {
-        delete[] data_;
-        size_ = 1;
-        data_ = new char[size_ + 1];
-        data_[0] = c;
-        data_[1] = '\0';
-        return *this;
-    }
+    // String& String::operator=(char c)
+    // {
+    //     delete[] data_;
+    //     size_ = 1;
+    //     data_ = new char[size_ + 1];
+    //     data_[0] = c;
+    //     data_[1] = '\0';
+    //     return *this;
+    // }
 
-    bool string::operator==(const string& other) const
-    {
-        if (size_ != other.size_) 
-        {
-            return false;
-        }
-        return memcmp(data_, other.data_, size_ + 1) == 0;
-    }
+    // bool String::operator==(const String& other) const
+    // {
+    //     if (size_ != other.size_) 
+    //     {
+    //         return false;
+    //     }
+    //     return memcmp(data_, other.data_, size_ + 1) == 0;
+    // }
 
-    bool string::operator==(const char* cstr) const
-    {
-        return memcmp(data_, cstr, size_ + 1) == 0;
-    }
+    // bool String::operator==(const char* cstr) const
+    // {
+    //     return memcmp(data_, cstr, size_ + 1) == 0;
+    // }
 
-    bool string::operator==(char c) const
-    {
-        return size_ == 1 && data_[0] == c;
-    }
+    // bool String::operator==(char c) const
+    // {
+    //     return size_ == 1 && data_[0] == c;
+    // }
 
-    string& string::operator+=(const string& other)
-    {
-        char* tempData = new char[size_ + other.size_ + 1];
-        memcpy(tempData, data_, size_); // copy current string
-        memcpy(tempData + size_, other.data_, other.size_ + 1); // copy new string
+    // String& String::operator+=(const String& other)
+    // {
+    //     char* tempData = new char[size_ + other.size_ + 1];
+    //     memcpy(tempData, data_, size_); // copy current String
+    //     memcpy(tempData + size_, other.data_, other.size_ + 1); // copy new String
 
-        delete[] data_;
-        size_ = size_ + other.size_;
-        data_ = tempData;
-        return *this;
-    }
+    //     delete[] data_;
+    //     size_ = size_ + other.size_;
+    //     data_ = tempData;
+    //     return *this;
+    // }
 
-    string& string::operator+=(const char* cstr)
-    {
-        size_t cstrLength = strlen(cstr);
-        char* tempData = new char[size_ + cstrLength + 1];
-        memcpy(tempData, data_, size_); // copy current string
-        memcpy(tempData + size_, cstr, cstrLength + 1); // copy new string
+    // String& String::operator+=(const char* cstr)
+    // {
+    //     size_t cstrLength = strlen(cstr);
+    //     char* tempData = new char[size_ + cstrLength + 1];
+    //     memcpy(tempData, data_, size_); // copy current String
+    //     memcpy(tempData + size_, cstr, cstrLength + 1); // copy new String
 
-        delete[] data_;
-        size_ = size_ + cstrLength;
-        data_ = tempData;
-        return *this;
-    }
+    //     delete[] data_;
+    //     size_ = size_ + cstrLength;
+    //     data_ = tempData;
+    //     return *this;
+    // }
 
-    string& string::operator+=(char c)
-    {
-        char* tempData = new char[size_ + 2]; // +1 for c and +1 for null term = +2
-        memcpy(tempData, data_, size_); // copy current string
-        tempData[size_] = c;
-        tempData[size_ + 1] = '\0';
+    // String& String::operator+=(char c)
+    // {
+    //     char* tempData = new char[size_ + 2]; // +1 for c and +1 for null term = +2
+    //     memcpy(tempData, data_, size_); // copy current String
+    //     tempData[size_] = c;
+    //     tempData[size_ + 1] = '\0';
 
-        delete[] data_;
-        size_ = size_ + 1;
-        data_ = tempData;
-        return *this;
-    }
+    //     delete[] data_;
+    //     size_ = size_ + 1;
+    //     data_ = tempData;
+    //     return *this;
+    // }
 
-    void string::clear()
-    {
-        *this = "";
-    }
+    // void String::Clear()
+    // {
+    //     *this = "";
+    // }
 }

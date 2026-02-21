@@ -1,9 +1,16 @@
-#ifndef STRING_H
-#define STRING_H
+#ifndef String_H
+#define String_H
 
 #include <cstddef>
 
 namespace stdads {
+
+    /**
+     * @brief The default capacity of a String in bytes
+     * 
+     * Used by the String class to determine how many byes to allocate on the stack by default for SSO (Small String Optimization)
+     */
+    const static size_t DEFAULT_STRING_CAPACITY_BYTES = 24;
 
     /**
      * @brief Searches within the first num bytes of the block of memory pointed by ptr for the first occurrence of value (interpreted as an unsigned char), and returns a pointer to it.
@@ -63,203 +70,223 @@ namespace stdads {
     void* memset(void* ptr, int value, size_t num);
 
     /**
-     * @brief Concatenate strings
+     * @brief Concatenate Strings
      * 
-     * Appends a copy of the source string to the destination string.
-     * The terminating null character in destination is overwritten by the first character of source, and a null-character is included at the end of the new string formed by the concatenation of both in destination.
+     * Appends a copy of the source String to the destination String.
+     * The terminating null character in destination is overwritten by the first character of source, and a null-character is included at the end of the new String formed by the concatenation of both in destination.
      * destination and source shall not overlap.
      *
-     * @param destination Pointer to the destination array, which should contain a C string, and be large enough to contain the concatenated resulting string.
-     * @param source C string to be appended. This should not overlap destination.
+     * @param destination Pointer to the destination array, which should contain a C String, and be large enough to contain the concatenated resulting String.
+     * @param source C String to be appended. This should not overlap destination.
      * @return destination is returned.
      */
     char* strcat(char* destination, const char* source);
 
     /**
-     * @brief Locate first occurrence of character in string
+     * @brief Locate first occurrence of character in String
      * 
-     * Returns a pointer to the first occurrence of character in the C string str.
-     * The terminating null-character is considered part of the C string. Therefore, it can also be located in order to retrieve a pointer to the end of a string.
+     * Returns a pointer to the first occurrence of character in the C String str.
+     * The terminating null-character is considered part of the C String. Therefore, it can also be located in order to retrieve a pointer to the end of a String.
      *
-     * @param str C string.
+     * @param str C String.
      * @param character Character to be located. It is passed as its int promotion, but it is internally converted back to char for the comparison.
      * @return A pointer to the first occurrence of character in str. If the character is not found, the function returns a null pointer.
      */
     const char* strchr(const char* str, int character);
 
     /**
-     * @brief Compares the C string str1 to the C string str2.
+     * @brief Compares the C String str1 to the C String str2.
      *
-     * This function starts comparing the first character of each string. If they are equal to each other, it continues with the following pairs until the characters differ or until a terminating null-character is reached.
+     * This function starts comparing the first character of each String. If they are equal to each other, it continues with the following pairs until the characters differ or until a terminating null-character is reached.
      * This function performs a binary comparison of the characters.
      * Passing str1 or str2 as nullptr results in undefined behavior.
      *
-     * @param str1 C string to be compared.
-     * @param str2 C string to be compared.
-     * @return Zero if the contents of both strings are equal.
+     * @param str1 C String to be compared.
+     * @param str2 C String to be compared.
+     * @return Zero if the contents of both Strings are equal.
      *         Negative if the first character that does not match has a lower value in ptr1 than in ptr2.
      *         Positive if the first character that does not match has a greater value in ptr1 than in ptr2
      */
     int strcmp(const char* str1, const char* str2);
 
     /**
-     * @brief Copies the C string pointed by source into the array pointed by destination, including the terminating null character (and stopping at that point).
+     * @brief Copies the C String pointed by source into the array pointed by destination, including the terminating null character (and stopping at that point).
      * 
-     * To avoid overflows, the size of the array pointed by destination shall be long enough to contain the same C string as source (including the terminating null character), and should not overlap in memory with source.
+     * To avoid overflows, the size of the array pointed by destination shall be long enough to contain the same C String as source (including the terminating null character), and should not overlap in memory with source.
      * Passing destination or source as nullptr results in undefined behavior.
      *
      * @param destination Pointer to the destination array where the content is to be copied.
-     * @param source C string to be copied.
+     * @param source C String to be copied.
      * @return destination is returned.
      */
     char* strcpy(char* destination, const char* source);
 
     /**
-     * @brief Returns the length of the C string str.
+     * @brief Returns the length of the C String str.
      *
-     * The length of a C string is determined by the terminating null-character:
-     * A C string is as long as the number of characters between the beginning of the string and the terminating null character (without including the terminating null character itself).
+     * The length of a C String is determined by the terminating null-character:
+     * A C String is as long as the number of characters between the beginning of the String and the terminating null character (without including the terminating null character itself).
      * Passing str as nullptr results in undefined behavior.
      *
-     * @param str C string.
+     * @param str C String.
      * @return The length of str.
      */
     size_t strlen(const char* str);
 
 
-    class string {
+    /**
+     * @brief String class
+     *
+     * The templated parameter N represents the initial capacity of the String allocated on the stack.
+     * If the String outgrows its initial capacity, dynamic memory allocation will be used to grow the String.
+     *
+     * @param N The initial capacity of this string allocated on the stack (Default 23).
+     */
+    template<size_t N = DEFAULT_STRING_CAPACITY_BYTES>
+    class String {
     public:
+
         // Constructors //
 
         /**
          * @brief Default constructor.
          *
-         * Creates an empty string.
+         * Creates an empty String.
          */
-        string();
+        String();
 
         /**
          * @brief Copy constructor.
          *
          * @param other String to copy.
          */
-        string(const string& other);
+        String(const String& other);
 
         /**
-         * @brief C string constructor.
+         * @brief C String constructor.
          *
-         * @param cstr C string.
+         * @param cstr C String.
          */
-        string(const char* cstr);
+        String(const char* cstr);
 
         /**
          * @brief Character constructor.
          *
          * @param c A character.
          */
-        string(char c);
+        String(char c);
 
         /**
          * @brief Destructor.
          */
-        ~string();
+        ~String();
 
 
-        // Assignment operators //
+        // // Assignment operators //
 
         /**
-         * @brief Assigns a new value to the string, replacing its current contents.
+         * @brief Assigns a new value to the String, replacing its current contents.
          *
          * @param other String object to copy if different from *this.
-         * @return Reference to this string object
+         * @return Reference to this String object
          */
-        string& operator=(const string& other);
+        String& operator=(const String& other);
 
         /**
-         * @brief Assigns a new value to the string, replacing its current contents.
+         * @brief Assigns a new value to the String, replacing its current contents.
          *
-         * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied as the new value for the string.
-         * @return Reference to this string object
+         * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied as the new value for the String.
+         * @return Reference to this String object
          */
-        string& operator=(const char* cstr);
+        String& operator=(const char* cstr);
 
         /**
-         * @brief Assigns a new value to the string, replacing its current contents.
+         * @brief Assigns a new value to the String, replacing its current contents.
          *
-         * @param c A character. The string value is set to a single copy of this character.
-         * @return Reference to this string object
+         * @param c A character. The String value is set to a single copy of this character.
+         * @return Reference to this String object
          */
-        string& operator=(char c);
+        String& operator=(char c);
 
 
-        // Equality operators //
+        // // Equality operators //
 
-        /**
-         * @brief String Equality Operator
-         *
-         * @param other Other string object to compare *this to.
-         * @return True if *this string has the same content as other
-         */
-        bool operator==(const string& other) const;
+        // /**
+        //  * @brief String Equality Operator
+        //  *
+        //  * @param other Other String object to compare *this to.
+        //  * @return True if *this String has the same content as other
+        //  */
+        // bool operator==(const String& other) const;
 
-        /**
-         * @brief C String Equality Operator
-         *
-         * @param cstr Other C String to compare *this to.
-         * @return True if *this string has the same content as cstr
-         */
-        bool operator==(const char* cstr) const;
+        // /**
+        //  * @brief C String Equality Operator
+        //  *
+        //  * @param cstr Other C String to compare *this to.
+        //  * @return True if *this String has the same content as cstr
+        //  */
+        // bool operator==(const char* cstr) const;
 
-        /**
-         * @brief Character Equality Operator
-         *
-         * @param c Other Character to compare *this to.
-         * @return True if *this string is equal to Character c
-         */
-        bool operator==(char c) const;
+        // /**
+        //  * @brief Character Equality Operator
+        //  *
+        //  * @param c Other Character to compare *this to.
+        //  * @return True if *this String is equal to Character c
+        //  */
+        // bool operator==(char c) const;
 
-        /**
-         * @brief String Inequality Operator
-         *
-         * @param other Other string object to compare *this to.
-         * @return True if *this string does not have the same content as other
-         */
-        bool operator!=(const string& other) const { return !(*this == other); }
+        // /**
+        //  * @brief String Inequality Operator
+        //  *
+        //  * @param other Other String object to compare *this to.
+        //  * @return True if *this String does not have the same content as other
+        //  */
+        // bool operator!=(const String& other) const { return !(*this == other); }
 
-        /**
-         * @brief C String Inequality Operator
-         *
-         * @param cstr Other C String to compare *this to.
-         * @return True if *this string does not have the same content as cstr
-         */
-        bool operator!=(const char* cstr) const { return !(*this == cstr); }
+        // /**
+        //  * @brief C String Inequality Operator
+        //  *
+        //  * @param cstr Other C String to compare *this to.
+        //  * @return True if *this String does not have the same content as cstr
+        //  */
+        // bool operator!=(const char* cstr) const { return !(*this == cstr); }
 
-        /**
-         * @brief Character Inequality Operator
-         *
-         * @param c Other Character to compare *this to.
-         * @return True if *this string is not equal to Character c
-         */
-        bool operator!=(char c) const { return !(*this == c); }
+        // /**
+        //  * @brief Character Inequality Operator
+        //  *
+        //  * @param c Other Character to compare *this to.
+        //  * @return True if *this String is not equal to Character c
+        //  */
+        // bool operator!=(char c) const { return !(*this == c); }
 
 
         // Capacity //
 
         /**
-         * @brief Returns the length of the string, in terms of bytes.
+         * @brief Returns the length of the String, in terms of bytes (excluding the null terminator).
          * 
-         * This is the number of actual bytes that conform the contents of the string, which is not necessarily equal to its storage capacity.
+         * This is the number of actual bytes that conform the contents of the String, which is not necessarily equal to its storage capacity.
          *
-         * @return The number of bytes in the string.
+         * @return The number of bytes in the String.
          */
-        size_t size() const { return size_; }
+        size_t Size() const { return size_; }
 
         /**
-         * @brief Returns whether the string is empty (i.e. whether its length is 0).
+         * @brief Return size of allocated storage
+         * 
+         * Returns the size of the storage space currently allocated for the string, expressed in terms of bytes (excluding the null terminator).
+         * This capacity is not necessarily equal to the string length. It can be equal or greater, with the extra space allowing the object to optimize its operations when new characters are added to the string.
          *
-         * @return true if the string length is 0, false otherwise.
+         * @return The size of the storage capacity currently allocated for the string.
          */
-        bool empty() const { return size_ == 0; }
+        size_t Capacity() const { return capacity_; }
+
+        /**
+         * @brief Returns whether the String is empty (i.e. whether its length is 0).
+         *
+         * @return true if the String length is 0, false otherwise.
+         */
+        bool Empty() const { return size_ == 0; }
 
 
         // Element access //
@@ -267,9 +294,9 @@ namespace stdads {
         /**
          * @brief Get contents as a C String.
          * 
-         * Returns a pointer to an array that contains a null-terminated sequence of characters (i.e., a C-string) representing the current value of the string object.
+         * Returns a pointer to an array that contains a null-terminated sequence of characters (i.e., a C-String) representing the current value of the String object.
          *
-         * @return A pointer to the c-string representation of the string object's value.
+         * @return A pointer to the c-String representation of the String object's value.
          */
         const char* c_str() const { return data_; }
 
@@ -285,45 +312,189 @@ namespace stdads {
 
         // Modifiers //
 
-        /**
-         * @brief Addition Assignment Operator.
-         * 
-         * Extends the string by appending additional characters at the end of its current value.
-         *
-         * @param other A string object, whose value is copied at the end.
-         * @return Reference to this string object
-         */
-        string& operator+=(const string& other);
+        // /**
+        //  * @brief Addition Assignment Operator.
+        //  * 
+        //  * Extends the String by appending additional characters at the end of its current value.
+        //  *
+        //  * @param other A String object, whose value is copied at the end.
+        //  * @return Reference to this String object
+        //  */
+        // String& operator+=(const String& other);
 
-        /**
-         * @brief Addition Assignment Operator.
-         * 
-         * Extends the string by appending additional characters at the end of its current value.
-         *
-         * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the string.
-         * @return Reference to this string object
-         */
-        string& operator+=(const char* cstr);
+        // /**
+        //  * @brief Addition Assignment Operator.
+        //  * 
+        //  * Extends the String by appending additional characters at the end of its current value.
+        //  *
+        //  * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the String.
+        //  * @return Reference to this String object
+        //  */
+        // String& operator+=(const char* cstr);
 
-        /**
-         * @brief Addition Assignment Operator.
-         * 
-         * Extends the string by appending additional character at the end of its current value.
-         *
-         * @param c A character, which is appended to the current value of the string.
-         * @return Reference to this string object
-         */
-        string& operator+=(char c);
+        // /**
+        //  * @brief Addition Assignment Operator.
+        //  * 
+        //  * Extends the String by appending additional character at the end of its current value.
+        //  *
+        //  * @param c A character, which is appended to the current value of the String.
+        //  * @return Reference to this String object
+        //  */
+        // String& operator+=(char c);
 
-        /**
-         * @brief Erases the contents of the string, which becomes an empty string (with a length of 0 characters).
-         */
-        void clear();
+        // /**
+        //  * @brief Erases the contents of the String, which becomes an empty String (with a length of 0 characters).
+        //  */
+        // void Clear();
 
     private:
-        char* data_;
-        size_t size_;
+        size_t size_; // length of the string excluding the null terminator
+        size_t capacity_; // number of bytes currently allocated for the string excluding the null terminator
+        char stackBuffer_[N + 1]; // initial stack allocated memory for this string
+        char* data_; // pointer to the Strings char buffer
+
+        /**
+         * @brief Delete any dynamically allocated memory for this class
+         */
+        void Deallocate();
+
+        /**
+         * @brief Grows (repeatedly doubles) the capacity of this String until enough space for minSize is achieved.
+         * 
+         * @param minSize
+         */
+        void GrowCapacity(size_t minSize);
+
+        /**
+         * @brief Set this String equal to a C string
+         * 
+         * This Function grows this String's capacity if the provided cstr is larger than the current capacity.
+         * 
+         * @param cstr C String to assign to this
+         * @param cstrLength The length of the cstr
+         */
+        void Assign(const char* cstr, size_t cstrLength);
     };
+
+
+    // Inline String implementation //
+
+    template<size_t N>
+    String<N>::String()
+    : size_(0)
+    , capacity_(N)
+    , data_(stackBuffer_)
+    {
+        data_[0] = '\0';
+    }
+
+    template<size_t N>
+    String<N>::String(const String<N>& other)
+    : size_(other.size_)
+    , capacity_(N)
+    {
+        Assign(other.c_str(), other.size_);
+    }
+
+    template<size_t N>
+    String<N>::String(const char* cstr)
+    : size_(strlen(cstr))
+    , capacity_(N)
+    {
+        Assign(cstr, size_);
+    }
+
+    template<size_t N>
+    String<N>::String(char c)
+    : size_(1)
+    , capacity_(N)
+    {
+        Assign("X", size_); // "X" is a dummy value
+        data_[0] = c;
+    }
+
+    template<size_t N>
+    String<N>::~String()
+    {
+        Deallocate();
+    }
+
+    template<size_t N>
+    String<N>& String<N>::operator=(const String<N>& other)
+    {
+        if (this != &other)
+        {
+            Deallocate();
+            Assign(other.c_str(), other.size_);
+        }
+        return *this;
+    }
+
+    template<size_t N>
+    String<N>& String<N>::operator=(const char* cstr)
+    {
+        if (data_ != cstr)
+        {
+            Deallocate();
+            Assign(cstr, strlen(cstr));
+        }
+        return *this;
+    }
+
+    template<size_t N>
+    String<N>& String<N>::operator=(char c)
+    {
+        Deallocate();
+        Assign("X", 1); // "X" is a dummy value
+        data_[0] = c;
+        return *this;
+    }
+
+    template<size_t N>
+    void String<N>::Deallocate()
+    {
+        if (data_ != stackBuffer_)
+        {
+            delete[] data_;
+            data_ = 0;
+        }
+    }
+
+    template<size_t N>
+    void String<N>::GrowCapacity(size_t minSize)
+    {
+        while (capacity_ < minSize)
+        {
+            if (capacity_ == 0)
+            {
+                capacity_ = 1;
+            }
+            else
+            {
+                capacity_ *= 2;
+            }
+        }
+    }
+
+    template<size_t N>
+    void String<N>::Assign(const char* cstr, size_t cstrLength)
+    {
+        if (cstrLength <= N)
+        {
+            // cstr fits in our allocated stack memory
+            data_ = stackBuffer_;
+            capacity_ = N;
+        }
+        else
+        {
+            // cstr is larger than our allocate stack memory, so use dynamic memory
+            GrowCapacity(cstrLength);
+            data_ = new char[capacity_ + 1];
+        }
+
+        size_ = cstrLength;
+        memcpy(data_, cstr, cstrLength + 1);
+    }
 }
 
 #endif
