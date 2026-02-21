@@ -8,7 +8,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ---- Library ----
 add_library(stdads
+    src/Ctype.cpp
     src/math.cpp
+    src/Stdadslib.cpp
     src/string.cpp
     src/Stopwatch.cpp
 )
@@ -33,7 +35,10 @@ FetchContent_MakeAvailable(googletest)
 
 # ---- Tests ----
 add_executable(stdads_tests
+    tests/TestCtype.cpp
     tests/test_math.cpp
+    tests/TestNumUtils.cpp
+    tests/TestStdadslib.cpp
     tests/test_string.cpp
     tests/TestStopwatch.cpp
 )
