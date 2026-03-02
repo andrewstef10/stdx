@@ -113,10 +113,11 @@ TEST(StrtolTest, StopsAtInvalidCharacter)
 TEST(StrtolTest, StopsImmediatelyIfNoDigits)
 {
     char* end = nullptr;
-    long result = stdads::Strtol("abc", 10, &end);
+    const char* str = "abc";
+    long result = stdads::Strtol(str, 10, &end);
 
     EXPECT_EQ(0, result);
-    EXPECT_EQ(end, "abc");
+    EXPECT_EQ(end, str);
 }
 
 TEST(StrtolTest, ParsesThenStopsOnSpace)

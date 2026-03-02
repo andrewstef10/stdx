@@ -15,34 +15,18 @@ namespace stdads {
 
     bool IsDigitOfBase(char c, int base)
     {
-        if (base <= 0) return false; // positive bases non zero bases only
-
-        int result = false;
-        if (base == 1)
-        {
-            result = c == '1'; // base 1 only contains 1s
-        }
-        else if (base <= 10)
-        {
-            // bases 2 - 10 only contain digits in range 0 - (base - 1)
-            result = stdads::Within(c, '0', static_cast<char>('0' + (base - 1)));
-        }
-        else if (base <= 36)
-        {
-            // bases 11 - 36 contain digits and letters in range a - (base - 11)
-            result = stdads::Within(c, '0', '9') || 
-                     stdads::Within(c, 'a', static_cast<char>('a' + (base - 11))) ||
-                     stdads::Within(c, 'A', static_cast<char>('A' + (base - 11)));
-        }
-        return result;
+        int digit = CharToDigit(c, base);
+        return digit >= 0 && (digit < base || (base == 1 && digit == 1));
     }
 
     int CharToDigit(char c, int base)
     {
-        if (base <= 0) return -1; // positive bases non zero bases only
+        if (base <= 0)
+        {
+            return -1; // positive bases non zero bases only
+        }
 
         int result = -1;
-
         if (base == 1) // base 1
         {
             if (c == '1') // base 1 only contains 1s
