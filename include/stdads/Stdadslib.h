@@ -15,7 +15,7 @@ namespace stdads {
      * - An optional prefix indicating octal or hexadecimal base ("0" or "0x"/"0X" respectively)
      * - A sequence of decimal digits (if no base prefix was specified) or either octal or hexadecimal digits if a specific prefix is present
      * 
-     * If the base value is between 2 and 36, the format expected for the integral number is a succession of any of the valid digits and/or letters needed to represent integers of the specified radix (starting from '0' and up to 'z'/'Z' for radix 36).
+     * If the base value is between 1 and 36, the format expected for the integral number is a succession of any of the valid digits and/or letters needed to represent integers of the specified radix (starting from '0' and up to 'z'/'Z' for radix 36).
      * The sequence may optionally be preceded by a sign (either + or -) and, if base is 16, an optional "0x" or "0X" prefix.
      *
      * @param str C-string beginning with the representation of an integral number.

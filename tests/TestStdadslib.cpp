@@ -16,6 +16,12 @@ TEST(StrtolTest, ParsesPositiveSign)
     EXPECT_EQ(789, stdads::Strtol("+789"));
 }
 
+TEST(StrtolTest, ParsesDecimalWithLeadingZeros)
+{
+    EXPECT_EQ(123, stdads::Strtol("00123"));
+}
+
+
 //
 // WHITESPACE
 //
@@ -37,6 +43,7 @@ TEST(StrtolTest, SkipsWhitespaceWithSign)
 TEST(StrtolTest, ParsesBinaryBase2)
 {
     EXPECT_EQ(10, stdads::Strtol("1010", 2));
+    EXPECT_EQ(10, stdads::Strtol("0001010", 2));
 }
 
 TEST(StrtolTest, ParsesHexBase16)
@@ -53,6 +60,7 @@ TEST(StrtolTest, ParsesBase36)
 {
     EXPECT_EQ(35, stdads::Strtol("z", 36));
     EXPECT_EQ(35, stdads::Strtol("Z", 36));
+    EXPECT_EQ(1223, stdads::Strtol("xZ", 36));
 }
 
 //
@@ -72,6 +80,7 @@ TEST(StrtolTest, BaseZeroOctal)
 TEST(StrtolTest, BaseZeroHex)
 {
     EXPECT_EQ(26, stdads::Strtol("0x1A", 0));
+    EXPECT_EQ(26, stdads::Strtol("0X1A", 0));
 }
 
 //
@@ -125,7 +134,7 @@ TEST(StrtolTest, ParsesThenStopsOnSpace)
 
 TEST(StrtolTest, InvalidBaseReturnsZero)
 {
-    EXPECT_EQ(0, stdads::Strtol("123", 1));
+    EXPECT_EQ(0, stdads::Strtol("123", -1));
     EXPECT_EQ(0, stdads::Strtol("123", 37));
 }
 
@@ -163,8 +172,9 @@ TEST(StrtolTest, LeadingZeroBase10)
 TEST(StrtolTest, EmptyString)
 {
     char* end = nullptr;
-    EXPECT_EQ(0, stdads::Strtol("", 10, &end));
-    EXPECT_EQ(end, "");
+    const char* emptyStr = "";
+    EXPECT_EQ(0, stdads::Strtol(emptyStr, 10, &end));
+    EXPECT_EQ(end, emptyStr);
 }
 
 //
@@ -174,6 +184,11 @@ TEST(StrtolTest, EmptyString)
 TEST(StrtolTest, OnlySign)
 {
     char* end = nullptr;
-    EXPECT_EQ(0, stdads::Strtol("-", 10, &end));
-    EXPECT_EQ(end, "-");
+    const char* onlySign = "-";
+    EXPECT_EQ(0, stdads::Strtol(onlySign, 10, &end));
+    EXPECT_EQ(end, onlySign);
+
+    onlySign = "+";
+    EXPECT_EQ(0, stdads::Strtol(onlySign, 10, &end));
+    EXPECT_EQ(end, onlySign);
 }

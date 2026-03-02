@@ -103,7 +103,7 @@ namespace stdads {
         if (val < low)
         {
             val = low;
-            limited =  true;
+            limited = true;
         }
         else if (val > high)
         {
