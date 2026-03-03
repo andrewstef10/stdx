@@ -61,6 +61,7 @@ TEST(StrtolTest, ParsesBase36)
     EXPECT_EQ(35, stdads::Strtol("z", 36));
     EXPECT_EQ(35, stdads::Strtol("Z", 36));
     EXPECT_EQ(1223, stdads::Strtol("xZ", 36));
+    EXPECT_EQ(1223, stdads::Strtol("0xZ", 36));
 }
 
 //
