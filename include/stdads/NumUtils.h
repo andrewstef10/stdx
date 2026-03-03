@@ -1,0 +1,118 @@
+#ifndef NUM_UTILS_H
+#define NUM_UTILS_H
+
+namespace stdads {
+
+    /**
+     * @brief Get if a value val is within values low and high (inclusive).
+     * 
+     * This function assumes that the type passed in has properly implemented <= and >= operators.
+     *
+     * @param val Value to check is within low and high (inclusive)
+     * @param low The low value.
+     * @param high The high value.
+     * @return True if val is greater than or equal to low AND val is less than or equal to high.
+     */
+    template<typename T>
+    bool Within(const T& val, const T& low, const T& high);
+
+    /**
+     * @brief Get if a value val is within values low and high (exclusive).
+     * 
+     * This function assumes that the type passed in has properly implemented < and > operators.
+     *
+     * @param val Value to check is within low and high (exclusive)
+     * @param low The low value.
+     * @param high The high value.
+     * @return True if val is greater than low AND val is less than high.
+     */
+    template<typename T>
+    bool WithinExclusive(const T& val, const T& low, const T& high);
+
+    /**
+     * @brief Get if a value val is outside values low and high (exclusive).
+     * 
+     * This function assumes that the type passed in has properly implemented < and > operators.
+     *
+     * @param val Value to check is outside low and high (exclusive)
+     * @param low The low value.
+     * @param high The high value.
+     * @return True if val is less than low OR val is greater than high.
+     */
+    template<typename T>
+    bool Outside(const T& val, const T& low, const T& high);
+
+    /**
+     * @brief Get if a value val is outside values low and high (inclusive).
+     * 
+     * This function assumes that the type passed in has properly implemented <= and >= operators.
+     *
+     * @param val Value to check is outside low and high (inclusive)
+     * @param low The low value.
+     * @param high The high value.
+     * @return True if val is less than or equal to low OR val is greater than or equal to high.
+     */
+    template<typename T>
+    bool OutsideInclusive(const T& val, const T& low, const T& high);
+
+    /**
+     * @brief Clamp a value val so that it is within a range.
+     * 
+     * This function assumes that the type passed in has properly implemented <, >, and = operators.
+     *
+     * @param val Value to clamp
+     * @param low The lower limit.
+     * @param high The upper limit.
+     * @return True if the value val was clamped.
+     */
+    template<typename T>
+    bool Clamp(T& val, const T& low, const T& high);
+
+
+
+    // inline implementation //
+
+    template<typename T>
+    bool Within(const T& val, const T& low, const T& high)
+    {
+        return val >= low && val <= high;
+    }
+
+    template<typename T>
+    bool WithinExclusive(const T& val, const T& low, const T& high)
+    {
+        return val > low && val < high;
+    }
+
+    template<typename T>
+    bool Outside(const T& val, const T& low, const T& high)
+    {
+        return val < low || val > high;
+    }
+
+    template<typename T>
+    bool OutsideExclusive(const T& val, const T& low, const T& high)
+    {
+        return val <= low || val >= high;
+    }
+
+    template<typename T>
+    bool Clamp(T& val, const T& low, const T& high)
+    {
+        bool limited = false;
+        if (val < low)
+        {
+            val = low;
+            limited = true;
+        }
+        else if (val > high)
+        {
+            val = high;
+            limited = true;
+        }
+        return limited;
+    }
+
+}
+
+#endif
