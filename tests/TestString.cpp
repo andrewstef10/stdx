@@ -784,6 +784,18 @@ TEST(StringAssignmentTest, AssignSameCStringContent)
     EXPECT_EQ(s.c_str(), before); // buffer should be reused
 }
 
+TEST(StringAssignmentTest, AssignSameCStringOverlappingMemory)
+{
+    stdads::String s("hello");
+    const char* before = s.c_str();
+    s = before + 1;
+
+    EXPECT_EQ(4u, s.Size());
+    EXPECT_EQ(stdads::DEFAULT_STRING_CAPACITY_BYTES, s.Capacity());
+    EXPECT_STREQ("ello", s.c_str());
+    EXPECT_EQ(s.c_str(), before); // buffer should be reused
+}
+
 TEST(StringAssignmentTest, AssignFromCStringGrowsCapacity)
 {
     stdads::String a("hello");
@@ -806,7 +818,7 @@ TEST(StringAssignmentTest, AssignFromCStringGrowsCapacity)
     EXPECT_NE(c.c_str(), d); // deep copy
 }
 
-TEST(StringAssignmentTest, AssignFromCStringShrinksCapacity)
+TEST(StringAssignmentTest, AssignFromCStringDoesNotShrinksCapacity)
 {
     stdads::String a("abcdefghijklmnopqrstuvwxyz");
     EXPECT_EQ(stdads::DEFAULT_STRING_CAPACITY_BYTES * 2, a.Capacity());
@@ -815,7 +827,7 @@ TEST(StringAssignmentTest, AssignFromCStringShrinksCapacity)
     a = b;
 
     EXPECT_EQ(5u, a.Size());
-    EXPECT_EQ(stdads::DEFAULT_STRING_CAPACITY_BYTES, a.Capacity());
+    EXPECT_EQ(stdads::DEFAULT_STRING_CAPACITY_BYTES * 2, a.Capacity());
     EXPECT_STREQ(a.c_str(), b);
     EXPECT_NE(a.c_str(), b); // deep copy
 }
@@ -840,7 +852,7 @@ TEST(StringConstructorTest, AssignFromCharGrowsCapacity) {
     EXPECT_NE(&c, s.c_str());
 }
 
-TEST(StringConstructorTest, AssignFromCharShrinksCapacity) {
+TEST(StringConstructorTest, AssignFromCharDoesNotShrinksCapacity) {
     const char c = '!';
     stdads::String<1> s("hello");
     EXPECT_EQ(8u, s.Capacity());
@@ -848,125 +860,138 @@ TEST(StringConstructorTest, AssignFromCharShrinksCapacity) {
     s = c;
 
     EXPECT_EQ(1u, s.Size());
-    EXPECT_EQ(1u, s.Capacity());
+    EXPECT_EQ(8u, s.Capacity());
     EXPECT_STREQ("!", s.c_str());
     EXPECT_NE(&c, s.c_str());
 }
 
 
-// // String class equality operators
-// TEST(StringEqualityTest, EqualStringsSameContent) {
-//     stdads::String a("hello");
-//     stdads::String b("hello");
-//     EXPECT_TRUE(a == b);
-//     EXPECT_FALSE(a != b);
+// String class equality operators
+TEST(StringEqualityTest, EqualStringsSameContent) {
+    stdads::String a("hello");
+    stdads::String b("hello");
+    EXPECT_TRUE(a == b);
+    EXPECT_FALSE(a != b);
+}
 
-//     EXPECT_TRUE(a == "hello");
-//     EXPECT_FALSE(a != "hello");
-// }
+TEST(StringEqualityTest, NotEqualDifferentContent) {
+    stdads::String a("hello");
+    stdads::String b("world");
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+}
 
-// TEST(StringEqualityTest, NotEqualDifferentContent) {
-//     stdads::String a("hello");
-//     stdads::String b("world");
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a != b);
-// }
+TEST(StringEqualityTest, NotEqualDifferentLength) {
+    stdads::String a("hello");
+    stdads::String b("hello!");
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+}
 
-// TEST(StringEqualityTest, NotEqualDifferentLength) {
-//     stdads::String a("hello");
-//     stdads::String b("hello!");
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a != b);
-// }
+TEST(StringEqualityTest, EqualEmptyStrings) {
+    stdads::String a;
+    stdads::String b;
+    EXPECT_TRUE(a == b);
+    EXPECT_FALSE(a != b);
+}
 
-// TEST(StringEqualityTest, EqualEmptyStrings) {
-//     stdads::String a;
-//     stdads::String b;
-//     EXPECT_TRUE(a == b);
-//     EXPECT_FALSE(a != b);
-// }
+TEST(StringEqualityTest, EmptyAndNonEmptyNotEqual) {
+    stdads::String a;
+    stdads::String b("hello");
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+}
 
-// TEST(StringEqualityTest, EmptyAndNonEmptyNotEqual) {
-//     stdads::String a;
-//     stdads::String b("hello");
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a != b);
-// }
+TEST(StringEqualityTest, SelfEquality) {
+    stdads::String a("hello");
+    EXPECT_TRUE(a == a);
+    EXPECT_FALSE(a != a);
+}
 
-// TEST(StringEqualityTest, SelfEquality) {
-//     stdads::String a("hello");
-//     EXPECT_TRUE(a == a);
-//     EXPECT_FALSE(a != a);
-// }
+TEST(StringEqualityTest, CaseSensitive) {
+    stdads::String a("hello");
+    stdads::String b("Hello");
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+}
 
-// TEST(StringEqualityTest, CaseSensitive) {
-//     stdads::String a("hello");
-//     stdads::String b("Hello");
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a != b);
-// }
+TEST(StringEqualityTest, EqualCStringsSameContent) {
+    stdads::String a("hello");
+    const char* b = "hello";
+    EXPECT_TRUE(a == b);
+    EXPECT_FALSE(a != b);
+    EXPECT_TRUE(b == a);
+    EXPECT_FALSE(b != a);
 
-// TEST(StringEqualityTest, EqualCStringsSameContent) {
-//     stdads::String a("hello");
-//     const char* b = "hello";
-//     EXPECT_TRUE(a == b);
-//     EXPECT_FALSE(a != b);
+    EXPECT_TRUE("hello" == a);
+    EXPECT_FALSE("hello" != a);
+}
 
-//     EXPECT_TRUE(a == "hello");
-//     EXPECT_FALSE(a != "hello");
-// }
+TEST(StringEqualityTest, CStringNotEqualDifferentContent) {
+    stdads::String a("hello");
+    const char* b ="world";
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+    EXPECT_FALSE(b == a);
+    EXPECT_TRUE(b != a);
+}
 
-// TEST(StringEqualityTest, CStringNotEqualDifferentContent) {
-//     stdads::String a("hello");
-//     const char* b ="world";
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a != b);
-// }
+TEST(StringEqualityTest, CStringNotEqualDifferentLength) {
+    stdads::String a("hello");
+    const char* b ="hello!";
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+    EXPECT_FALSE(b == a);
+    EXPECT_TRUE(b != a);
+}
 
-// TEST(StringEqualityTest, CStringNotEqualDifferentLength) {
-//     stdads::String a("hello");
-//     const char* b ="hello!";
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a != b);
-// }
+TEST(StringEqualityTest, EqualEmptyCStrings) {
+    stdads::String a;
+    const char* b = "";
+    EXPECT_TRUE(a == b);
+    EXPECT_FALSE(a != b);
+    EXPECT_TRUE(b == a);
+    EXPECT_FALSE(b != a);
+}
 
-// TEST(StringEqualityTest, EqualEmptyCStrings) {
-//     stdads::String a;
-//     const char* b = "";
-//     EXPECT_TRUE(a == b);
-//     EXPECT_FALSE(a != b);
-// }
+TEST(StringEqualityTest, EmptyAndNonEmptyCStringNotEqual) {
+    stdads::String a;
+    const char* b = "hello";
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+    EXPECT_FALSE(b == a);
+    EXPECT_TRUE(b != a);
+}
 
-// TEST(StringEqualityTest, EmptyAndNonEmptyCStringNotEqual) {
-//     stdads::String a;
-//     const char* b = "hello";
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a != b);
-// }
+TEST(StringEqualityTest, EqualCharSameContent) {
+    stdads::String a('!');
+    char b = '!';
+    EXPECT_TRUE(a == b);
+    EXPECT_FALSE(a != b);
+    EXPECT_TRUE(b == a);
+    EXPECT_FALSE(b != a);
 
-// TEST(StringEqualityTest, EqualCharSameContent) {
-//     stdads::String a('!');
-//     char b = '!';
-//     EXPECT_TRUE(a == b);
-//     EXPECT_FALSE(a != b);
+    EXPECT_TRUE('!' == a);
+    EXPECT_FALSE('!' != a);
+}
 
-//     EXPECT_TRUE(a == '!');
-//     EXPECT_FALSE(a != '!');
-// }
+TEST(StringEqualityTest, CharNotEqualDifferentContent) {
+    stdads::String a('a');
+    char b = 'b';
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+    EXPECT_FALSE(b == a);
+    EXPECT_TRUE(b != a);
+}
 
-// TEST(StringEqualityTest, CharNotEqualDifferentContent) {
-//     stdads::String a('a');
-//     char b = 'b';
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a != b);
-// }
-
-// TEST(StringEqualityTest, EmptyStringAndCharNotEqual) {
-//     stdads::String a;
-//     char b = 'b';
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a != b);
-// }
+TEST(StringEqualityTest, EmptyStringAndCharNotEqual) {
+    stdads::String a;
+    char b = 'b';
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+    EXPECT_FALSE(b == a);
+    EXPECT_TRUE(b != a);
+}
 
 
 // String class isEmpty
@@ -985,122 +1010,122 @@ TEST(StringEmptyTest, IsEmpty) {
 }
 
 
-// // String class addition assignment operators
-// TEST(StringAppendAssignTest, AppendAnotherString)
-// {
-//     stdads::String a("hello");
-//     stdads::String b(" world");
-//     stdads::String& result = (a += b);
+// String class addition assignment operators
+TEST(StringAppendAssignTest, AppendAnotherString)
+{
+    stdads::String a("hello");
+    stdads::String b(" world");
+    stdads::String<stdads::DEFAULT_STRING_CAPACITY_BYTES>& result = (a += b);
 
-//     EXPECT_EQ(&a, &result);
-//     EXPECT_EQ(11u, a.Size());
-//     EXPECT_STREQ("hello world", a.c_str());
-// }
+    EXPECT_EQ(&a, &result);
+    EXPECT_EQ(11u, a.Size());
+    EXPECT_STREQ("hello world", a.c_str());
+}
 
-// TEST(StringAppendAssignTest, AppendEmptyString)
-// {
-//     stdads::String a("hello");
-//     stdads::String empty;
-//     a += empty;
+TEST(StringAppendAssignTest, AppendEmptyString)
+{
+    stdads::String a("hello");
+    stdads::String empty;
+    a += empty;
 
-//     EXPECT_EQ(5u, a.Size());
-//     EXPECT_STREQ("hello", a.c_str());
-// }
+    EXPECT_EQ(5u, a.Size());
+    EXPECT_STREQ("hello", a.c_str());
+}
 
-// TEST(StringAppendAssignTest, AppendToEmptyString)
-// {
-//     stdads::String a;
-//     stdads::String b("hello");
-//     a += b;
+TEST(StringAppendAssignTest, AppendToEmptyString)
+{
+    stdads::String a;
+    stdads::String b("hello");
+    a += b;
 
-//     EXPECT_EQ(5u, a.Size());
-//     EXPECT_STREQ("hello", a.c_str());
-// }
+    EXPECT_EQ(5u, a.Size());
+    EXPECT_STREQ("hello", a.c_str());
+}
 
-// TEST(StringAppendAssignTest, AppendSelf)
-// {
-//     stdads::String a("abc");
-//     a += a;
+TEST(StringAppendAssignTest, AppendSelf)
+{
+    stdads::String a("abc");
+    a += a;
 
-//     EXPECT_EQ(6u, a.Size());
-//     EXPECT_STREQ("abcabc", a.c_str());
-// }
+    EXPECT_EQ(6u, a.Size());
+    EXPECT_STREQ("abcabc", a.c_str());
+}
 
-// TEST(StringAppendAssignTest, AppendCString)
-// {
-//     stdads::String s("hello");
-//     stdads::String& result = (s += " world");
+TEST(StringAppendAssignTest, AppendCString)
+{
+    stdads::String s("hello");
+    stdads::String<stdads::DEFAULT_STRING_CAPACITY_BYTES>& result = (s += " world");
 
-//     EXPECT_EQ(&s, &result);
-//     EXPECT_EQ(11u, s.Size());
-//     EXPECT_STREQ("hello world", s.c_str());
-// }
+    EXPECT_EQ(&s, &result);
+    EXPECT_EQ(11u, s.Size());
+    EXPECT_STREQ("hello world", s.c_str());
+}
 
-// TEST(StringAppendAssignTest, AppendEmptyCString)
-// {
-//     stdads::String s("hello");
-//     s += "";
+TEST(StringAppendAssignTest, AppendEmptyCString)
+{
+    stdads::String s("hello");
+    s += "";
 
-//     EXPECT_EQ(5u, s.Size());
-//     EXPECT_STREQ("hello", s.c_str());
-// }
+    EXPECT_EQ(5u, s.Size());
+    EXPECT_STREQ("hello", s.c_str());
+}
 
-// TEST(StringAppendAssignTest, AppendCStringToEmptyString)
-// {
-//     stdads::String s;
-//     s += "hello";
+TEST(StringAppendAssignTest, AppendCStringToEmptyString)
+{
+    stdads::String s;
+    s += "hello";
 
-//     EXPECT_EQ(5u, s.Size());
-//     EXPECT_STREQ("hello", s.c_str());
-// }
+    EXPECT_EQ(5u, s.Size());
+    EXPECT_STREQ("hello", s.c_str());
+}
 
 
-// // String class clear
-// TEST(StringClearTest, ClearNonEmptyString)
-// {
-//     stdads::String s("hello");
-//     s.Clear();
+// String class clear
+TEST(StringClearTest, ClearNonEmptyString)
+{
+    stdads::String s("hello");
+    s.Clear();
 
-//     EXPECT_EQ(0u, s.Size());
-//     EXPECT_STREQ("", s.c_str());
-// }
+    EXPECT_EQ(0u, s.Size());
+    EXPECT_STREQ("", s.c_str());
+}
 
-// TEST(StringClearTest, ClearEmptyString)
-// {
-//     stdads::String s;
-//     s.Clear();
+TEST(StringClearTest, ClearEmptyString)
+{
+    stdads::String s;
+    s.Clear();
 
-//     EXPECT_EQ(0u, s.Size());
-//     EXPECT_STREQ("", s.c_str());
-// }
+    EXPECT_EQ(0u, s.Size());
+    EXPECT_STREQ("", s.c_str());
+}
 
-// TEST(StringClearTest, ClearThenAppendString)
-// {
-//     stdads::String s("hello");
+TEST(StringClearTest, ClearThenAppendString)
+{
+    stdads::String s("hello");
 
-//     s.Clear();
-//     s += "world";
+    s.Clear();
+    s += "world";
 
-//     EXPECT_EQ(5u, s.Size());
-//     EXPECT_STREQ("world", s.c_str());
-// }
+    EXPECT_EQ(5u, s.Size());
+    EXPECT_STREQ("world", s.c_str());
+}
 
-// TEST(StringClearTest, ClearThenAppendChar)
-// {
-//     stdads::String s("hello");
-//     s.Clear();
-//     s += 'a';
+TEST(StringClearTest, ClearThenAppendChar)
+{
+    stdads::String s("hello");
+    s.Clear();
+    s += 'a';
 
-//     EXPECT_EQ(1u, s.Size());
-//     EXPECT_STREQ("a", s.c_str());
-// }
+    EXPECT_EQ(1u, s.Size());
+    EXPECT_STREQ("a", s.c_str());
+}
 
-// TEST(StringClearTest, ClearThenAssignCString)
-// {
-//     stdads::String s("hello");
-//     s.Clear();
-//     s = "test";
+TEST(StringClearTest, ClearThenAssignCString)
+{
+    stdads::String s("hello");
+    s.Clear();
+    s = "test";
 
-//     EXPECT_EQ(4u, s.Size());
-//     EXPECT_STREQ("test", s.c_str());
-// }
+    EXPECT_EQ(4u, s.Size());
+    EXPECT_STREQ("test", s.c_str());
+}

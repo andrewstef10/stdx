@@ -209,57 +209,6 @@ namespace stdads {
         String& operator=(char c);
 
 
-        // // Equality operators //
-
-        // /**
-        //  * @brief String Equality Operator
-        //  *
-        //  * @param other Other String object to compare *this to.
-        //  * @return True if *this String has the same content as other
-        //  */
-        // bool operator==(const String& other) const;
-
-        // /**
-        //  * @brief C String Equality Operator
-        //  *
-        //  * @param cstr Other C String to compare *this to.
-        //  * @return True if *this String has the same content as cstr
-        //  */
-        // bool operator==(const char* cstr) const;
-
-        // /**
-        //  * @brief Character Equality Operator
-        //  *
-        //  * @param c Other Character to compare *this to.
-        //  * @return True if *this String is equal to Character c
-        //  */
-        // bool operator==(char c) const;
-
-        // /**
-        //  * @brief String Inequality Operator
-        //  *
-        //  * @param other Other String object to compare *this to.
-        //  * @return True if *this String does not have the same content as other
-        //  */
-        // bool operator!=(const String& other) const { return !(*this == other); }
-
-        // /**
-        //  * @brief C String Inequality Operator
-        //  *
-        //  * @param cstr Other C String to compare *this to.
-        //  * @return True if *this String does not have the same content as cstr
-        //  */
-        // bool operator!=(const char* cstr) const { return !(*this == cstr); }
-
-        // /**
-        //  * @brief Character Inequality Operator
-        //  *
-        //  * @param c Other Character to compare *this to.
-        //  * @return True if *this String is not equal to Character c
-        //  */
-        // bool operator!=(char c) const { return !(*this == c); }
-
-
         // Capacity //
 
         /**
@@ -298,7 +247,7 @@ namespace stdads {
          *
          * @return A pointer to the c-String representation of the String object's value.
          */
-        const char* c_str() const { return data_; }
+        const char* c_str() const { return GetData(); }
 
         // char& operator[](size_t i) { return data_[i]; }
         // const char& operator[](size_t i) const { return data_[i]; }
@@ -312,46 +261,59 @@ namespace stdads {
 
         // Modifiers //
 
-        // /**
-        //  * @brief Addition Assignment Operator.
-        //  * 
-        //  * Extends the String by appending additional characters at the end of its current value.
-        //  *
-        //  * @param other A String object, whose value is copied at the end.
-        //  * @return Reference to this String object
-        //  */
-        // String& operator+=(const String& other);
+        /**
+         * @brief Addition Assignment Operator.
+         * 
+         * Extends the String by appending additional characters at the end of its current value.
+         *
+         * @param other A String object, whose value is copied at the end.
+         * @return Reference to this String object
+         */
+        String& operator+=(const String& other);
 
-        // /**
-        //  * @brief Addition Assignment Operator.
-        //  * 
-        //  * Extends the String by appending additional characters at the end of its current value.
-        //  *
-        //  * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the String.
-        //  * @return Reference to this String object
-        //  */
-        // String& operator+=(const char* cstr);
+        /**
+         * @brief Addition Assignment Operator.
+         * 
+         * Extends the String by appending additional characters at the end of its current value.
+         *
+         * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the String.
+         * @return Reference to this String object
+         */
+        String& operator+=(const char* cstr);
 
-        // /**
-        //  * @brief Addition Assignment Operator.
-        //  * 
-        //  * Extends the String by appending additional character at the end of its current value.
-        //  *
-        //  * @param c A character, which is appended to the current value of the String.
-        //  * @return Reference to this String object
-        //  */
-        // String& operator+=(char c);
+        /**
+         * @brief Addition Assignment Operator.
+         * 
+         * Extends the String by appending additional character at the end of its current value.
+         *
+         * @param c A character, which is appended to the current value of the String.
+         * @return Reference to this String object
+         */
+        String& operator+=(char c);
 
-        // /**
-        //  * @brief Erases the contents of the String, which becomes an empty String (with a length of 0 characters).
-        //  */
-        // void Clear();
+        /**
+         * @brief Erases the contents of the String, which becomes an empty String (with a length of 0 characters).
+         */
+        void Clear();
 
     private:
         size_t size_; // length of the string excluding the null terminator
         size_t capacity_; // number of bytes currently allocated for the string excluding the null terminator
-        char stackBuffer_[N + 1]; // initial stack allocated memory for this string
-        char* data_; // pointer to the Strings char buffer
+
+        union StringData
+        {
+            char stackBuffer[N + 1]; // initial stack allocated memory for this string
+            char* heapPtr; // pointer to Strings memory after capacity has grown
+        } data_;
+
+
+        /**
+         * @brief Helper to get a pointer to the correct buffer (stack or heap)
+         * 
+         * @returns Pointer to the String's character buffer
+         */
+        char* GetData() { return capacity_ > N ? data_.heapPtr : data_.stackBuffer; }
+        const char* GetData() const { return capacity_ > N ? data_.heapPtr : data_.stackBuffer; }
 
         /**
          * @brief Delete any dynamically allocated memory for this class
@@ -374,7 +336,87 @@ namespace stdads {
          * @param cstrLength The length of the cstr
          */
         void Assign(const char* cstr, size_t cstrLength);
+
+        /**
+         * @brief Append a C string to the end of this String
+         * 
+         * This Function grows this String's capacity if the provided cstr is larger than the current capacity.
+         * 
+         * @param cstr C String to append to this
+         * @param cstrLength The length of the cstr
+         */
+        void Append(const char* cstr, size_t cstrLength);
     };
+
+    // String non members //
+
+    /**
+     * @brief String Equality Operator
+     *
+     * @param lhs Left operand.
+     * @param rhs Right operand.
+     * @return True if lhs and rhs are equal, false otherwise.
+     */
+    template<size_t N, size_t M>
+    bool operator==(const String<N>& lhs, const String<M>& rhs);
+
+    /**
+     * @brief C String Equality Operator
+     *
+     * @param lhs Left operand.
+     * @param rhs Right operand.
+     * @return True if lhs and rhs are equal, false otherwise.
+     */
+    template<size_t N>
+    bool operator==(const String<N>& lhs, const char* rhs);
+    template<size_t N>
+    bool operator==(const char* lhs, const String<N>& rhs) { return rhs == lhs; }
+
+    /**
+     * @brief Character Equality Operator
+     *
+     * @param lhs Left operand.
+     * @param rhs Right operand.
+     * @return True if lhs and rhs are equal, false otherwise.
+     */
+    template<size_t N>
+    bool operator==(const String<N>& lhs, char rhs);
+    template<size_t N>
+    bool operator==(char lhs, const String<N>& rhs) { return rhs == lhs; }
+
+    /**
+     * @brief String Inequality Operator
+     *
+     * @param lhs Left operand.
+     * @param rhs Right operand.
+     * @return True if lhs and rhs are equal, false otherwise.
+     */
+    template<size_t N, size_t M>
+    bool operator!=(const String<N>& lhs, const String<M>& rhs) { return !(lhs == rhs); }
+
+    /**
+     * @brief C String Inequality Operator
+     *
+     * @param lhs Left operand.
+     * @param rhs Right operand.
+     * @return True if lhs and rhs are equal, false otherwise.
+     */
+    template<size_t N>
+    bool operator!=(const String<N>& lhs, const char* rhs) { return !(lhs == rhs); }
+    template<size_t N>
+    bool operator!=(const char* lhs, const String<N>& rhs) { return !(rhs == lhs); }
+
+    /**
+     * @brief Character Inequality Operator
+     *
+     * @param lhs Left operand.
+     * @param rhs Right operand.
+     * @return True if lhs and rhs are equal, false otherwise.
+     */
+    template<size_t N>
+    bool operator!=(const String<N>& lhs, char rhs) { return !(lhs == rhs); }
+    template<size_t N>
+    bool operator!=(char lhs, const String<N>& rhs) { return !(rhs == lhs); }
 
 
     // Inline String implementation //
@@ -383,34 +425,36 @@ namespace stdads {
     String<N>::String()
     : size_(0)
     , capacity_(N)
-    , data_(stackBuffer_)
+    , data_{'\0'}
     {
-        data_[0] = '\0';
     }
 
     template<size_t N>
     String<N>::String(const String<N>& other)
-    : size_(other.size_)
+    : size_(0)
     , capacity_(N)
+    , data_{'\0'}
     {
         Assign(other.c_str(), other.size_);
     }
 
     template<size_t N>
     String<N>::String(const char* cstr)
-    : size_(strlen(cstr))
+    : size_(0)
     , capacity_(N)
+    , data_{'\0'}
     {
-        Assign(cstr, size_);
+        Assign(cstr, strlen(cstr));
     }
 
     template<size_t N>
     String<N>::String(char c)
-    : size_(1)
+    : size_(0)
     , capacity_(N)
+    , data_{'\0'}
     {
-        Assign("X", size_); // "X" is a dummy value
-        data_[0] = c;
+        char buff[] = {c, '\0'};
+        Assign(buff, 1);
     }
 
     template<size_t N>
@@ -424,7 +468,6 @@ namespace stdads {
     {
         if (this != &other)
         {
-            Deallocate();
             Assign(other.c_str(), other.size_);
         }
         return *this;
@@ -433,9 +476,8 @@ namespace stdads {
     template<size_t N>
     String<N>& String<N>::operator=(const char* cstr)
     {
-        if (data_ != cstr)
+        if (GetData() != cstr)
         {
-            Deallocate();
             Assign(cstr, strlen(cstr));
         }
         return *this;
@@ -444,19 +486,47 @@ namespace stdads {
     template<size_t N>
     String<N>& String<N>::operator=(char c)
     {
-        Deallocate();
-        Assign("X", 1); // "X" is a dummy value
-        data_[0] = c;
+        char buff[] = {c, '\0'};
+        Assign(buff, 1);
         return *this;
+    }
+
+    template<size_t N>
+    String<N>& String<N>::operator+=(const String& other)
+    {
+        Append(other.c_str(), other.size_);
+        return *this;
+    }
+
+    template<size_t N>
+    String<N>& String<N>::operator+=(const char* cstr)
+    {
+        Append(cstr, strlen(cstr));
+        return *this;
+    }
+
+    template<size_t N>
+    String<N>& String<N>::operator+=(char c)
+    {
+        char buff[] = {c, '\0'};
+        Append(buff, 1);
+        return *this;
+    }
+
+    template<size_t N>
+    void String<N>::Clear()
+    {
+        size_ = 0;
+        GetData()[0] = '\0';
     }
 
     template<size_t N>
     void String<N>::Deallocate()
     {
-        if (data_ != stackBuffer_)
+        if (capacity_ > N)
         {
-            delete[] data_;
-            data_ = 0;
+            delete[] data_.heapPtr;
+            data_.heapPtr = 0;
         }
     }
 
@@ -479,21 +549,60 @@ namespace stdads {
     template<size_t N>
     void String<N>::Assign(const char* cstr, size_t cstrLength)
     {
-        if (cstrLength <= N)
+        if (cstrLength > capacity_)
         {
-            // cstr fits in our allocated stack memory
-            data_ = stackBuffer_;
-            capacity_ = N;
-        }
-        else
-        {
-            // cstr is larger than our allocate stack memory, so use dynamic memory
+            // need to allocate more memory
+            Deallocate();
             GrowCapacity(cstrLength);
-            data_ = new char[capacity_ + 1];
+            data_.heapPtr = new char[capacity_ + 1];
         }
 
         size_ = cstrLength;
-        memcpy(data_, cstr, cstrLength + 1);
+        char* data = GetData();
+        memcpy(data, cstr, cstrLength); // assign all but the null term
+        data[size_] = '\0';
+    }
+
+    template<size_t N>
+    void String<N>::Append(const char* cstr, size_t cstrLength)
+    {
+        if (size_ + cstrLength > capacity_)
+        {
+            // Need to allocate more memory.
+            char* tempData = new char[capacity_ + 1];
+            memcpy(tempData, GetData(), size_); // copy current String. Not plus 1 because theres no need to copy null term (we are appending)
+
+            Deallocate();
+            GrowCapacity(size_ + cstrLength);
+            data_.heapPtr = tempData;
+        }
+
+        char* data = GetData();
+        memcpy(data + size_, cstr, cstrLength); // append other String excluding the null term
+        size_ += cstrLength;
+        data[size_] = '\0';
+    }
+
+    template<size_t N, size_t M>
+    bool operator==(const String<N>& lhs, const String<M>& rhs)
+    {
+        if (lhs.Size() != rhs.Size())
+        {
+            return false;
+        }
+        return memcmp(lhs.c_str(), rhs.c_str(), lhs.Size() + 1) == 0;
+    }
+
+    template<size_t N>
+    bool operator==(const String<N>& lhs, const char* rhs)
+    {
+        return memcmp(lhs.c_str(), rhs, lhs.Size() + 1) == 0;
+    }
+
+    template<size_t N>
+    bool operator==(const String<N>& lhs, char rhs)
+    {
+        return lhs.Size() == 1 && lhs.c_str()[0] == rhs;
     }
 }
 
