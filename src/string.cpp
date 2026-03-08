@@ -2,7 +2,7 @@
 
 namespace stdads {
 
-    const void* memchr(const void* ptr, int value, size_t num)
+    const void* memchr(const void* ptr, int value, std::size_t num)
     {
         const unsigned char* p = static_cast<const unsigned char*>(ptr);
         for (; num > 0; --num)
@@ -16,7 +16,7 @@ namespace stdads {
         return nullptr; // value not found, return nullptr
     }
 
-    int memcmp(const void* ptr1, const void* ptr2, size_t num)
+    int memcmp(const void* ptr1, const void* ptr2, std::size_t num)
     {
         if (ptr1 == ptr2) 
         {
@@ -38,7 +38,7 @@ namespace stdads {
         return 0; // memory blocks are equal
     }
 
-    void* memcpy(void* destination, const void* source, size_t num)
+    void* memcpy(void* destination, const void* source, std::size_t num)
     {
         unsigned char* dest = static_cast<unsigned char*>(destination);
         const unsigned char* src  = static_cast<const unsigned char*>(source);
@@ -51,7 +51,7 @@ namespace stdads {
         return destination;
     }
 
-    void* memset(void* ptr, int value, size_t num)
+    void* memset(void* ptr, int value, std::size_t num)
     {
         unsigned char* dest = static_cast<unsigned char*>(ptr);
         for (; num > 0; --num)
@@ -133,9 +133,9 @@ namespace stdads {
         return destination;
     }
 
-    size_t strlen(const char* str)
+    std::size_t strlen(const char* str)
     {
-        size_t len = 0;
+        std::size_t len = 0;
         while (*str != '\0') 
         {
             ++len;

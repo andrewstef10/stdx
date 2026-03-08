@@ -175,16 +175,16 @@ TEST(MemcpyTest, ZeroLengthCopy) {
 }
 
 TEST(MemcpyTest, LargeCopy) {
-    const size_t size = 1024;
+    const std::size_t size = 1024;
     unsigned char src[size];
     unsigned char dst[size];
 
-    for (size_t i = 0; i < size; ++i)
+    for (std::size_t i = 0; i < size; ++i)
         src[i] = static_cast<unsigned char>(i % 256);
 
     stdads::memcpy(dst, src, size);
 
-    for (size_t i = 0; i < size; ++i)
+    for (std::size_t i = 0; i < size; ++i)
         EXPECT_EQ(src[i], dst[i]);
 }
 
@@ -248,11 +248,11 @@ TEST(MemsetTest, ZeroLengthDoesNothing) {
 }
 
 TEST(MemsetTest, LargeBufferSet) {
-    const size_t size = 1024;
+    const std::size_t size = 1024;
     unsigned char buffer[size];
     stdads::memset(buffer, 0xAB, size);
 
-    for (size_t i = 0; i < size; ++i)
+    for (std::size_t i = 0; i < size; ++i)
         EXPECT_EQ(0xAB, buffer[i]);
 }
 
@@ -500,11 +500,11 @@ TEST(StrcpyTest, BinarySafeCopy) {
 }
 
 TEST(StrcpyTest, LargeStringCopy) {
-    const size_t size = 1024;
+    const std::size_t size = 1024;
     char src[size];
     char dst[size];
 
-    for (size_t i = 0; i < size - 1; ++i)
+    for (std::size_t i = 0; i < size - 1; ++i)
         src[i] = 'A';
     src[size - 1] = '\0';
 
@@ -523,43 +523,43 @@ TEST(StrcpyTest, ReturnsDestinationPointer) {
 // strlen tests
 TEST(StrlenTest, EmptyString) {
     const char* s = "";
-    size_t result = stdads::strlen(s);
+    std::size_t result = stdads::strlen(s);
     EXPECT_EQ(0u, result);
 }
 
 TEST(StrlenTest, SingleCharacter) {
     const char* s = "a";
-    size_t result = stdads::strlen(s);
+    std::size_t result = stdads::strlen(s);
     EXPECT_EQ(1u, result);
 }
 
 TEST(StrlenTest, NormalString) {
     const char* s = "hello";
-    size_t result = stdads::strlen(s);
+    std::size_t result = stdads::strlen(s);
     EXPECT_EQ(5u, result);
 }
 
 TEST(StrlenTest, StringWithSpaces) {
     const char* s = "hello world";
-    size_t result = stdads::strlen(s);
+    std::size_t result = stdads::strlen(s);
     EXPECT_EQ(11u, result);
 }
 
 TEST(StrlenTest, StringWithSpecialCharacters) {
     const char* s = "a\tb\nc";
-    size_t result = stdads::strlen(s);
+    std::size_t result = stdads::strlen(s);
     EXPECT_EQ(5u, result); // '\t' and '\n' count as characters
 }
 
 TEST(StrlenTest, StopsAtNullTerminator) {
     const char s[] = {'a', 'b', '\0', 'c', 'd'};
-    size_t result = stdads::strlen(s);
+    std::size_t result = stdads::strlen(s);
     EXPECT_EQ(2u, result); // must stop at first '\0'
 }
 
 TEST(StrlenTest, LongString) {
     const char* s = "abcdefghijklmnopqrstuvwxyz";
-    size_t result = stdads::strlen(s);
+    std::size_t result = stdads::strlen(s);
     EXPECT_EQ(26u, result);
 }
 
