@@ -146,8 +146,6 @@ namespace stdads {
     class String {
     public:
 
-        // Constructors //
-
         /**
          * @brief Default constructor.
          *
@@ -161,6 +159,8 @@ namespace stdads {
          * @param other String to copy.
          */
         String(const String& other);
+        template<std::size_t M>
+        String(const String<M>& other); 
 
         /**
          * @brief C String constructor.
@@ -181,16 +181,15 @@ namespace stdads {
          */
         ~String();
 
-
-        // // Assignment operators //
-
         /**
          * @brief Assigns a new value to the String, replacing its current contents.
          *
          * @param other String object to copy if different from *this.
          * @return Reference to this String object
          */
-        String& operator=(const String& other);
+        String& operator=(const String& other) { return Assign(other.c_str(), other.Size()); }
+        template<std::size_t M>
+        String& operator=(const String<M>& other) { return Assign(other.c_str(), other.Size()); }
 
         /**
          * @brief Assigns a new value to the String, replacing its current contents.
@@ -198,7 +197,7 @@ namespace stdads {
          * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied as the new value for the String.
          * @return Reference to this String object
          */
-        String& operator=(const char* cstr);
+        String& operator=(const char* cstr) { return Assign(cstr, strlen(cstr)); }
 
         /**
          * @brief Assigns a new value to the String, replacing its current contents.
@@ -209,7 +208,7 @@ namespace stdads {
         String& operator=(char c);
 
 
-        // Capacity //
+        //////////////////////// Capacity ////////////////////////
 
         /**
          * @brief Returns the length of the String, in terms of bytes (excluding the null terminator).
@@ -238,7 +237,7 @@ namespace stdads {
         bool Empty() const { return size_ == 0; }
 
 
-        // Element access //
+        //////////////////////// Element Access ////////////////////////
 
         /**
          * @brief Get contents as a C String.
@@ -249,17 +248,19 @@ namespace stdads {
          */
         const char* c_str() const { return GetData(); }
 
-        // char& operator[](std::size_t i) { return data_[i]; }
-        // const char& operator[](std::size_t i) const { return data_[i]; }
-        // char& at(std::size_t i) { return data_[i]; }
-        // const char& at(std::size_t i) const { return data_[i]; }
-        // char& back() { return data_[size_ - 1]; }
-        // const char& back() const { return data_[size_ - 1]; }
-        // char& front() { return data_[0]; };
-        // const char& front() const { return data_[0]; };
+        /**
+         * @brief Returns a reference to the character at specified location pos if pos < size(), or if pos == size()
+         * 
+         * If pos > Size(), the behavior is undefined. Bounds checking is not performed.
+         *
+         * @param pos Position of the character to return
+         * @return Reference to char at position pos
+         */
+        char& operator[](std::size_t pos) { return GetData()[pos]; }
+        const char& operator[](std::size_t pos) const { return GetData()[pos]; }
 
 
-        // Modifiers //
+        //////////////////////// Modifiers ////////////////////////
 
         /**
          * @brief Addition Assignment Operator.
@@ -269,7 +270,9 @@ namespace stdads {
          * @param other A String object, whose value is copied at the end.
          * @return Reference to this String object
          */
-        String& operator+=(const String& other);
+        String& operator+=(const String<N>& other) { return Append(other.c_str(), other.Size()); }
+        template<std::size_t M>
+        String& operator+=(const String<M>& other) { return Append(other.c_str(), other.Size()); }
 
         /**
          * @brief Addition Assignment Operator.
@@ -279,7 +282,7 @@ namespace stdads {
          * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the String.
          * @return Reference to this String object
          */
-        String& operator+=(const char* cstr);
+        String& operator+=(const char* cstr) { return Append(cstr, strlen(cstr)); }
 
         /**
          * @brief Addition Assignment Operator.
@@ -334,8 +337,9 @@ namespace stdads {
          * 
          * @param cstr C String to assign to this
          * @param cstrLength The length of the cstr
+         * @returns Reference to this String object
          */
-        void Assign(const char* cstr, std::size_t cstrLength);
+        String& Assign(const char* cstr, std::size_t cstrLength);
 
         /**
          * @brief Append a C string to the end of this String
@@ -344,11 +348,13 @@ namespace stdads {
          * 
          * @param cstr C String to append to this
          * @param cstrLength The length of the cstr
+         * @returns Reference to this String object
          */
-        void Append(const char* cstr, std::size_t cstrLength);
+        String& Append(const char* cstr, std::size_t cstrLength);
     };
 
-    // String non members //
+
+    ////////////////////////String Non Members ////////////////////////
 
     /**
      * @brief String Equality Operator
@@ -357,6 +363,8 @@ namespace stdads {
      * @param rhs Right operand.
      * @return True if lhs and rhs are equal, false otherwise.
      */
+    template<std::size_t N>
+    bool operator==(const String<N>& lhs, const String<N>& rhs);
     template<std::size_t N, std::size_t M>
     bool operator==(const String<N>& lhs, const String<M>& rhs);
 
@@ -391,6 +399,8 @@ namespace stdads {
      * @param rhs Right operand.
      * @return True if lhs and rhs are equal, false otherwise.
      */
+    template<std::size_t N>
+    bool operator!=(const String<N>& lhs, const String<N>& rhs) { return !(lhs == rhs); }
     template<std::size_t N, std::size_t M>
     bool operator!=(const String<N>& lhs, const String<M>& rhs) { return !(lhs == rhs); }
 
@@ -419,7 +429,7 @@ namespace stdads {
     bool operator!=(char lhs, const String<N>& rhs) { return !(rhs == lhs); }
 
 
-    // Inline String implementation //
+    //////////////////////// Inline String Implementation ////////////////////////
 
     template<std::size_t N>
     String<N>::String()
@@ -435,7 +445,17 @@ namespace stdads {
     , capacity_(N)
     , data_{'\0'}
     {
-        Assign(other.c_str(), other.size_);
+        Assign(other.c_str(), other.Size());
+    }
+
+    template<std::size_t N>
+    template<std::size_t M>
+    String<N>::String(const String<M>& other)
+    : size_(0)
+    , capacity_(N)
+    , data_{'\0'}
+    {
+        Assign(other.c_str(), other.Size());
     }
 
     template<std::size_t N>
@@ -464,53 +484,17 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    String<N>& String<N>::operator=(const String<N>& other)
-    {
-        if (this != &other)
-        {
-            Assign(other.c_str(), other.size_);
-        }
-        return *this;
-    }
-
-    template<std::size_t N>
-    String<N>& String<N>::operator=(const char* cstr)
-    {
-        if (GetData() != cstr)
-        {
-            Assign(cstr, strlen(cstr));
-        }
-        return *this;
-    }
-
-    template<std::size_t N>
     String<N>& String<N>::operator=(char c)
     {
         char buff[] = {c, '\0'};
-        Assign(buff, 1);
-        return *this;
-    }
-
-    template<std::size_t N>
-    String<N>& String<N>::operator+=(const String& other)
-    {
-        Append(other.c_str(), other.size_);
-        return *this;
-    }
-
-    template<std::size_t N>
-    String<N>& String<N>::operator+=(const char* cstr)
-    {
-        Append(cstr, strlen(cstr));
-        return *this;
+        return Assign(buff, 1);
     }
 
     template<std::size_t N>
     String<N>& String<N>::operator+=(char c)
     {
         char buff[] = {c, '\0'};
-        Append(buff, 1);
-        return *this;
+        return Append(buff, 1);
     }
 
     template<std::size_t N>
@@ -547,7 +531,7 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    void String<N>::Assign(const char* cstr, std::size_t cstrLength)
+    String<N>& String<N>::Assign(const char* cstr, std::size_t cstrLength)
     {
         if (cstrLength > capacity_)
         {
@@ -561,10 +545,11 @@ namespace stdads {
         char* data = GetData();
         memcpy(data, cstr, cstrLength); // assign all but the null term
         data[size_] = '\0';
+        return *this;
     }
 
     template<std::size_t N>
-    void String<N>::Append(const char* cstr, std::size_t cstrLength)
+    String<N>& String<N>::Append(const char* cstr, std::size_t cstrLength)
     {
         if (size_ + cstrLength > capacity_)
         {
@@ -581,6 +566,17 @@ namespace stdads {
         memcpy(data + size_, cstr, cstrLength); // append other String excluding the null term
         size_ += cstrLength;
         data[size_] = '\0';
+        return *this;
+    }
+
+    template<std::size_t N>
+    bool operator==(const String<N>& lhs, const String<N>& rhs)
+    {
+        if (lhs.Size() != rhs.Size())
+        {
+            return false;
+        }
+        return memcmp(lhs.c_str(), rhs.c_str(), lhs.Size() + 1) == 0;
     }
 
     template<std::size_t N, std::size_t M>
