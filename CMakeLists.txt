@@ -11,8 +11,8 @@ add_library(stdads
     src/Ctype.cpp
     src/math.cpp
     src/Stdadslib.cpp
-    src/string.cpp
     src/Stopwatch.cpp
+    src/String.cpp
 )
 
 target_include_directories(stdads
@@ -39,8 +39,8 @@ add_executable(stdads_tests
     tests/test_math.cpp
     tests/TestNumUtils.cpp
     tests/TestStdadslib.cpp
-    tests/test_string.cpp
     tests/TestStopwatch.cpp
+    tests/TestString.cpp
 )
 
 target_link_libraries(stdads_tests
