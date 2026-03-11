@@ -107,11 +107,14 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
         gcovr -r ${{ github.workspace }} \
-          --exclude tests \
-          --exclude build \
+          --filter ${{ github.workspace }}/src \
+          --filter ${{ github.workspace }}/include \
+          --exclude ${{ github.workspace }}/tests \
+          --exclude ${{ github.workspace }}/build/_deps \
+          --exclude-throw-branches \
           --html \
           --html-details \
-          -o coverage.html
+          -o coverage/index.html
 
     # Upload coverage report artifact
     - name: Upload coverage report
@@ -119,4 +122,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: ${{ steps.strings.outputs.build-output-dir }}/coverage.html
+        path: ${{ steps.strings.outputs.build-output-dir }}/coverage
