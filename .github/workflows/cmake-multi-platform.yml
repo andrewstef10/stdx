@@ -106,6 +106,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
+        mkdir -p coverage
         gcovr -r ${{ github.workspace }} \
           --filter ${{ github.workspace }}/src \
           --filter ${{ github.workspace }}/include \
