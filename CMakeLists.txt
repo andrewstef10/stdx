@@ -5,6 +5,20 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ---- Coverage Option ----
+option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+
+if(ENABLE_COVERAGE)
+    message(STATUS "Coverage enabled")
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(-O0 -g --coverage)
+        add_link_options(--coverage)
+    else()
+        message(WARNING "Coverage only supported with GCC/Clang")
+    endif()
+endif()
+
 
 # ---- Library ----
 add_library(stdads
@@ -51,3 +65,27 @@ target_link_libraries(stdads_tests
 
 enable_testing()
 add_test(NAME stdads_tests COMMAND stdads_tests)
+
+
+# ---- Coverage Target ----
+if(ENABLE_COVERAGE)
+
+    find_program(GCOVR_PATH gcovr)
+
+    if(NOT GCOVR_PATH)
+        message(FATAL_ERROR "gcovr not found! Install it with: sudo apt install gcovr")
+    endif()
+
+    add_custom_target(coverage
+        COMMAND ${CMAKE_COMMAND} -E make_directory coverage
+        COMMAND ${GCOVR_PATH}
+            -r ${CMAKE_SOURCE_DIR}
+            --exclude ${CMAKE_BINARY_DIR}
+            --html
+            --html-details
+            -o coverage/index.html
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Generating coverage report..."
+    )
+
+endif()
