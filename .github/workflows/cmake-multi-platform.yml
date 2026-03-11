@@ -75,7 +75,7 @@ jobs:
 
      # Install gcovr ONLY for Linux GCC job
     - name: Install coverage tools
-      if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc'
+      if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcovr
@@ -88,7 +88,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        ${{ matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && '-DENABLE_COVERAGE=ON' || '' }}
+        ${{ matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release' && '-DENABLE_COVERAGE=ON' || '' }}
         -S ${{ github.workspace }}
 
     - name: Build
@@ -103,7 +103,7 @@ jobs:
 
      # Generate coverage report ONLY for Linux GCC
     - name: Generate coverage
-      if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc'
+      if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
         gcovr -r ${{ github.workspace }} \
@@ -115,7 +115,7 @@ jobs:
 
     # Upload coverage report artifact
     - name: Upload coverage report
-      if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc'
+      if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
