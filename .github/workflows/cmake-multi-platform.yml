@@ -115,6 +115,8 @@ jobs:
           --exclude-throw-branches \
           --html \
           --html-details \
+          --html-self-contained \
+          --html-title "stdads Coverage Report" \
           -o coverage/index.html
 
     # Upload coverage report artifact
