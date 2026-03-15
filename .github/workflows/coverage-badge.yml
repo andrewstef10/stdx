@@ -47,11 +47,9 @@ jobs:
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      # Execute tests defined by the CMake configuration. See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config Release --output-on-failure
 
-    # Generate coverage report
     - name: Generate coverage
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
@@ -67,17 +65,6 @@ jobs:
           --html-self-contained \
           --html-title "stdads Coverage Report" \
           -o coverage/index.html
-
-    - name: Generate coverage badge
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: |
-        curl -s https://raw.githubusercontent.com/marketplace/codecov-action/main/codecov-badge.sh | bash -s -- -f coverage/index.html
-
-    - name: Upload coverage badge
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-badge
-        path: ${{ steps.strings.outputs.build-output-dir }}/coverage/badge.svg
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
