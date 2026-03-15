@@ -1,0 +1,86 @@
+name: Coverage Badge
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install gcovr
+        sudo apt-get update -y
+        sudo apt-get install -y lcov
+
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=g++
+        -DCMAKE_C_COMPILER=gcc
+        -DCMAKE_BUILD_TYPE=Release
+        -DENABLE_COVERAGE=ON
+        -S ${{ github.workspace }}
+
+    - name: Build
+      # Build your program with the given configuration.
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+
+    - name: Test
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      # Execute tests defined by the CMake configuration.
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ctest --build-config Release --output-on-failure
+
+    # Generate coverage report
+    - name: Generate coverage
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: |
+        mkdir -p coverage
+        gcovr -r ${{ github.workspace }} \
+          --filter ${{ github.workspace }}/src \
+          --filter ${{ github.workspace }}/include \
+          --exclude ${{ github.workspace }}/tests \
+          --exclude ${{ github.workspace }}/build/_deps \
+          --exclude-throw-branches \
+          --html \
+          --html-details \
+          --html-self-contained \
+          --html-title "stdads Coverage Report" \
+          -o coverage/index.html
+
+    - name: Generate coverage badge
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: |
+        curl -s https://raw.githubusercontent.com/marketplace/codecov-action/main/codecov-badge.sh | bash -s -- -f coverage/index.html
+
+    - name: Upload coverage badge
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-badge
+        path: ${{ steps.strings.outputs.build-output-dir }}/coverage/badge.svg
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ${{ steps.strings.outputs.build-output-dir }}/coverage

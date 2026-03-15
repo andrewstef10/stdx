@@ -73,12 +73,12 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-     # Install gcovr ONLY for Linux GCC job
-    - name: Install coverage tools
-      if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcovr
+    #  # Install gcovr ONLY for Linux GCC job
+    # - name: Install coverage tools
+    #   if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y gcovr
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -88,7 +88,6 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        ${{ matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release' && '-DENABLE_COVERAGE=ON' || '' }}
         -S ${{ github.workspace }}
 
     - name: Build
@@ -101,28 +100,28 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
 
-     # Generate coverage report ONLY for Linux GCC
-    - name: Generate coverage
-      if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: |
-        mkdir -p coverage
-        gcovr -r ${{ github.workspace }} \
-          --filter ${{ github.workspace }}/src \
-          --filter ${{ github.workspace }}/include \
-          --exclude ${{ github.workspace }}/tests \
-          --exclude ${{ github.workspace }}/build/_deps \
-          --exclude-throw-branches \
-          --html \
-          --html-details \
-          --html-self-contained \
-          --html-title "stdads Coverage Report" \
-          -o coverage/index.html
+    #  # Generate coverage report ONLY for Linux GCC
+    # - name: Generate coverage
+    #   if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
+    #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
+    #   run: |
+    #     mkdir -p coverage
+    #     gcovr -r ${{ github.workspace }} \
+    #       --filter ${{ github.workspace }}/src \
+    #       --filter ${{ github.workspace }}/include \
+    #       --exclude ${{ github.workspace }}/tests \
+    #       --exclude ${{ github.workspace }}/build/_deps \
+    #       --exclude-throw-branches \
+    #       --html \
+    #       --html-details \
+    #       --html-self-contained \
+    #       --html-title "stdads Coverage Report" \
+    #       -o coverage/index.html
 
-    # Upload coverage report artifact
-    - name: Upload coverage report
-      if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: ${{ steps.strings.outputs.build-output-dir }}/coverage
+    # # Upload coverage report artifact
+    # - name: Upload coverage report
+    #   if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc' && matrix.build_type == 'Release'
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: coverage-report
+    #     path: ${{ steps.strings.outputs.build-output-dir }}/coverage
