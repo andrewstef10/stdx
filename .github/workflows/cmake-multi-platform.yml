@@ -15,7 +15,7 @@ env:
 
 jobs:
   build:
-    name: Build & Test (${{ matrix.os }} / ${{ matrix.compiler }} / ${{ matrix.build_type }})
+    name: Build & Test (${{ matrix.os }} / ${{ matrix.c_compiler }} / ${{ matrix.build_type }})
     runs-on: ${{ matrix.os }}
 
     strategy:
