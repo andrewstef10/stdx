@@ -5,9 +5,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# ---- Coverage Option ----
+# ---- Options ----
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 
+# ---- Coverage ----
 if(ENABLE_COVERAGE)
     message(STATUS "Coverage enabled")
 
@@ -16,6 +18,18 @@ if(ENABLE_COVERAGE)
         add_link_options(--coverage)
     else()
         message(WARNING "Coverage only supported with GCC/Clang")
+    endif()
+endif()
+
+# ---- AddressSanitizer + UBSan----
+if(ENABLE_ASAN)
+    message(STATUS "AddressSanitizer enabled")
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g)
+        add_link_options(-fsanitize=address)
+    else()
+        message(WARNING "ASan only supported with GCC/Clang")
     endif()
 endif()
 
