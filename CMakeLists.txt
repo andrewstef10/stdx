@@ -102,14 +102,13 @@ if(ENABLE_COVERAGE)
     endif()
 
     add_custom_target(coverage
-        COMMAND ${CMAKE_COMMAND} -E make_directory coverage
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/coverage
         COMMAND ${GCOVR_PATH}
             -r ${CMAKE_SOURCE_DIR}
             --exclude ${CMAKE_BINARY_DIR}
             --html
             --html-details
-            -o coverage/index.html
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            -o ${CMAKE_SOURCE_DIR}/coverage/index.html
         COMMENT "Generating coverage report..."
     )
 

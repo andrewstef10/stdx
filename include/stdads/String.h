@@ -140,7 +140,7 @@ namespace stdads {
      * The templated parameter N represents the initial capacity of the String allocated on the stack.
      * If the String outgrows its initial capacity, dynamic memory allocation will be used to grow the String.
      *
-     * @param N The initial capacity of this string allocated on the stack (Default 23).
+     * @param N The initial capacity of this string allocated on the stack.
      */
     template<std::size_t N = DEFAULT_STRING_CAPACITY_BYTES>
     class String {

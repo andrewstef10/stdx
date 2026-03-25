@@ -1,5 +1,7 @@
 # Build directories
 /build/
+/coverage/
+/docs/
 /CMakeFiles/
 /CMakeCache.txt
 

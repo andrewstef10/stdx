@@ -159,9 +159,7 @@ jobs:
       run: ctest --build-config Release --output-on-failure
 
     - name: Generate Coverage
-      working-directory: ${{ env.BUILD_DIR }}
       run: |
-        mkdir -p coverage
         gcovr -r ${{ github.workspace }} \
           --filter ${{ github.workspace }}/src \
           --filter ${{ github.workspace }}/include \
@@ -172,13 +170,20 @@ jobs:
           --html-details \
           --html-self-contained \
           --html-title "stdads Coverage Report" \
-          -o coverage/index.html
+          -o ${{ github.workspace }}/coverage/index.html
 
     - name: Upload Coverage Report
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: ${{ env.BUILD_DIR }}/coverage
+        path: ${{ github.workspace }}/coverage
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ${{ github.workspace }}/coverage
+        cname: coverage.stdads.com
 
 
   doxygen:
@@ -206,7 +211,6 @@ jobs:
         path: docs/html
 
     - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
