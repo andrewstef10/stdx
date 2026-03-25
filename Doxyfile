@@ -1,66 +1,81 @@
 # Doxyfile for stdads project
 
+# ---- Project ----
 PROJECT_NAME           = "stdads"
-PROJECT_NUMBER        = "1.0"
-PROJECT_BRIEF         = "C++ Standard Namespace Implementation"
-OUTPUT_DIRECTORY      = "docs"
+PROJECT_NUMBER         = "1.0"
+PROJECT_BRIEF          = "C++ Standard Namespace Implementation"
+
+# ---- Output ----
+OUTPUT_DIRECTORY       = docs
 CREATE_SUBDIRS         = YES
-ALLOW_UNICODE_NAMES    = NO
-INPUT                 = .
-FILE_PATTERNS         = *.cpp *.h *.hpp *.H
-RECURSIVE             = YES
+
+# ---- Input ----
+# Only document public headers
+INPUT                  = include README.md
+FILE_PATTERNS          = *.h *.hpp
+RECURSIVE              = YES
+
+# Exclude internal/test/build files
 EXCLUDE_PATTERNS       = */tests/* */build/*
-EXCLUDE_SYMBOLS        =
-EXAMPLE_PATH          =
-EXAMPLE_PATTERNS       =
-EXAMPLE_RECURSIVE      = NO
-IMAGE_PATH            =
-INPUT_FILTER          =
-FILTER_PATTERNS       =
-FILTER_SOURCE_FILES   = NO
+
+# ---- Main Page ----
 USE_MDFILE_AS_MAINPAGE = README.md
-SOURCE_BROWSER        = YES
-INLINE_SOURCES        = NO
-STRIP_CODE_COMMENTS   = YES
-REFERENCED_BY_RELATION = YES
+MARKDOWN_SUPPORT       = YES
+
+# ---- Extraction ----
+# Extract everything from headers (even if undocumented)
+EXTRACT_ALL            = YES
+
+# Only include public API
+EXTRACT_PRIVATE        = NO
+EXTRACT_PROTECTED      = NO
+EXTRACT_STATIC         = NO
+
+# Show undocumented items (important for full API visibility)
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+
+# ---- Visibility ----
+# Ensure free functions are visible
+SHOW_FILES             = YES
+SHOW_NAMESPACES        = YES
+
+# ---- Source Browsing ----
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = NO
+
+# ---- Relationships ----
+REFERENCED_BY_RELATION  = YES
 REFERENCES_RELATION    = YES
 REFERENCES_LINK_SOURCE = YES
-SOURCE_TOOLTIPS       = YES
-USE_HTAGS             = NO
-VERBATIM_HEADERS      = YES
-CLANG_ASSISTED_PARSING = NO
-CLANG_OPTIONS         =
-ALPHABETICAL_INDEX    = YES
-COLS_IN_ALPHA_INDEX   = 5
-IGNORE_PREFIX         =
-GENERATE_HTML         = YES
-HTML_OUTPUT           = html
-HTML_FILE_EXTENSION   = .html
-HTML_HEADER           =
-HTML_FOOTER           =
-HTML_STYLESHEET       =
-HTML_EXTRA_STYLESHEET  =
-HTML_EXTRA_FILES      =
+
+# ---- Parsing ----
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+
+# ---- Indexing ----
+ALPHABETICAL_INDEX     = YES
+COLS_IN_ALPHA_INDEX    = 5
+
+# ---- HTML Output ----
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+
+# Improve usability
+GENERATE_TREEVIEW      = YES
+HTML_DYNAMIC_SECTIONS  = YES
+
+# Styling
 HTML_COLORSTYLE_HUE    = 220
-HTML_COLORSTYLE_SAT   = 100
+HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
-HTML_TIMESTAMP        = YES
-HTML_DYNAMIC_SECTIONS = NO
-HTML_INDEX_NUM_ENTRIES = 100
-GENERATE_DOCSET       = NO
-DISABLE_INDEX         = NO
-GENERATE_TREEVIEW     = NO
-ENUM_VALUES_PER_LINE   = 4
-TREEVIEW_WIDTH        = 250
-EXT_LINKS_IN_WINDOW   = NO
-FORMULA_FONTSIZE      = 10
-FORMULA_TRANSPARENT   = YES
-USE_MATHJAX          = NO
-SEARCHENGINE          = YES
-SERVER_BASED_SEARCH   = NO
-EXTERNAL_SEARCH       = NO
-SEARCHENGINE_URL     =
-SEARCHDATA_FILE      = searchdata.xml
-EXTERNAL_SEARCH_ID   =
-EXTRA_SEARCH_MAPPINGS =
-GENERATE_LATEX        = NO
+HTML_TIMESTAMP         = YES
+
+# ---- Search ----
+SEARCHENGINE           = YES
+
+# ---- Disable unused outputs ----
+GENERATE_LATEX         = NO
+GENERATE_DOCSET        = NO
