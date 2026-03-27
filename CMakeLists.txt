@@ -127,8 +127,6 @@ if(ENABLE_COVERAGE)
             --filter ${CMAKE_SOURCE_DIR}/include
             --exclude ${CMAKE_SOURCE_DIR}/tests
             --exclude ${CMAKE_BINARY_DIR}
-            --xml-pretty
-            -o ${COVERAGE_DIR}/coverage.xml
             --html
             --html-details
             --html-self-contained
