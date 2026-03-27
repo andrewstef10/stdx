@@ -131,7 +131,10 @@ if(ENABLE_COVERAGE)
             --html-details
             --html-self-contained
             --html-title "stdads Coverage Report"
+            --print-summary
             -o ${COVERAGE_DIR}/index.html
+            --xml-pretty
+            -o ${COVERAGE_DIR}/coverage.xml
         COMMENT "Generating coverage report..."
     )
 endif()
