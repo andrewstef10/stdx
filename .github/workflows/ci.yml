@@ -71,7 +71,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -101,7 +101,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Configure CMake (ASan)
       run: >
@@ -129,16 +129,15 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
-        python-version: '3.11'
+        python-version: '3.13'
 
     - name: Install Dependencies
-      run: |
-        pip install gcovr
+      run: pip install gcovr
 
     - name: Configure CMake
       run: >
@@ -160,7 +159,7 @@ jobs:
       run: cmake --build ${{ env.BUILD_DIR }} --target coverage
 
     - name: Upload Coverage Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: coverage-report
         path: ${{ github.workspace }}/coverage
@@ -180,7 +179,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Install Doxygen # NOTE: currently this installs an older version of Doxygen
       run: |
@@ -192,7 +191,7 @@ jobs:
         doxygen Doxyfile
 
     - name: Upload Documentation
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: doxygen-documentation
         path: docs/html
