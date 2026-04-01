@@ -123,8 +123,8 @@ if(ENABLE_COVERAGE)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${COVERAGE_DIR}
         COMMAND ${GCOVR_PATH}
             -r ${CMAKE_SOURCE_DIR}
-            --filter ${CMAKE_SOURCE_DIR}/src
-            --filter ${CMAKE_SOURCE_DIR}/include
+            --filter ${CMAKE_SOURCE_DIR}/src/
+            --filter ${CMAKE_SOURCE_DIR}/include/
             --html
             --html-details
             --html-self-contained

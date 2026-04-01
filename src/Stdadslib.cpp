@@ -77,7 +77,7 @@ namespace stdads {
         while (*str != '\0')
         {
             int digit = stdads::CharToDigit(*str, base);
-            if (digit < 0 || digit >= base)
+            if (digit < 0)
             {
                 break;
             }
