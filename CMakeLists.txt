@@ -125,8 +125,6 @@ if(ENABLE_COVERAGE)
             -r ${CMAKE_SOURCE_DIR}
             --filter ${CMAKE_SOURCE_DIR}/src
             --filter ${CMAKE_SOURCE_DIR}/include
-            --exclude ${CMAKE_SOURCE_DIR}/tests
-            --exclude ${CMAKE_BINARY_DIR}
             --html
             --html-details
             --html-self-contained
