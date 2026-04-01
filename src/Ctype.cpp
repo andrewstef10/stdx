@@ -15,8 +15,7 @@ namespace stdads {
 
     bool IsDigitOfBase(char c, int base)
     {
-        int digit = CharToDigit(c, base);
-        return digit >= 0 && (digit < base || (base == 1 && digit == 1));
+        return CharToDigit(c, base) >= 0;
     }
 
     int CharToDigit(char c, int base)
