@@ -324,11 +324,13 @@ namespace stdads {
         void Deallocate();
 
         /**
-         * @brief Grows (repeatedly doubles) the capacity of this String until enough space for minSize is achieved.
+         * @brief Calculates the new string capacity given the minimum size required.
+         * Capacity will be repeatedly doubled until minimumSize is met or exceeded.
          * 
-         * @param minSize
+         * @param minimumSize
+         * @returns The new capacity in bytes that should be allocated to fit minimumSize bytes of data.
          */
-        void GrowCapacity(std::size_t minSize);
+        size_t CalculateNewCapacity(std::size_t minimumSize) const;
 
         /**
          * @brief Set this String equal to a C string
@@ -515,19 +517,21 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    inline void String<N>::GrowCapacity(std::size_t minSize)
+    inline size_t String<N>::CalculateNewCapacity(std::size_t minimumSize) const
     {
-        while (capacity_ < minSize)
+        size_t newCapacity = capacity_;
+        while (newCapacity < minimumSize)
         {
-            if (capacity_ == 0)
+            if (newCapacity == 0)
             {
-                capacity_ = 1;
+                newCapacity = 1;
             }
             else
             {
-                capacity_ *= 2;
+                newCapacity *= 2;
             }
         }
+        return newCapacity;
     }
 
     template<std::size_t N>
@@ -537,7 +541,7 @@ namespace stdads {
         {
             // need to allocate more memory
             Deallocate();
-            GrowCapacity(cstrLength);
+            capacity_ = CalculateNewCapacity(cstrLength);
             data_.heapPtr = new char[capacity_ + 1];
         }
 
@@ -551,18 +555,20 @@ namespace stdads {
     template<std::size_t N>
     inline String<N>& String<N>::Append(const char* cstr, std::size_t cstrLength)
     {
+        char* data = GetData();
         if (size_ + cstrLength > capacity_)
         {
             // Need to allocate more memory.
-            char* tempData = new char[capacity_ + 1];
-            memcpy(tempData, GetData(), size_); // copy current String. Not plus 1 because theres no need to copy null term (we are appending)
+            size_t newCapacity = CalculateNewCapacity(size_ + cstrLength);
+            char* tempData = new char[newCapacity + 1];
+            memcpy(tempData, data, size_); // copy current String. No need to copy null term (we are appending)
 
             Deallocate();
-            GrowCapacity(size_ + cstrLength);
+            capacity_ = newCapacity;
             data_.heapPtr = tempData;
+            data = data_.heapPtr;
         }
 
-        char* data = GetData();
         memcpy(data + size_, cstr, cstrLength); // append other String excluding the null term
         size_ += cstrLength;
         data[size_] = '\0';
