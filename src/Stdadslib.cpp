@@ -7,6 +7,12 @@ namespace stdads {
 
     long Strtol(const char* str, int base, char** endptr)
     {
+        // Set endptr to str. Will be overridden if parsing is successful.
+        if (endptr)
+        {
+            *endptr = const_cast<char*>(str);
+        }
+
         // Only support bases from 0 - 36
         if (base < 0 || base > 36)
         {
@@ -21,17 +27,14 @@ namespace stdads {
 
         // Handle sign
         bool negative = false;
-        if (*(str + 1) != '\0') // ensure this is not the only char in the string
+        if (*str == '+')
         {
-            if (*str == '+')
-            {
-                ++str;
-            }
-            else if (*str == '-')
-            {
-                negative = true;
-                ++str;
-            }
+            ++str;
+        }
+        else if (*str == '-')
+        {
+            negative = true;
+            ++str;
         }
 
         // Handle base 0 (auto detect base)
@@ -70,24 +73,29 @@ namespace stdads {
 
         // Parse result
         long result = 0L;
+        bool valid = false;
         while (*str != '\0')
         {
             int digit = stdads::CharToDigit(*str, base);
-            if (digit < 0 || digit >= base)
+            if (digit < 0)
             {
                 break;
             }
             result = result * base + digit;
+            valid = true;
             ++str;
         }
 
-        if (negative)
+        if (valid)
         {
-            result = -result;
-        }
-        if (endptr)
-        {
-            *endptr = const_cast<char*>(str);
+            if (negative)
+            {
+                result = -result;
+            }
+            if (endptr)
+            {
+                *endptr = const_cast<char*>(str);
+            }
         }
         return result;
     }

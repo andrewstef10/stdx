@@ -140,7 +140,7 @@ namespace stdads {
      * The templated parameter N represents the initial capacity of the String allocated on the stack.
      * If the String outgrows its initial capacity, dynamic memory allocation will be used to grow the String.
      *
-     * @param N The initial capacity of this string allocated on the stack (Default 23).
+     * @param N The initial capacity of this string allocated on the stack.
      */
     template<std::size_t N = DEFAULT_STRING_CAPACITY_BYTES>
     class String {
@@ -324,11 +324,13 @@ namespace stdads {
         void Deallocate();
 
         /**
-         * @brief Grows (repeatedly doubles) the capacity of this String until enough space for minSize is achieved.
+         * @brief Calculates the new string capacity given the minimum size required.
+         * Capacity will be repeatedly doubled until minimumSize is met or exceeded.
          * 
-         * @param minSize
+         * @param minimumSize
+         * @returns The new capacity in bytes that should be allocated to fit minimumSize bytes of data.
          */
-        void GrowCapacity(std::size_t minSize);
+        size_t CalculateNewCapacity(std::size_t minimumSize) const;
 
         /**
          * @brief Set this String equal to a C string
@@ -378,7 +380,7 @@ namespace stdads {
     template<std::size_t N>
     bool operator==(const String<N>& lhs, const char* rhs);
     template<std::size_t N>
-    bool operator==(const char* lhs, const String<N>& rhs) { return rhs == lhs; }
+    inline bool operator==(const char* lhs, const String<N>& rhs) { return rhs == lhs; }
 
     /**
      * @brief Character Equality Operator
@@ -390,7 +392,7 @@ namespace stdads {
     template<std::size_t N>
     bool operator==(const String<N>& lhs, char rhs);
     template<std::size_t N>
-    bool operator==(char lhs, const String<N>& rhs) { return rhs == lhs; }
+    inline bool operator==(char lhs, const String<N>& rhs) { return rhs == lhs; }
 
     /**
      * @brief String Inequality Operator
@@ -400,9 +402,9 @@ namespace stdads {
      * @return True if lhs and rhs are equal, false otherwise.
      */
     template<std::size_t N>
-    bool operator!=(const String<N>& lhs, const String<N>& rhs) { return !(lhs == rhs); }
+    inline bool operator!=(const String<N>& lhs, const String<N>& rhs) { return !(lhs == rhs); }
     template<std::size_t N, std::size_t M>
-    bool operator!=(const String<N>& lhs, const String<M>& rhs) { return !(lhs == rhs); }
+    inline bool operator!=(const String<N>& lhs, const String<M>& rhs) { return !(lhs == rhs); }
 
     /**
      * @brief C String Inequality Operator
@@ -412,9 +414,9 @@ namespace stdads {
      * @return True if lhs and rhs are equal, false otherwise.
      */
     template<std::size_t N>
-    bool operator!=(const String<N>& lhs, const char* rhs) { return !(lhs == rhs); }
+    inline bool operator!=(const String<N>& lhs, const char* rhs) { return !(lhs == rhs); }
     template<std::size_t N>
-    bool operator!=(const char* lhs, const String<N>& rhs) { return !(rhs == lhs); }
+    inline bool operator!=(const char* lhs, const String<N>& rhs) { return !(rhs == lhs); }
 
     /**
      * @brief Character Inequality Operator
@@ -424,15 +426,15 @@ namespace stdads {
      * @return True if lhs and rhs are equal, false otherwise.
      */
     template<std::size_t N>
-    bool operator!=(const String<N>& lhs, char rhs) { return !(lhs == rhs); }
+    inline bool operator!=(const String<N>& lhs, char rhs) { return !(lhs == rhs); }
     template<std::size_t N>
-    bool operator!=(char lhs, const String<N>& rhs) { return !(rhs == lhs); }
+    inline bool operator!=(char lhs, const String<N>& rhs) { return !(rhs == lhs); }
 
 
     //////////////////////// Inline String Implementation ////////////////////////
 
     template<std::size_t N>
-    String<N>::String()
+    inline String<N>::String()
     : size_(0)
     , capacity_(N)
     , data_{'\0'}
@@ -440,7 +442,7 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    String<N>::String(const String<N>& other)
+    inline String<N>::String(const String<N>& other)
     : size_(0)
     , capacity_(N)
     , data_{'\0'}
@@ -450,7 +452,7 @@ namespace stdads {
 
     template<std::size_t N>
     template<std::size_t M>
-    String<N>::String(const String<M>& other)
+    inline String<N>::String(const String<M>& other)
     : size_(0)
     , capacity_(N)
     , data_{'\0'}
@@ -459,7 +461,7 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    String<N>::String(const char* cstr)
+    inline String<N>::String(const char* cstr)
     : size_(0)
     , capacity_(N)
     , data_{'\0'}
@@ -468,7 +470,7 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    String<N>::String(char c)
+    inline String<N>::String(char c)
     : size_(0)
     , capacity_(N)
     , data_{'\0'}
@@ -478,34 +480,34 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    String<N>::~String()
+    inline String<N>::~String()
     {
         Deallocate();
     }
 
     template<std::size_t N>
-    String<N>& String<N>::operator=(char c)
+    inline String<N>& String<N>::operator=(char c)
     {
         char buff[] = {c, '\0'};
         return Assign(buff, 1);
     }
 
     template<std::size_t N>
-    String<N>& String<N>::operator+=(char c)
+    inline String<N>& String<N>::operator+=(char c)
     {
         char buff[] = {c, '\0'};
         return Append(buff, 1);
     }
 
     template<std::size_t N>
-    void String<N>::Clear()
+    inline void String<N>::Clear()
     {
         size_ = 0;
         GetData()[0] = '\0';
     }
 
     template<std::size_t N>
-    void String<N>::Deallocate()
+    inline void String<N>::Deallocate()
     {
         if (capacity_ > N)
         {
@@ -515,29 +517,31 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    void String<N>::GrowCapacity(std::size_t minSize)
+    inline size_t String<N>::CalculateNewCapacity(std::size_t minimumSize) const
     {
-        while (capacity_ < minSize)
+        size_t newCapacity = capacity_;
+        while (newCapacity < minimumSize)
         {
-            if (capacity_ == 0)
+            if (newCapacity == 0)
             {
-                capacity_ = 1;
+                newCapacity = 1;
             }
             else
             {
-                capacity_ *= 2;
+                newCapacity *= 2;
             }
         }
+        return newCapacity;
     }
 
     template<std::size_t N>
-    String<N>& String<N>::Assign(const char* cstr, std::size_t cstrLength)
+    inline String<N>& String<N>::Assign(const char* cstr, std::size_t cstrLength)
     {
         if (cstrLength > capacity_)
         {
             // need to allocate more memory
             Deallocate();
-            GrowCapacity(cstrLength);
+            capacity_ = CalculateNewCapacity(cstrLength);
             data_.heapPtr = new char[capacity_ + 1];
         }
 
@@ -549,20 +553,22 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    String<N>& String<N>::Append(const char* cstr, std::size_t cstrLength)
+    inline String<N>& String<N>::Append(const char* cstr, std::size_t cstrLength)
     {
+        char* data = GetData();
         if (size_ + cstrLength > capacity_)
         {
             // Need to allocate more memory.
-            char* tempData = new char[capacity_ + 1];
-            memcpy(tempData, GetData(), size_); // copy current String. Not plus 1 because theres no need to copy null term (we are appending)
+            size_t newCapacity = CalculateNewCapacity(size_ + cstrLength);
+            char* tempData = new char[newCapacity + 1];
+            memcpy(tempData, data, size_); // copy current String. No need to copy null term (we are appending)
 
             Deallocate();
-            GrowCapacity(size_ + cstrLength);
+            capacity_ = newCapacity;
             data_.heapPtr = tempData;
+            data = data_.heapPtr;
         }
 
-        char* data = GetData();
         memcpy(data + size_, cstr, cstrLength); // append other String excluding the null term
         size_ += cstrLength;
         data[size_] = '\0';
@@ -570,7 +576,7 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    bool operator==(const String<N>& lhs, const String<N>& rhs)
+    inline bool operator==(const String<N>& lhs, const String<N>& rhs)
     {
         if (lhs.Size() != rhs.Size())
         {
@@ -580,7 +586,7 @@ namespace stdads {
     }
 
     template<std::size_t N, std::size_t M>
-    bool operator==(const String<N>& lhs, const String<M>& rhs)
+    inline bool operator==(const String<N>& lhs, const String<M>& rhs)
     {
         if (lhs.Size() != rhs.Size())
         {
@@ -590,13 +596,13 @@ namespace stdads {
     }
 
     template<std::size_t N>
-    bool operator==(const String<N>& lhs, const char* rhs)
+    inline bool operator==(const String<N>& lhs, const char* rhs)
     {
         return memcmp(lhs.c_str(), rhs, lhs.Size() + 1) == 0;
     }
 
     template<std::size_t N>
-    bool operator==(const String<N>& lhs, char rhs)
+    inline bool operator==(const String<N>& lhs, char rhs)
     {
         return lhs.Size() == 1 && lhs.c_str()[0] == rhs;
     }

@@ -28,6 +28,15 @@ TEST(StopWatchTest, StopSetsNotRunning)
     EXPECT_FALSE(sw.Running());
 }
 
+TEST(StopWatchTest, StopNotRunningTimerDoesNothing)
+{
+    stdads::Stopwatch sw;
+
+    sw.Stop();
+    EXPECT_FALSE(sw.Running());
+    EXPECT_DOUBLE_EQ(0.0, sw.GetElapsedTimeSec());
+}
+
 TEST(StopWatchTest, ElapsedTimeIncreasesWhileRunning)
 {
     stdads::Stopwatch sw;
@@ -99,6 +108,9 @@ TEST(StopWatchTest, MultipleStartCallsDoNothingIfAlreadyRunning)
 
     EXPECT_GT(sw.GetElapsedTimeSec(), 0.0);
     EXPECT_TRUE(sw.Running());
+
+    long long elapsedTimeMs = sw.GetElapsedTime<std::chrono::milliseconds>().count();
+    EXPECT_GT(elapsedTimeMs, 0);
 }
 
 TEST(StopWatchTest, MeasuresApproximately100ms)

@@ -73,31 +73,31 @@ namespace stdads {
     // inline implementation //
 
     template<typename T>
-    bool Within(const T& val, const T& low, const T& high)
+    inline bool Within(const T& val, const T& low, const T& high)
     {
         return val >= low && val <= high;
     }
 
     template<typename T>
-    bool WithinExclusive(const T& val, const T& low, const T& high)
+    inline bool WithinExclusive(const T& val, const T& low, const T& high)
     {
         return val > low && val < high;
     }
 
     template<typename T>
-    bool Outside(const T& val, const T& low, const T& high)
+    inline bool Outside(const T& val, const T& low, const T& high)
     {
         return val < low || val > high;
     }
 
     template<typename T>
-    bool OutsideExclusive(const T& val, const T& low, const T& high)
+    inline bool OutsideExclusive(const T& val, const T& low, const T& high)
     {
         return val <= low || val >= high;
     }
 
     template<typename T>
-    bool Clamp(T& val, const T& low, const T& high)
+    inline bool Clamp(T& val, const T& low, const T& high)
     {
         bool limited = false;
         if (val < low)

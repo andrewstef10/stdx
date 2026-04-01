@@ -1116,6 +1116,17 @@ TEST(StringAppendAssignTest, AppendDifferentCapacityString)
     EXPECT_STREQ("hello", a.c_str());
 }
 
+TEST(StringAppendAssignTest, AppendStringGrowsCapacity)
+{
+    stdads::String<0> a;
+    stdads::String<10> b("hello");
+    a += b;
+
+    EXPECT_EQ(5u, a.Size());
+    EXPECT_EQ(8u, a.Capacity()); // Should grow to 8.
+    EXPECT_STREQ("hello", a.c_str());
+}
+
 TEST(StringAppendAssignTest, AppendCString)
 {
     stdads::String s("hello");
@@ -1130,9 +1141,14 @@ TEST(StringAppendAssignTest, AppendEmptyCString)
 {
     stdads::String s("hello");
     s += "";
-
     EXPECT_EQ(5u, s.Size());
     EXPECT_STREQ("hello", s.c_str());
+
+    stdads::String<0> s2;
+    s2 += "";
+    EXPECT_EQ(0u, s2.Size());
+    EXPECT_EQ(0u, s2.Capacity());
+    EXPECT_STREQ("", s2.c_str());
 }
 
 TEST(StringAppendAssignTest, AppendCStringToEmptyString)
@@ -1142,6 +1158,17 @@ TEST(StringAppendAssignTest, AppendCStringToEmptyString)
 
     EXPECT_EQ(5u, s.Size());
     EXPECT_STREQ("hello", s.c_str());
+}
+
+TEST(StringAppendAssignTest, AppendCStringGrowsCapacity)
+{
+    stdads::String<0> a;
+    const char* b = "hello";
+    a += b;
+
+    EXPECT_EQ(5u, a.Size());
+    EXPECT_EQ(8u, a.Capacity()); // Should grow to 8.
+    EXPECT_STREQ("hello", a.c_str());
 }
 
 

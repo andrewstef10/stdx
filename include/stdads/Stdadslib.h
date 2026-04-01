@@ -24,7 +24,7 @@ namespace stdads {
      *             Default param option is base 10 (decimal).
      * @param endptr Reference to an object of type char*, whose value is set by the function to the next character in str after the numerical value.
      *               This parameter can also be a null pointer (default param option), in which case it is not used.
-     * @return absolute value of the input
+     * @return Integral number representation of str, or 0 if no valid conversion could be performed.
      */
     long Strtol(const char* str, int base = 10, char** endptr = 0);
 }

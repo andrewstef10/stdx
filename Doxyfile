@@ -1,0 +1,81 @@
+# Doxyfile for stdads project
+
+# ---- Project ----
+PROJECT_NAME           = "stdads"
+PROJECT_NUMBER         = "1.0"
+PROJECT_BRIEF          = "C++ Standard Namespace Implementation"
+
+# ---- Output ----
+OUTPUT_DIRECTORY       = docs
+CREATE_SUBDIRS         = YES
+
+# ---- Input ----
+# Only document public headers
+INPUT                  = include README.md
+FILE_PATTERNS          = *.h *.hpp
+RECURSIVE              = YES
+
+# Exclude internal/test/build files
+EXCLUDE_PATTERNS       = */tests/* */build/*
+
+# ---- Main Page ----
+USE_MDFILE_AS_MAINPAGE = README.md
+MARKDOWN_SUPPORT       = YES
+
+# ---- Extraction ----
+# Extract everything from headers (even if undocumented)
+EXTRACT_ALL            = YES
+
+# Only include public API
+EXTRACT_PRIVATE        = NO
+EXTRACT_PROTECTED      = NO
+EXTRACT_STATIC         = NO
+
+# Show undocumented items (important for full API visibility)
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+
+# ---- Visibility ----
+# Ensure free functions are visible
+SHOW_FILES             = YES
+SHOW_NAMESPACES        = YES
+
+# ---- Source Browsing ----
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = NO
+
+# ---- Relationships ----
+REFERENCED_BY_RELATION  = YES
+REFERENCES_RELATION    = YES
+REFERENCES_LINK_SOURCE = YES
+
+# ---- Parsing ----
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+
+# ---- Indexing ----
+ALPHABETICAL_INDEX     = YES
+COLS_IN_ALPHA_INDEX    = 5
+
+# ---- HTML Output ----
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+
+# Improve usability
+GENERATE_TREEVIEW      = YES
+HTML_DYNAMIC_SECTIONS  = YES
+
+# Styling
+HTML_COLORSTYLE_HUE    = 220
+HTML_COLORSTYLE_SAT    = 100
+HTML_COLORSTYLE_GAMMA  = 80
+HTML_TIMESTAMP         = YES
+
+# ---- Search ----
+SEARCHENGINE           = YES
+
+# ---- Disable unused outputs ----
+GENERATE_LATEX         = NO
+GENERATE_DOCSET        = NO

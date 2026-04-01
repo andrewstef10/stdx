@@ -98,6 +98,13 @@ TEST(StrtolTest, HexPrefixUppercase)
     EXPECT_EQ(26, stdads::Strtol("0X1A", 16));
 }
 
+TEST(StrtolTest, HexPrefixInvalidForCoverage)
+{
+    EXPECT_EQ(10, stdads::Strtol("0a", 16));
+    EXPECT_EQ(0, stdads::Strtol("X1A", 16));
+    EXPECT_EQ(0, stdads::Strtol("x1A", 16));
+}
+
 //
 // PARTIAL PARSING
 //

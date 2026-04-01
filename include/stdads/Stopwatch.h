@@ -91,7 +91,7 @@ namespace stdads {
     };
 
     template<typename Duration>
-    Duration Stopwatch::GetElapsedTime() const
+    inline Duration Stopwatch::GetElapsedTime() const
     {
         std::chrono::steady_clock::time_point latestTime = running_ ? Now() : stopTime_;
         return std::chrono::duration_cast<Duration>(latestTime - startTime_);
