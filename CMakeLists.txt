@@ -88,7 +88,9 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(stdads_tests
+    tests/TestArray.cpp
     tests/TestCtype.cpp
+    tests/TestIterator.cpp
     tests/test_math.cpp
     tests/TestNumUtils.cpp
     tests/TestStdadslib.cpp
