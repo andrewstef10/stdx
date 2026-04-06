@@ -113,10 +113,10 @@ namespace stdads {
         // Constructors for Derived classes only
         IteratorBase() = default;
         IteratorBase(const IteratorBase&) = default;
-        //IteratorBase(const IteratorBase&&) = default;
+        IteratorBase(IteratorBase&&) = default;
         ~IteratorBase() = default;
         IteratorBase& operator=(const IteratorBase&) = default;
-        //IteratorBase& operator=(const IteratorBase&&) = default;
+        IteratorBase& operator=(IteratorBase&&) = default;
 
     private:
         // Helper to cast to derived
@@ -144,10 +144,10 @@ namespace stdads {
         ReverseIterator() : base_() {}
         ReverseIterator(Iterator it) : base_(it) {}
         ReverseIterator(const ReverseIterator&) = default;
-        //ReverseIterator(const ReverseIterator&&) = default;
+        ReverseIterator(ReverseIterator&&) = default;
         ~ReverseIterator() = default;
         ReverseIterator& operator=(const ReverseIterator&) = default;
-        //ReverseIterator& operator=(const ReverseIterator&&) = default;
+        ReverseIterator& operator=(ReverseIterator&&) = default;
 
         template <typename OtherIterator,
                   typename = std::enable_if_t<std::is_convertible_v<typename OtherIterator::pointer, pointer>>>
@@ -259,10 +259,10 @@ namespace stdads {
         PtrIterator() : ptr_(0) {}
         PtrIterator(T* ptr) : ptr_(ptr) {}
         PtrIterator(const PtrIterator&) = default;
-        //PtrIterator(const PtrIterator&&) = default;
+        PtrIterator(PtrIterator&&) = default;
         ~PtrIterator() = default;
         PtrIterator& operator=(const PtrIterator&) = default;
-        //PtrIterator& operator=(const PtrIterator&&) = default;
+        PtrIterator& operator=(PtrIterator&&) = default;
 
         template <typename U, typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
         PtrIterator(const PtrIterator<U>& other) : ptr_(other.ptr_) {} // Const conversion constructor

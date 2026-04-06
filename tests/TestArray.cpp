@@ -14,6 +14,11 @@ struct TestObject {
         ++constructed;
     }
 
+    TestObject(int val)
+    : value(val) {
+        ++constructed;
+    }
+
     ~TestObject() {
         ++destructed;
     }
@@ -57,8 +62,7 @@ TEST(ArrayTest, Destructor_DestructsAllElements) {
 
 TEST(ArrayConstructorTest, AggregateInitialization_Zeros) {
     stdads::Array<int, 1000> arr{};
-    EXPECT_EQ(1000, arr.Size());
-    for (std::size_t i = 0 ; i < arr.Size(); ++i)
+    for (std::size_t i = 0 ; i < 1000; ++i)
     {
         EXPECT_EQ(0, arr[i]);
     }
@@ -66,7 +70,6 @@ TEST(ArrayConstructorTest, AggregateInitialization_Zeros) {
 
 TEST(ArrayConstructorTest, AggregateInitialization_Partial) {
     stdads::Array<int, 3> arr{1, 2};
-    EXPECT_EQ(3, arr.Size());
     EXPECT_EQ(1, arr[0]);
     EXPECT_EQ(2, arr[1]);
     EXPECT_EQ(0, arr[2]);
@@ -74,10 +77,32 @@ TEST(ArrayConstructorTest, AggregateInitialization_Partial) {
 
 TEST(ArrayConstructorTest, AggregateInitialization_Full) {
     stdads::Array<int, 3> arr{1, 2, 3};
-    EXPECT_EQ(3, arr.Size());
     EXPECT_EQ(1, arr[0]);
     EXPECT_EQ(2, arr[1]);
     EXPECT_EQ(3, arr[2]);
+}
+
+
+// ==== Fill constructor ====
+TEST(ArrayConstructorTest, FillConstructor_BasicType) {
+    stdads::Array<int, 1000> arr(42);
+    for (std::size_t i = 0 ; i < 1000; ++i)
+    {
+        EXPECT_EQ(42, arr[i]);
+    }
+}
+
+TEST(ArrayConstructorTest, FillConstructor_ClassType) {
+    TestObject testObject(76); // custom test object with 76
+    TestObject::constructed = 0;
+    EXPECT_EQ(0, TestObject::constructed);
+
+    stdads::Array<TestObject, 1000> arr(testObject);
+    EXPECT_EQ(1000, TestObject::constructed);
+    for (std::size_t i = 0 ; i < 1000; ++i)
+    {
+        EXPECT_EQ(76, arr[i].value);
+    }
 }
 
 
@@ -253,16 +278,23 @@ TEST(ArrayIteratorTest, BeginPointsToFirstElement)
 {
     stdads::Array<int, 3> arr{1, 2, 3};
     stdads::Array<int, 3>::Iterator it = arr.Begin();
+    stdads::Array<int, 3>::ConstIterator cit = arr.CBegin();
     EXPECT_EQ(*it, 1);
+    EXPECT_EQ(*cit, 1);
 }
 
 TEST(ArrayIteratorTest, EndPointsPastLastElement)
 {
     stdads::Array<int, 3> arr{1, 2, 3};
+    const stdads::Array<int, 3>::Iterator begin = arr.Begin();
+    stdads::Array<int, 3>::Iterator end = arr.End();
+    stdads::Array<int, 3>::ConstIterator cend = arr.CEnd();
+    EXPECT_EQ(end - begin, 3);
+    EXPECT_EQ(cend - begin, 3);
 
-    stdads::Array<int, 3>::Iterator it = arr.End();
-    stdads::Array<int, 3>::Iterator begin = arr.Begin();
-    EXPECT_EQ(it - begin, 3);
+    // end is not dereferenceable. Ensure decrementing gives us the last element
+    EXPECT_EQ(*--end, 3);
+    EXPECT_EQ(*--cend, 3);
 }
 
 TEST(ArrayIteratorTest, IterateForwardFromBeginToEnd)
@@ -271,85 +303,95 @@ TEST(ArrayIteratorTest, IterateForwardFromBeginToEnd)
 
     int expected[] = {1, 2, 3};
     int i = 0;
+    int j = 0;
 
     for (stdads::Array<int, 3>::Iterator it = arr.Begin(); it != arr.End(); ++it)
     {
         EXPECT_EQ(*it, expected[i++]);
     }
+    for (stdads::Array<int, 3>::ConstIterator cit = arr.CBegin(); cit != arr.CEnd(); ++cit)
+    {
+        EXPECT_EQ(*cit, expected[j++]);
+    }
+    
+    EXPECT_EQ(3, i);
+    EXPECT_EQ(3, j);
+}
 
-    EXPECT_EQ(i, 3);
+TEST(ArrayIteratorTest, ConstIterationMatchesNonConst)
+{
+    stdads::Array<int, 3> arr{1, 2, 3};
+
+    int i = 0;
+    stdads::Array<int, 3>::Iterator it = arr.Begin();
+    stdads::Array<int, 3>::ConstIterator cit = arr.CBegin();
+    for (; it != arr.End() && cit != arr.CEnd(); ++it, ++cit)
+    {
+        EXPECT_EQ(*it, *cit);
+        ++i;
+    }
+    EXPECT_EQ(3, i);
 }
 
 TEST(ArrayIteratorTest, BeginEqualsEndForEmptyArray)
 {
     stdads::Array<int, 0> arr;
     EXPECT_EQ(arr.Begin(), arr.End());
+    EXPECT_EQ(arr.CBegin(), arr.CEnd());
 }
 
-TEST(ArrayIteratorTest, EndIsNotDereferenceable)
+TEST(ArrayIteratorTest, ConvertIteratorToConstIterator)
 {
-    stdads::Array<int, 3> arr{1, 2, 3};
+    stdads::Array<int, 3> arr{1,2,3};
 
-    auto it = arr.End();
+    stdads::Array<int, 3>::Iterator it = arr.Begin();
+    stdads::Array<int, 3>::ConstIterator cit = it;
 
-    // We can't dereference End(), but we can test decrement
-    --it;
-    EXPECT_EQ(*it, 3);
+    const stdads::Array<int, 3> carr{1,2,3};
+    stdads::Array<int, 3>::ConstIterator cbegin = carr.Begin(); // must be const iterator
+    stdads::Array<int, 3>::ConstIterator cend = carr.End(); // must be const iterator
 }
 
-// TEST(ArrayIteratorTest, ConvertIteratorToConstIterator)
-// {
-//     stdads::Array<int, 3> arr{1,2,3};
-
-//     stdads::Array<int, 3>::Iterator it = arr.Begin();
-//     stdads::Array<int, 3>::ConstIterator cit = it; // must work
-
-//     const stdads::Array<int, 3> carr{1,2,3};
-//     auto cit2 = carr.Begin(); // must be const_iterator
-// }
-
-// ------------------------------------------------------------
-// CONST BEGIN / END
-// ------------------------------------------------------------
-
-TEST(ArrayIteratorTest, ConstBeginWorks)
+TEST(ArrayIteratorTest, SingleElementForwardIteration)
 {
-    const stdads::Array<int, 3> arr{1, 2, 3};
-    stdads::Array<int, 3>::ConstIterator it = arr.Begin();
-    EXPECT_EQ(*it, 1);
+    stdads::Array<int, 1> arr{99};
+
+    stdads::Array<int, 1>::Iterator it = arr.Begin();
+    stdads::Array<int, 1>::ConstIterator cit = arr.CBegin();
+    EXPECT_EQ(*it, 99);
+    EXPECT_EQ(*cit, 99);
+
+    ++it;
+    ++cit;
+    EXPECT_EQ(it, arr.End());
+    EXPECT_EQ(cit, arr.CEnd());
 }
 
-TEST(ArrayIteratorTest, ConstIterationMatchesNonConst)
-{
-    stdads::Array<int, 3> arr{1, 2, 3};
-    const stdads::Array<int, 3>& carr = arr;
 
-    stdads::Array<int, 3>::Iterator it1 = arr.Begin();
-    stdads::Array<int, 3>::ConstIterator it2 = carr.Begin();
-    for (; it1 != arr.End(); ++it1, ++it2)
-    {
-        EXPECT_EQ(*it1, *it2);
-    }
-}
-
-// ------------------------------------------------------------
-// REVERSE ITERATOR TESTS
-// ------------------------------------------------------------
+// ===== RBegin() / REnd() =====
 
 TEST(ArrayIteratorTest, RBeginPointsToLastElement)
 {
     stdads::Array<int, 3> arr{1, 2, 3};
-    stdads::Array<int, 3>::ReverseIterator it = arr.RBegin();
-    EXPECT_EQ(*it, 3);
+    stdads::Array<int, 3>::ReverseIterator rit = arr.RBegin();
+    stdads::Array<int, 3>::ConstReverseIterator crit = arr.CRBegin();
+    EXPECT_EQ(*rit, 3);
+    EXPECT_EQ(*crit, 3);
 }
 
 TEST(ArrayIteratorTest, REndPointsBeforeFirstElement)
 {
     stdads::Array<int, 3> arr{1, 2, 3};
 
+    const stdads::Array<int, 3>::ReverseIterator rbegin = arr.RBegin();
     stdads::Array<int, 3>::ReverseIterator rend = arr.REnd();
-    auto rbegin = arr.RBegin();
+    stdads::Array<int, 3>::ConstReverseIterator crend = arr.CREnd();
     EXPECT_EQ(rend - rbegin, 3);
+    EXPECT_EQ(crend - rbegin, 3);
+
+    // end is not dereferenceable. Ensure decrementing gives us the last element
+    EXPECT_EQ(*--rend, 1);
+    EXPECT_EQ(*--crend, 1);
 }
 
 TEST(ArrayIteratorTest, IterateReverseFromRBeginToREnd)
@@ -358,26 +400,53 @@ TEST(ArrayIteratorTest, IterateReverseFromRBeginToREnd)
 
     int expected[] = {3, 2, 1};
     int i = 0;
+    int j = 0;
 
-    for (stdads::Array<int, 3>::ReverseIterator it = arr.RBegin(); it != arr.REnd(); ++it)
+    for (stdads::Array<int, 3>::ReverseIterator rit = arr.RBegin(); rit != arr.REnd(); ++rit)
     {
-        EXPECT_EQ(*it, expected[i++]);
+        EXPECT_EQ(*rit, expected[i++]);
     }
-
-    EXPECT_EQ(i, 3);
+    for (stdads::Array<int, 3>::ConstReverseIterator crit = arr.CRBegin(); crit != arr.CREnd(); ++crit)
+    {
+        EXPECT_EQ(*crit, expected[j++]);
+    }
+    
+    EXPECT_EQ(3, i);
+    EXPECT_EQ(3, j);
 }
 
-TEST(ArrayIteratorTest, ReverseIteratorDecrementMovesForward)
+TEST(ArrayIteratorTest, ConstReverseIterationMatchesNonConst)
 {
     stdads::Array<int, 3> arr{1, 2, 3};
 
-    stdads::Array<int, 3>::ReverseIterator it = arr.RBegin(); // points to 3
-    --it;                   // should point to REnd()-1 invalid? depends on impl
+    int i = 0;
+    stdads::Array<int, 3>::ReverseIterator rit = arr.RBegin();
+    stdads::Array<int, 3>::ConstReverseIterator crit = arr.CRBegin();
+    for (; rit != arr.REnd() && crit != arr.CREnd(); ++rit, ++crit)
+    {
+        EXPECT_EQ(*rit, *crit);
+        ++i;
+    }
+    EXPECT_EQ(3, i);
+}
 
-    // safer test:
-    stdads::Array<int, 3>::ReverseIterator it2 = arr.RBegin();
-    ++it2;
-    EXPECT_EQ(*it2, 2);
+TEST(ArrayIteratorTest, RBeginEqualsREndForEmptyArray)
+{
+    stdads::Array<int, 0> arr;
+    EXPECT_EQ(arr.RBegin(), arr.REnd());
+    EXPECT_EQ(arr.CRBegin(), arr.CREnd());
+}
+
+TEST(ArrayIteratorTest, ConvertReverseIteratorToConstReverseIterator)
+{
+    stdads::Array<int, 3> arr{1,2,3};
+
+    stdads::Array<int, 3>::ReverseIterator rit = arr.RBegin();
+    stdads::Array<int, 3>::ConstReverseIterator crit = rit;
+
+    const stdads::Array<int, 3> carr{1,2,3};
+    stdads::Array<int, 3>::ConstReverseIterator crbegin = carr.RBegin(); // must be const iterator
+    stdads::Array<int, 3>::ConstReverseIterator crend = carr.REnd(); // must be const iterator
 }
 
 TEST(ArrayIteratorTest, ReverseIteratorBaseRelationship)
@@ -387,70 +456,50 @@ TEST(ArrayIteratorTest, ReverseIteratorBaseRelationship)
     stdads::Array<int, 3>::ReverseIterator rit = arr.RBegin();
     stdads::Array<int, 3>::Iterator base = rit.Base();
 
-    // base() should point to End()
+    // Base() should point to End()
     EXPECT_EQ(base, arr.End());
-}
-
-// ------------------------------------------------------------
-// CONST RBEGIN / REND
-// ------------------------------------------------------------
-
-TEST(ArrayIteratorTest, ConstReverseBeginWorks)
-{
-    const stdads::Array<int, 3> arr{1, 2, 3};
-    stdads::Array<int, 3>::ConstReverseIterator it = arr.RBegin();
-    EXPECT_EQ(*it, 3);
-}
-
-TEST(ArrayIteratorTest, ConstReverseIterationMatchesNonConst)
-{
-    stdads::Array<int, 3> arr{1, 2, 3};
-    const stdads::Array<int, 3>& carr = arr;
-
-    stdads::Array<int, 3>::ReverseIterator it1 = arr.RBegin();
-    stdads::Array<int, 3>::ConstReverseIterator it2 = carr.RBegin();
-    for (; it1 != arr.REnd(); ++it1, ++it2)
-    {
-        EXPECT_EQ(*it1, *it2);
-    }
-}
-
-// ------------------------------------------------------------
-// EDGE CASES
-// ------------------------------------------------------------
-
-TEST(ArrayIteratorTest, SingleElementForwardIteration)
-{
-    stdads::Array<int, 1> arr{99};
-
-    auto it = arr.Begin();
-    EXPECT_EQ(*it, 99);
-
-    ++it;
-    EXPECT_EQ(it, arr.End());
 }
 
 TEST(ArrayIteratorTest, SingleElementReverseIteration)
 {
     stdads::Array<int, 1> arr{99};
 
-    auto it = arr.RBegin();
-    EXPECT_EQ(*it, 99);
+    stdads::Array<int, 1>::ReverseIterator rit = arr.RBegin();
+    stdads::Array<int, 1>::ConstReverseIterator crit = arr.CRBegin();
+    EXPECT_EQ(*rit, 99);
+    EXPECT_EQ(*crit, 99);
 
-    ++it;
-    EXPECT_EQ(it, arr.REnd());
+    ++rit;
+    ++crit;
+    EXPECT_EQ(rit, arr.REnd());
+    EXPECT_EQ(crit, arr.CREnd());
 }
 
-TEST(ArrayIteratorTest, DistanceBetweenBeginAndEnd)
-{
-    stdads::Array<int, 5> arr{1,2,3,4,5};
 
-    EXPECT_EQ(arr.End() - arr.Begin(), 5);
+// ==== Fill() ====
+TEST(ArrayFillTest, FillsEmptyArray)
+{
+    stdads::Array<int, 5> arr;
+    arr.Fill(42);
+
+    for (std::size_t i = 0; i < 5; ++i)
+    {
+        EXPECT_EQ(arr[i], 42);
+    }
 }
 
-TEST(ArrayIteratorTest, DistanceBetweenRBeginAndREnd)
+TEST(ArrayFillTest, FillsAllElementsOverrides)
 {
-    stdads::Array<int, 5> arr{1,2,3,4,5};
+    stdads::Array<int, 5> arr{1, 2, 3, 4, 5};
+    for (std::size_t i = 0; i < 5; ++i)
+    {
+        EXPECT_EQ(arr[i], i + 1);
+    }
 
-    EXPECT_EQ(arr.REnd() - arr.RBegin(), 5);
+    arr.Fill(42);
+
+    for (std::size_t i = 0; i < 5; ++i)
+    {
+        EXPECT_EQ(arr[i], 42);
+    }
 }

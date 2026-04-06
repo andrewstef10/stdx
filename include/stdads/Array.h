@@ -5,7 +5,6 @@
 #include <stdexcept>
 
 #include <stdads/IteratorBase.h>
-#include <stdads/String.h>
 
 namespace stdads {
 
@@ -30,11 +29,25 @@ namespace stdads {
         Array() = default;
 
         /**
-         * @brief Copy constructor.
+         * @brief Implicitly defined Copy constructor.
          *
          * Creates a copy of another array.
          */
         Array(const Array& other) = default;
+
+        /**
+         * @brief Implicitly defined Move constructor.
+         *
+         * Moves another array to this array.
+         */
+        Array(Array&& other) = default;
+
+        /**
+         * @brief Fill constructor.
+         *
+         * Creates an array where each element equals value.
+         */
+        Array(const T& value) { Fill(value); }
 
         /**
          * @brief Aggregate initialization constructor.
@@ -51,12 +64,22 @@ namespace stdads {
         /**
          * @brief Implicitly defined assignment operator.
          * 
-         * Overwrites every element of the array with the corresponding element of another array.
+         * Overwrites every element of the array with a copy of the corresponding element of another array.
          *
          * @param other Array to assign this to.
          * @return Reference to this object.
          */
         Array& operator=(const Array& other) = default;
+
+        /**
+         * @brief Implicitly defined move assignment operator.
+         * 
+         * Overwrites every element of the array with the corresponding element of another array.
+         *
+         * @param other Array to assign this to.
+         * @return Reference to this object.
+         */
+        Array& operator=(Array&& other) = default;
 
 
         // ===== Element Access =====
@@ -157,6 +180,16 @@ namespace stdads {
          */
         std::size_t Size() const { return N; }
 
+
+        // ==== Operations ====
+
+        /**
+         * @brief Assigns the value to all elements in the container.
+         *
+         * @param value The value to assign to the elements.
+         */
+        void Fill(const T& value);
+
     private:
         T data_[N];
     };
@@ -205,6 +238,15 @@ namespace stdads {
             throw std::out_of_range("Index outside the bounds of the array");
         }
         return data_[pos];
+    }
+
+    template<typename T, std::size_t N>
+    inline void Array<T, N>::Fill(const T& value)
+    {
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            data_[i] = value;
+        }
     }
 
 }
