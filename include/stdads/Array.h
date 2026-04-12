@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <stdexcept>
 
-#include <stdads/IteratorBase.h>
+#include <stdads/Iterator.h>
 
 namespace stdads {
 
@@ -14,8 +14,8 @@ namespace stdads {
     template<typename T, std::size_t N>
     class Array {
     public:
-        using Iterator = stdads::PtrIterator<T>;
-        using ConstIterator = stdads::PtrIterator<const T>;
+        using Iterator = T*;
+        using ConstIterator = const T*;
         using ReverseIterator = stdads::ReverseIterator<Iterator>;
         using ConstReverseIterator = stdads::ReverseIterator<ConstIterator>;
 
@@ -120,44 +120,44 @@ namespace stdads {
         // ==== Iterators ====
 
         /**
-         * @brief Returns an iterator to the first element of *this.
+         * @brief Returns a contiguous iterator to the first element of *this.
          * 
          * If *this is empty, the returned iterator will be equal to end().
          * 
-         * @return Iterator to the first element.
+         * @return contiguous iterator to the first element.
          */
         Iterator Begin() { return Iterator(data_); }
         ConstIterator Begin() const { return ConstIterator(data_); }
         ConstIterator CBegin() const { return ConstIterator(data_); }
 
         /**
-         * @brief Returns an iterator past the last element of *this.
+         * @brief Returns a contiguous iterator past the last element of *this.
          * 
          * This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
          * 
-         * @return Iterator past the last element.
+         * @return contiguous iterator past the last element.
          */
         Iterator End() { return Iterator(data_ + N); }
         ConstIterator End() const { return ConstIterator(data_ + N); }
         ConstIterator CEnd() const { return ConstIterator(data_ + N); }
 
         /**
-         * @brief Returns a reverse iterator to the first element of the reversed *this. It corresponds to the last element of the non-reversed *this.
+         * @brief Returns a reverse contiguous iterator to the first element of the reversed *this. It corresponds to the last element of the non-reversed *this.
          * 
          * If *this is empty, the returned iterator will be equal to end().
          * 
-         * @return Reverse iterator to the first element.
+         * @return Reverse contiguous iterator to the first element.
          */
         ReverseIterator RBegin() { return ReverseIterator(data_ + N); }
         ConstReverseIterator RBegin() const { return ConstReverseIterator(data_ + N); }
         ConstReverseIterator CRBegin() const { return ConstReverseIterator(data_ + N); }
 
          /**
-         * @brief Returns a reverse iterator past the last element of the reversed *this. It corresponds to the element preceding the first element of the non-reversed *this.
+         * @brief Returns a reverse contiguous iterator past the last element of the reversed *this. It corresponds to the element preceding the first element of the non-reversed *this.
          * 
          * This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
          * 
-         * @return Reverse iterator to the element following the last element.
+         * @return Reverse contiguous iterator to the element following the last element.
          */
         ReverseIterator REnd() { return ReverseIterator(data_); }
         ConstReverseIterator REnd() const { return ConstReverseIterator(data_); }

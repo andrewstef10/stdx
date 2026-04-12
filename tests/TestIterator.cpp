@@ -3,7 +3,7 @@
 #include <numeric>
 #include <vector>
 
-#include <stdads/IteratorBase.h>
+#include <stdads/Iterator.h>
 
 using namespace stdads;
 
@@ -84,7 +84,7 @@ TEST(PtrIteratorTest, PostIncrement)
     int arr[] = {1, 2, 3};
     PtrIterator<int> it(arr);
 
-    auto old = it++;
+    PtrIterator<int> old = it++;
     EXPECT_EQ(*old, 1);
     EXPECT_EQ(*it, 2);
 }
@@ -103,7 +103,7 @@ TEST(PtrIteratorTest, PostDecrement)
     int arr[] = {1, 2, 3};
     PtrIterator<int> it(arr + 1);
 
-    auto old = it--;
+    PtrIterator<int> old = it--;
     EXPECT_EQ(*old, 2);
     EXPECT_EQ(*it, 1);
 }
@@ -119,10 +119,10 @@ TEST(PtrIteratorTest, AdvanceAndArithmetic)
     it -= 1;
     EXPECT_EQ(*it, 20);
 
-    auto it2 = it + 2;
+    PtrIterator<int> it2 = it + 2;
     EXPECT_EQ(*it2, 40);
 
-    auto it3 = it2 - 3;
+    PtrIterator<int> it3 = it2 - 3;
     EXPECT_EQ(*it3, 10);
 }
 
@@ -132,8 +132,8 @@ TEST(PtrIteratorTest, AdditionSymmetry)
 
     PtrIterator<int> it(arr);
 
-    auto a = it + 2;
-    auto b = 2 + it;
+    PtrIterator<int> a = it + 2;
+    PtrIterator<int> b = 2 + it;
 
     EXPECT_EQ(*a, *b);
     EXPECT_EQ(a, b);
@@ -147,6 +147,10 @@ TEST(PtrIteratorTest, Distance)
 
     EXPECT_EQ(b - a, 3);
     EXPECT_EQ(a - b, -3);
+
+    PtrIterator<const int> cit(arr + 2);
+    EXPECT_EQ(cit - a, 2);
+    EXPECT_EQ(a - cit, -2);
 }
 
 TEST(PtrIteratorTest, IndexOperator)
@@ -216,22 +220,6 @@ TEST(PtrIteratorTest, ComparisonOperatorsBetweenConstAndNormal)
     EXPECT_FALSE(b <= a);
     EXPECT_FALSE(a >= b);
 }
-
-// Uncomment to test compile failure
-// TEST(PtrIteratorTest, ComparisonBetweenIncompattbleTypes)
-// {
-//     int arr[] = {1, 2, 3};
-//     PtrIterator<int> a(arr);
-//     int b = 1;
-
-//     // All expressions should NOT compile
-//     EXPECT_TRUE(a != b); 
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a < b);
-//     EXPECT_TRUE(a > b);
-//     EXPECT_TRUE(a <= b);
-//     EXPECT_TRUE(a >= b);  
-// }
 
 TEST(PtrIteratorTest, NonConstToConstConversion)
 {
@@ -348,7 +336,7 @@ TEST(ReverseIteratorTest, PostIncrement)
     int arr[] = {1, 2, 3};
     ReverseIterator<PtrIterator<int>> rit(PtrIterator<int>(arr + 3));
 
-    auto old = rit++;
+    ReverseIterator<PtrIterator<int>> old = rit++;
     EXPECT_EQ(*old, 3);
     EXPECT_EQ(*rit, 2);
 }
@@ -367,7 +355,7 @@ TEST(ReverseIteratorTest, PostDecrement)
     int arr[] = {1, 2, 3};
     ReverseIterator<PtrIterator<int>> rit(PtrIterator<int>(arr + 2));
 
-    auto old = rit--;
+    ReverseIterator<PtrIterator<int>> old = rit--;
     EXPECT_EQ(*old, 2);
     EXPECT_EQ(*rit, 3);
 }
@@ -383,10 +371,10 @@ TEST(ReverseIteratorTest, Arithmetic)
     rit -= 1;
     EXPECT_EQ(*rit, 3);
 
-    auto r2 = rit + 1;
+    ReverseIterator<PtrIterator<int>> r2 = rit + 1;
     EXPECT_EQ(*r2, 2);
 
-    auto r3 = r2 - 2;
+    ReverseIterator<PtrIterator<int>> r3 = r2 - 2;
     EXPECT_EQ(*r3, 4);
 }
 
@@ -397,8 +385,8 @@ TEST(ReverseIteratorTest, AdditionSymmetry)
     using It = PtrIterator<int>;
     ReverseIterator<It> rit(It(arr + 4));
 
-    auto a = rit + 2;
-    auto b = 2 + rit;
+    ReverseIterator<It> a = rit + 2;
+    ReverseIterator<It> b = 2 + rit;
 
     EXPECT_EQ(*a, *b);
     EXPECT_EQ(a, b);
@@ -413,6 +401,10 @@ TEST(ReverseIteratorTest, Distance)
 
     EXPECT_EQ(a - b, -3);
     EXPECT_EQ(b - a, 3);
+
+    ReverseIterator<PtrIterator<const int>> crit(PtrIterator<const int>(arr + 2));
+    EXPECT_EQ(a - crit, -2);
+    EXPECT_EQ(crit - a, 2);
 }
 
 TEST(ReverseIteratorTest, IndexOperator)
@@ -474,23 +466,10 @@ TEST(ReverseIteratorTest, ComparisonsBetweenConstAndNormal)
     EXPECT_FALSE(a > b);
     EXPECT_FALSE(b <= a);
     EXPECT_FALSE(a >= b);
+
+    EXPECT_FALSE(a < caCopy);
+    EXPECT_FALSE(caCopy < a);
 }
-
-// Uncomment to test compile failure
-// TEST(ReverseIteratorTest, ComparisonBetweenIncompattbleTypes)
-// {
-//     int arr[] = {1, 2, 3};
-//     ReverseIterator<PtrIterator<int>> a(PtrIterator<int>(arr + 3));
-//     int b = 1;
-
-//     // All expressions should NOT compile
-//     EXPECT_TRUE(a != b); 
-//     EXPECT_FALSE(a == b);
-//     EXPECT_TRUE(a < b);
-//     EXPECT_TRUE(a > b);
-//     EXPECT_TRUE(a <= b);
-//     EXPECT_TRUE(a >= b);  
-// }
 
 TEST(ReverseIteratorTest, BaseFunction)
 {
@@ -637,8 +616,8 @@ TEST(STLCompatibilityTest, Distance)
 {
     int arr[] = {1, 2, 3, 4, 5};
 
-    auto begin = PtrIterator<int>(arr);
-    auto end   = PtrIterator<int>(arr + 5);
+    PtrIterator<int> begin = PtrIterator<int>(arr);
+    PtrIterator<int> end   = PtrIterator<int>(arr + 5);
 
     EXPECT_EQ(std::distance(begin, end), 5);
 }
@@ -651,7 +630,7 @@ TEST(STLCompatibilityTest, Advance)
 {
     int arr[] = {10, 20, 30};
 
-    auto it = PtrIterator<int>(arr);
+    PtrIterator<int> it = PtrIterator<int>(arr);
 
     std::advance(it, 2);
 
@@ -666,10 +645,10 @@ TEST(STLCompatibilityTest, Find)
 {
     int arr[] = {5, 10, 15};
 
-    auto begin = PtrIterator<int>(arr);
-    auto end   = PtrIterator<int>(arr + 3);
+    PtrIterator<int> begin = PtrIterator<int>(arr);
+    PtrIterator<int> end   = PtrIterator<int>(arr + 3);
 
-    auto it = std::find(begin, end, 10);
+    PtrIterator<int> it = std::find(begin, end, 10);
 
     EXPECT_NE(it, end);
     EXPECT_EQ(*it, 10);
@@ -716,7 +695,7 @@ TEST(STLCompatibilityTest, LowerBound)
 {
     int arr[] = {1, 2, 4, 5};
 
-    auto it = std::lower_bound(
+    PtrIterator<int> it = std::lower_bound(
         PtrIterator<int>(arr),
         PtrIterator<int>(arr + 4),
         3
@@ -733,9 +712,9 @@ TEST(STLCompatibilityTest, NthElement)
 {
     int arr[] = {4, 1, 3, 2};
 
-    auto begin = PtrIterator<int>(arr);
-    auto nth   = PtrIterator<int>(arr + 2);
-    auto end   = PtrIterator<int>(arr + 4);
+    PtrIterator<int> begin = PtrIterator<int>(arr);
+    PtrIterator<int> nth   = PtrIterator<int>(arr + 2);
+    PtrIterator<int> end   = PtrIterator<int>(arr + 4);
 
     std::nth_element(begin, nth, end);
 

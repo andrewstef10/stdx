@@ -290,7 +290,9 @@ TEST(ArrayIteratorTest, EndPointsPastLastElement)
     stdads::Array<int, 3>::Iterator end = arr.End();
     stdads::Array<int, 3>::ConstIterator cend = arr.CEnd();
     EXPECT_EQ(end - begin, 3);
+    EXPECT_EQ(begin - end, -3);
     EXPECT_EQ(cend - begin, 3);
+    EXPECT_EQ(begin - cend, -3);
 
     // end is not dereferenceable. Ensure decrementing gives us the last element
     EXPECT_EQ(*--end, 3);
@@ -387,7 +389,9 @@ TEST(ArrayIteratorTest, REndPointsBeforeFirstElement)
     stdads::Array<int, 3>::ReverseIterator rend = arr.REnd();
     stdads::Array<int, 3>::ConstReverseIterator crend = arr.CREnd();
     EXPECT_EQ(rend - rbegin, 3);
+    EXPECT_EQ(rbegin - rend, -3);
     EXPECT_EQ(crend - rbegin, 3);
+    EXPECT_EQ(rbegin - crend, -3);
 
     // end is not dereferenceable. Ensure decrementing gives us the last element
     EXPECT_EQ(*--rend, 1);
