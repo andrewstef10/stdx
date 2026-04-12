@@ -350,43 +350,6 @@ namespace stdads {
         Iterator base_;
     };
 
-
-    /**
-     * @brief Pointer Iterator class
-     */
-    template <typename T>
-    class PtrIterator : public RandomAccessIterator<PtrIterator<T>, T> {
-    public:
-        // ===== Constructors =====
-        PtrIterator() : ptr_(0) {}
-        PtrIterator(T* ptr) : ptr_(ptr) {}
-        PtrIterator(const PtrIterator&) = default;
-        PtrIterator(PtrIterator&&) = default;
-        ~PtrIterator() = default;
-        PtrIterator& operator=(const PtrIterator&) = default;
-        PtrIterator& operator=(PtrIterator&&) = default;
-
-        template <typename U, typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
-        PtrIterator(const PtrIterator<U>& other) : ptr_(&(*other)) {} // Const conversion constructor
-
-
-        // ==== Required by ForwardIterator ====
-        void Increment() { ++ptr_; }
-        bool Equals(const PtrIterator& other) const { return ptr_ == other.ptr_; }
-        T& Dereference() const { return *ptr_; }
-
-        // ==== Required by Bidirectional Iterator ====
-        void Decrement() { --ptr_; }
-
-        // ==== Required by Random Access Iterator ====
-        void Advance(std::ptrdiff_t n) { ptr_ += n; }
-        std::ptrdiff_t DistanceTo(const PtrIterator& other) const { return ptr_ - other.ptr_; }
-        bool LessThan(const PtrIterator& other) const { return ptr_ < other.ptr_; }
-
-    private:
-        T* ptr_;
-    };
-
 }
 
 #endif
