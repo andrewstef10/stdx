@@ -152,13 +152,9 @@ namespace stdads {
         ConstReverseIterator RBegin() const { return ConstReverseIterator(data_ + N); }
         ConstReverseIterator CRBegin() const { return ConstReverseIterator(data_ + N); }
 
-         /**
-         * @brief Returns a reverse contiguous iterator past the last element of the reversed *this. It corresponds to the element preceding the first element of the non-reversed *this.
-         * 
-         * This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
-         * 
-         * @return Reverse contiguous iterator to the element following the last element.
-         */
+        /// @brief Returns a reverse contiguous iterator past the last element of the reversed *this. It corresponds to the element preceding the first element of the non-reversed *this.
+        /// This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+        /// @return Reverse contiguous iterator to the element following the last element.
         ReverseIterator REnd() { return ReverseIterator(data_); }
         ConstReverseIterator REnd() const { return ConstReverseIterator(data_); }
         ConstReverseIterator CREnd() const { return ConstReverseIterator(data_); }
@@ -166,28 +162,19 @@ namespace stdads {
 
         // ===== Capacity =====
 
-        /**
-         * @brief Checks if the container has no elements.
-         *
-         * @return true if the container is empty, false otherwise.
-         */
+        /// @brief Checks if the container has no elements.
+        /// @return true if the container is empty, false otherwise.
         bool Empty() const { return Size() == 0; }
 
-        /**
-         * @brief Returns the number of elements in the container.
-         *
-         * @return The number of elements in the container.
-         */
+        /// @brief Returns the number of elements in the container.
+        /// @return The number of elements in the container.
         std::size_t Size() const { return N; }
 
 
         // ==== Operations ====
 
-        /**
-         * @brief Assigns the value to all elements in the container.
-         *
-         * @param value The value to assign to the elements.
-         */
+        /// @brief Assigns the value to all elements in the container.
+        /// @param value The value to assign to the elements.
         void Fill(const T& value);
 
     private:

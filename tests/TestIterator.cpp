@@ -7,6 +7,63 @@
 
 using namespace stdads;
 
+/// @brief Test class used to test creating a custom forward iterator
+/// @tparam T Iterator value type
+template <typename T>
+class TestForwardIterator : public ForwardIterator<TestForwardIterator<T>, T> {
+public:
+    // ===== Constructors =====
+    TestForwardIterator() : ptr_(0) {}
+    TestForwardIterator(T* ptr) : ptr_(ptr) {}
+    TestForwardIterator(const TestForwardIterator&) = default;
+    TestForwardIterator(TestForwardIterator&&) = default;
+    ~TestForwardIterator() = default;
+    TestForwardIterator& operator=(const TestForwardIterator&) = default;
+    TestForwardIterator& operator=(TestForwardIterator&&) = default;
+
+    template <typename U, typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+    TestForwardIterator(const TestForwardIterator<U>& other) : ptr_(&(*other)) {} // Const conversion constructor
+
+
+    // ==== Required by ForwardIterator ====
+    void Increment() { ++ptr_; }
+    bool Equals(const TestForwardIterator& other) const { return ptr_ == other.ptr_; }
+    T& Dereference() const { return *ptr_; }
+
+private:
+    T* ptr_;
+};
+
+/// @brief Test class used to test creating a custom bidirectional iterator
+/// @tparam T Iterator value type
+template <typename T>
+class TestBidirectionalIterator : public BidirectionalIterator<TestBidirectionalIterator<T>, T> {
+public:
+    // ===== Constructors =====
+    TestBidirectionalIterator() : ptr_(0) {}
+    TestBidirectionalIterator(T* ptr) : ptr_(ptr) {}
+    TestBidirectionalIterator(const TestBidirectionalIterator&) = default;
+    TestBidirectionalIterator(TestBidirectionalIterator&&) = default;
+    ~TestBidirectionalIterator() = default;
+    TestBidirectionalIterator& operator=(const TestBidirectionalIterator&) = default;
+    TestBidirectionalIterator& operator=(TestBidirectionalIterator&&) = default;
+
+    template <typename U, typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+    TestBidirectionalIterator(const TestBidirectionalIterator<U>& other) : ptr_(&(*other)) {} // Const conversion constructor
+
+
+    // ==== Required by ForwardIterator ====
+    void Increment() { ++ptr_; }
+    bool Equals(const TestBidirectionalIterator& other) const { return ptr_ == other.ptr_; }
+    T& Dereference() const { return *ptr_; }
+
+    // ==== Required by Bidirectional Iterator ====
+    void Decrement() { --ptr_; }
+
+private:
+    T* ptr_;
+};
+
 /// @brief Test class used to test creating a custom random access iterator
 /// @tparam T Iterator value type
 template <typename T>
@@ -42,11 +99,263 @@ private:
     T* ptr_;
 };
 
+
 // ============================================================
-// TestRandomAccessIterator Tests (covers IteratorBase via CRTP)
+// Custom ForwardIterator Tests
 // ============================================================
 
-TEST(TestRandomAccessIteratorTest, PointerConstructorAndDereferenceAndArrow)
+TEST(CustomForwardIteratorTest, IteratorTraitsTest)
+{
+    using It = TestForwardIterator<int>;
+    static_assert(std::is_same_v<std::iterator_traits<It>::value_type, int>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::reference, int&>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::pointer, int*>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::difference_type, std::ptrdiff_t>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::iterator_category, std::forward_iterator_tag>);
+}
+
+TEST(CustomForwardIteratorTest, PointerConstructorAndDereferenceAndArrow)
+{
+    int arr[] = {1, 2, 3};
+    TestForwardIterator<int> it(arr);
+
+    EXPECT_EQ(*it, 1);
+    EXPECT_EQ(it.operator->(), &arr[0]);
+}
+
+TEST(CustomForwardIteratorTest, DefaultConstructor)
+{
+    TestForwardIterator<int> it;
+
+    // Cannot safely dereference, but should be constructible
+    SUCCEED();
+}
+
+TEST(CustomForwardIteratorTest, CopyConstructor)
+{
+    int arr[] = {1, 2};
+
+    TestForwardIterator<int> it(arr);
+    TestForwardIterator<int> copy(it);
+    EXPECT_EQ(*copy, 1);
+}
+
+TEST(CustomForwardIteratorTest, CopyAssignment)
+{
+    int arr[] = {1, 2};
+
+    TestForwardIterator<int> a(arr);
+    TestForwardIterator<int> b;
+    b = a;
+
+    EXPECT_EQ(*b, 1);
+}
+
+TEST(CustomForwardIteratorTest, MoveConstructor)
+{
+    int arr[] = {9};
+
+    TestForwardIterator<int> it(arr);
+    TestForwardIterator<int> moved(std::move(it));
+
+    EXPECT_EQ(*moved, 9);
+}
+
+TEST(CustomForwardIteratorTest, MoveAssignment)
+{
+    int arr[] = {7};
+
+    TestForwardIterator<int> it(arr);
+    TestForwardIterator<int> target;
+
+    target = std::move(it);
+
+    EXPECT_EQ(*target, 7);
+}
+
+TEST(CustomForwardIteratorTest, PreIncrement)
+{
+    int arr[] = {1, 2, 3};
+    TestForwardIterator<int> it(arr);
+
+    ++it;
+    EXPECT_EQ(*it, 2);
+}
+
+TEST(CustomForwardIteratorTest, PostIncrement)
+{
+    int arr[] = {1, 2, 3};
+    TestForwardIterator<int> it(arr);
+
+    TestForwardIterator<int> old = it++;
+    EXPECT_EQ(*old, 1);
+    EXPECT_EQ(*it, 2);
+}
+
+TEST(CustomForwardIteratorTest, IterateForwardThroughArray)
+{
+    int arr[] = {1, 2, 3};
+    
+    TestForwardIterator<int> it = arr;
+    for (int i = 0; i < 3; ++i)
+    {
+        EXPECT_EQ(*it, arr[i]);
+        ++it;
+    }
+}
+
+
+// ============================================================
+// Custom Bidirectional Iterator Tests
+// ============================================================
+
+TEST(CustomBidirectionalIteratorTest, IteratorTraitsTest)
+{
+    using It = TestBidirectionalIterator<int>;
+    static_assert(std::is_same_v<std::iterator_traits<It>::value_type, int>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::reference, int&>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::pointer, int*>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::difference_type, std::ptrdiff_t>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::iterator_category, std::bidirectional_iterator_tag>);
+}
+
+TEST(CustomBidirectionalIteratorTest, PointerConstructorAndDereferenceAndArrow)
+{
+    int arr[] = {1, 2, 3};
+    TestBidirectionalIterator<int> it(arr);
+
+    EXPECT_EQ(*it, 1);
+    EXPECT_EQ(it.operator->(), &arr[0]);
+}
+
+TEST(CustomBidirectionalIteratorTest, DefaultConstructor)
+{
+    TestBidirectionalIterator<int> it;
+
+    // Cannot safely dereference, but should be constructible
+    SUCCEED();
+}
+
+TEST(CustomBidirectionalIteratorTest, CopyConstructor)
+{
+    int arr[] = {1, 2};
+
+    TestBidirectionalIterator<int> it(arr);
+    TestBidirectionalIterator<int> copy(it);
+    EXPECT_EQ(*copy, 1);
+}
+
+TEST(CustomBidirectionalIteratorTest, CopyAssignment)
+{
+    int arr[] = {1, 2};
+
+    TestBidirectionalIterator<int> a(arr);
+    TestBidirectionalIterator<int> b;
+    b = a;
+
+    EXPECT_EQ(*b, 1);
+}
+
+TEST(CustomBidirectionalIteratorTest, MoveConstructor)
+{
+    int arr[] = {9};
+
+    TestBidirectionalIterator<int> it(arr);
+    TestBidirectionalIterator<int> moved(std::move(it));
+
+    EXPECT_EQ(*moved, 9);
+}
+
+TEST(CustomBidirectionalIteratorTest, MoveAssignment)
+{
+    int arr[] = {7};
+
+    TestBidirectionalIterator<int> it(arr);
+    TestBidirectionalIterator<int> target;
+
+    target = std::move(it);
+
+    EXPECT_EQ(*target, 7);
+}
+
+TEST(CustomBidirectionalIteratorTest, PreIncrement)
+{
+    int arr[] = {1, 2, 3};
+    TestBidirectionalIterator<int> it(arr);
+
+    ++it;
+    EXPECT_EQ(*it, 2);
+}
+
+TEST(CustomBidirectionalIteratorTest, PostIncrement)
+{
+    int arr[] = {1, 2, 3};
+    TestBidirectionalIterator<int> it(arr);
+
+    TestBidirectionalIterator<int> old = it++;
+    EXPECT_EQ(*old, 1);
+    EXPECT_EQ(*it, 2);
+}
+
+TEST(CustomBidirectionalIteratorTest, IterateForwardThroughArray)
+{
+    int arr[] = {1, 2, 3};
+    
+    TestBidirectionalIterator<int> it = arr;
+    for (int i = 0; i < 3; ++i)
+    {
+        EXPECT_EQ(*it, arr[i]);
+        ++it;
+    }
+}
+
+TEST(CustomBidirectionalIteratorTest, PreDecrement)
+{
+    int arr[] = {1, 2, 3};
+    TestBidirectionalIterator<int> it(arr + 1);
+
+    --it;
+    EXPECT_EQ(*it, 1);
+}
+
+TEST(CustomBidirectionalIteratorTest, PostDecrement)
+{
+    int arr[] = {1, 2, 3};
+    TestBidirectionalIterator<int> it(arr + 1);
+
+    TestBidirectionalIterator<int> old = it--;
+    EXPECT_EQ(*old, 2);
+    EXPECT_EQ(*it, 1);
+}
+
+TEST(CustomBidirectionalIteratorTest, IterateBackwardThroughArray)
+{
+    int arr[] = {1, 2, 3};
+    
+    TestBidirectionalIterator<int> it = arr + 2;
+    for (int i = 2; i >= 0; --i)
+    {
+        EXPECT_EQ(*it, arr[i]);
+        --it;
+    }
+}
+
+
+// ============================================================
+// TestRandomAccessIterator Tests
+// ============================================================
+
+TEST(CustomRandomAccessIteratorTest, IteratorTraitsTest)
+{
+    using It = TestRandomAccessIterator<int>;
+    static_assert(std::is_same_v<std::iterator_traits<It>::value_type, int>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::reference, int&>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::pointer, int*>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::difference_type, std::ptrdiff_t>);
+    static_assert(std::is_same_v<std::iterator_traits<It>::iterator_category, std::random_access_iterator_tag>);
+}
+
+TEST(CustomRandomAccessIteratorTest, PointerConstructorAndDereferenceAndArrow)
 {
     int arr[] = {1, 2, 3};
     TestRandomAccessIterator<int> it(arr);
@@ -55,7 +364,7 @@ TEST(TestRandomAccessIteratorTest, PointerConstructorAndDereferenceAndArrow)
     EXPECT_EQ(it.operator->(), &arr[0]);
 }
 
-TEST(TestRandomAccessIteratorTest, DefaultConstructor)
+TEST(CustomRandomAccessIteratorTest, DefaultConstructor)
 {
     TestRandomAccessIterator<int> it;
 
@@ -63,7 +372,7 @@ TEST(TestRandomAccessIteratorTest, DefaultConstructor)
     SUCCEED();
 }
 
-TEST(TestRandomAccessIteratorTest, CopyConstructor)
+TEST(CustomRandomAccessIteratorTest, CopyConstructor)
 {
     int arr[] = {1, 2};
 
@@ -72,7 +381,7 @@ TEST(TestRandomAccessIteratorTest, CopyConstructor)
     EXPECT_EQ(*copy, 1);
 }
 
-TEST(TestRandomAccessIteratorTest, CopyAssignment)
+TEST(CustomRandomAccessIteratorTest, CopyAssignment)
 {
     int arr[] = {1, 2};
 
@@ -83,7 +392,7 @@ TEST(TestRandomAccessIteratorTest, CopyAssignment)
     EXPECT_EQ(*b, 1);
 }
 
-TEST(TestRandomAccessIteratorConstructorTest, MoveConstructor)
+TEST(CustomRandomAccessIteratorTest, MoveConstructor)
 {
     int arr[] = {9};
 
@@ -93,7 +402,7 @@ TEST(TestRandomAccessIteratorConstructorTest, MoveConstructor)
     EXPECT_EQ(*moved, 9);
 }
 
-TEST(TestRandomAccessIteratorConstructorTest, MoveAssignment)
+TEST(CustomRandomAccessIteratorTest, MoveAssignment)
 {
     int arr[] = {7};
 
@@ -105,7 +414,7 @@ TEST(TestRandomAccessIteratorConstructorTest, MoveAssignment)
     EXPECT_EQ(*target, 7);
 }
 
-TEST(TestRandomAccessIteratorTest, PreIncrement)
+TEST(CustomRandomAccessIteratorTest, PreIncrement)
 {
     int arr[] = {1, 2, 3};
     TestRandomAccessIterator<int> it(arr);
@@ -114,7 +423,7 @@ TEST(TestRandomAccessIteratorTest, PreIncrement)
     EXPECT_EQ(*it, 2);
 }
 
-TEST(TestRandomAccessIteratorTest, PostIncrement)
+TEST(CustomRandomAccessIteratorTest, PostIncrement)
 {
     int arr[] = {1, 2, 3};
     TestRandomAccessIterator<int> it(arr);
@@ -124,7 +433,19 @@ TEST(TestRandomAccessIteratorTest, PostIncrement)
     EXPECT_EQ(*it, 2);
 }
 
-TEST(TestRandomAccessIteratorTest, PreDecrement)
+TEST(CustomRandomAccessIteratorTest, IterateForwardThroughArray)
+{
+    int arr[] = {1, 2, 3};
+    
+    TestRandomAccessIterator<int> it = arr;
+    for (int i = 0; i < 3; ++i)
+    {
+        EXPECT_EQ(*it, arr[i]);
+        ++it;
+    }
+}
+
+TEST(CustomRandomAccessIteratorTest, PreDecrement)
 {
     int arr[] = {1, 2, 3};
     TestRandomAccessIterator<int> it(arr + 1);
@@ -133,7 +454,7 @@ TEST(TestRandomAccessIteratorTest, PreDecrement)
     EXPECT_EQ(*it, 1);
 }
 
-TEST(TestRandomAccessIteratorTest, PostDecrement)
+TEST(CustomRandomAccessIteratorTest, PostDecrement)
 {
     int arr[] = {1, 2, 3};
     TestRandomAccessIterator<int> it(arr + 1);
@@ -143,7 +464,19 @@ TEST(TestRandomAccessIteratorTest, PostDecrement)
     EXPECT_EQ(*it, 1);
 }
 
-TEST(TestRandomAccessIteratorTest, AdvanceAndArithmetic)
+TEST(CustomRandomAccessIteratorTest, IterateBackwardThroughArray)
+{
+    int arr[] = {1, 2, 3};
+    
+    TestRandomAccessIterator<int> it = arr + 2;
+    for (int i = 2; i >= 0; --i)
+    {
+        EXPECT_EQ(*it, arr[i]);
+        --it;
+    }
+}
+
+TEST(CustomRandomAccessIteratorTest, AdvanceAndArithmetic)
 {
     int arr[] = {10, 20, 30, 40};
     TestRandomAccessIterator<int> it(arr);
@@ -161,7 +494,7 @@ TEST(TestRandomAccessIteratorTest, AdvanceAndArithmetic)
     EXPECT_EQ(*it3, 10);
 }
 
-TEST(TestRandomAccessIteratorTest, AdditionSymmetry)
+TEST(CustomRandomAccessIteratorTest, AdditionSymmetry)
 {
     int arr[] = {1, 2, 3, 4};
 
@@ -174,7 +507,7 @@ TEST(TestRandomAccessIteratorTest, AdditionSymmetry)
     EXPECT_EQ(a, b);
 }
 
-TEST(TestRandomAccessIteratorTest, Distance)
+TEST(CustomRandomAccessIteratorTest, Distance)
 {
     int arr[] = {1, 2, 3, 4};
     TestRandomAccessIterator<int> a(arr);
@@ -188,7 +521,7 @@ TEST(TestRandomAccessIteratorTest, Distance)
     EXPECT_EQ(a - cit, -2);
 }
 
-TEST(TestRandomAccessIteratorTest, IndexOperator)
+TEST(CustomRandomAccessIteratorTest, IndexOperator)
 {
     int arr[] = {5, 6, 7, 8};
     TestRandomAccessIterator<int> it(arr);
@@ -197,7 +530,7 @@ TEST(TestRandomAccessIteratorTest, IndexOperator)
     EXPECT_EQ(it[2], 7);
 }
 
-TEST(TestRandomAccessIteratorTest, EqualityAndInequality)
+TEST(CustomRandomAccessIteratorTest, EqualityAndInequality)
 {
     int arr[] = {1, 2};
     TestRandomAccessIterator<int> a(arr);
@@ -211,7 +544,7 @@ TEST(TestRandomAccessIteratorTest, EqualityAndInequality)
     EXPECT_FALSE(a == c);
 }
 
-TEST(TestRandomAccessIteratorTest, RelationalOperators)
+TEST(CustomRandomAccessIteratorTest, RelationalOperators)
 {
     int arr[] = {1, 2, 3};
     TestRandomAccessIterator<int> a(arr);
@@ -231,7 +564,7 @@ TEST(TestRandomAccessIteratorTest, RelationalOperators)
     EXPECT_FALSE(a >= b);
 }
 
-TEST(TestRandomAccessIteratorTest, ComparisonOperatorsBetweenConstAndNormal)
+TEST(CustomRandomAccessIteratorTest, ComparisonOperatorsBetweenConstAndNormal)
 {
     int arr[] = {1, 2, 3};
     TestRandomAccessIterator<int> a(arr);
@@ -256,7 +589,7 @@ TEST(TestRandomAccessIteratorTest, ComparisonOperatorsBetweenConstAndNormal)
     EXPECT_FALSE(a >= b);
 }
 
-TEST(TestRandomAccessIteratorTest, NonConstToConstConversion)
+TEST(CustomRandomAccessIteratorTest, NonConstToConstConversion)
 {
     int arr[] = {1, 2, 3};
 
@@ -266,7 +599,7 @@ TEST(TestRandomAccessIteratorTest, NonConstToConstConversion)
     EXPECT_EQ(*cit, 1);
 }
 
-TEST(TestRandomAccessIteratorTest, ConvertedIteratorTracksSameLocation)
+TEST(CustomRandomAccessIteratorTest, ConvertedIteratorTracksSameLocation)
 {
     int arr[] = {10, 20, 30};
 
