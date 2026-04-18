@@ -33,11 +33,6 @@ namespace stdads {
     struct IteratorBaseSelector;
 
     template<typename Derived, typename T, typename Difference, typename Pointer, typename Reference>
-    struct IteratorBaseSelector<std::forward_iterator_tag, Derived, T, Difference, Pointer, Reference> {
-        using type = ForwardIterator<Derived, T, Difference, Pointer, Reference, std::forward_iterator_tag>;
-    };
-
-    template<typename Derived, typename T, typename Difference, typename Pointer, typename Reference>
     struct IteratorBaseSelector<std::bidirectional_iterator_tag, Derived, T, Difference, Pointer, Reference> {
         using type = BidirectionalIterator<Derived, T, Difference, Pointer, Reference, std::bidirectional_iterator_tag>;
     };
@@ -308,42 +303,110 @@ namespace stdads {
     {
     public:
         // ===== Iterator Traits (full set defined in base class) =====
+        using iterator_category = typename std::iterator_traits<Iterator>::iterator_category;
         using difference_type   = typename std::iterator_traits<Iterator>::difference_type;
         using reference         = typename std::iterator_traits<Iterator>::reference;
         using pointer           = typename std::iterator_traits<Iterator>::pointer;
 
-        // ===== Constructors =====
+        static_assert(std::is_base_of<std::bidirectional_iterator_tag, iterator_category>::value, "ReverseIterator requires bidirectional or better iterator");
+
+
+        /// @brief Default constructor
+        /// Reverses Iterator calling Iterator's default constructor
+        /// Constructor is only enabled for iterators that are at least bidirectional iterators
+        template<
+            typename C = iterator_category,
+            typename std::enable_if<std::is_base_of<std::bidirectional_iterator_tag, C>::value, int>::type = 0
+        >
         ReverseIterator() : base_() {}
+
+        /// @brief Iterator constructor
+        /// Reverse Iterator it
+        /// @param it Iterator to reverse
+        /// Constructor is only enabled for iterators that are at least bidirectional iterators
+        template<
+            typename C = iterator_category,
+            typename std::enable_if<std::is_base_of<std::bidirectional_iterator_tag, C>::value, int>::type = 0
+        >
         ReverseIterator(Iterator it) : base_(it) {}
+
+        /// @brief Implicitly defined Copy constructor.
         ReverseIterator(const ReverseIterator&) = default;
+
+        /// @brief Implicitly defined Move constructor.
         ReverseIterator(ReverseIterator&&) = default;
+
+        /// @brief Implicitly defined destructor.
         ~ReverseIterator() = default;
+
+        /// @brief Implicitly defined assignment operator
+        /// @return Reference to this object
         ReverseIterator& operator=(const ReverseIterator&) = default;
+
+        /// @brief Implicitly defined move assignment operator
+        /// @return Reference to this object
         ReverseIterator& operator=(ReverseIterator&&) = default;
 
-        template <typename OtherIterator,
-                  typename = std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<OtherIterator>::pointer, pointer>>>
-        ReverseIterator(const ReverseIterator<OtherIterator>& other) : base_(other.Base()) {} // Const conversion constructor
+        /// @brief Const conversion constructor
+        /// @tparam OtherIterator The const version this ReverseIterator
+        /// This constructor is only enabled if OtherIterator::pointer is convertible to this::pointer 
+        /// @param other The other iterator
+        template <
+            typename OtherIterator,
+            typename = std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<OtherIterator>::pointer, pointer>>
+        >
+        ReverseIterator(const ReverseIterator<OtherIterator>& other) : base_(other.Base()) {}
 
         /// @brief Get the reverse iterator's base iterator
         /// @return Base iterator object
         Iterator Base() const { return base_; }
 
-        // ==== Required by ForwardIterator ====
+        /// @brief Increments the reverse iterator
         void Increment() { --base_; }
+
+        /// @brief Determines if ReverseIterator other is equal to this
+        /// @param other Other ReverseIterator
+        /// @return True if other is equal to this, false otherwise
         bool Equals(const ReverseIterator& other) const { return base_ == other.base_; }
+
+        /// @brief Dereference this iterator
+        /// @return Reference to the reverse iterator's underlying iterator
         reference Dereference() const
         { 
             Iterator tmp = base_;
             return *--tmp;
         }
 
-        // ==== Required by Bidirectional Iterator ====
+        /// @brief Decrements the reverse iterator
         void Decrement() { ++base_; };
 
-        // ==== Required by Random Access Iterator ====
+        /// @brief Advances the reverse iterator
+        /// Function is only enabled for iterators that are at least random access iterators
+        /// @param n Number of elements to advance
+        template<
+            typename C = iterator_category,
+            typename std::enable_if<std::is_base_of<std::random_access_iterator_tag, C>::value, int>::type = 0
+        >
         void Advance(difference_type n) { base_ -= n; };
+
+        /// @brief Gets the distance from this iterator to other
+        /// Function is only enabled for iterators that are at least random access iterators
+        /// @param other Other reverse iterator
+        /// @return The distance between this and other
+        template<
+            typename C = iterator_category,
+            typename std::enable_if<std::is_base_of<std::random_access_iterator_tag, C>::value, int>::type = 0
+        >
         difference_type DistanceTo(const ReverseIterator& other) const { return other.base_ - base_; }
+
+        /// @brief Determines if ReverseIterator other is less than this
+        /// Function is only enabled for iterators that are at least random access iterators
+        /// @param other Other ReverseIterator
+        /// @return True if other is less than this, false otherwise
+        template<
+            typename C = iterator_category,
+            typename std::enable_if<std::is_base_of<std::random_access_iterator_tag, C>::value, int>::type = 0
+        >
         bool LessThan(const ReverseIterator& other) const { return other.base_ < base_; }
 
     private:

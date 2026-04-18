@@ -628,17 +628,37 @@ TEST(CustomRandomAccessIteratorTest, ConvertedIteratorTracksSameLocation)
 // ReverseIterator Tests
 // ============================================================
 
+TEST(ReverseIteratorTest, ReverseIteratorTraitsTest)
+{
+    using BIIt = ReverseIterator<TestBidirectionalIterator<int>>;
+    static_assert(std::is_same_v<std::iterator_traits<BIIt>::value_type, int>);
+    static_assert(std::is_same_v<std::iterator_traits<BIIt>::reference, int&>);
+    static_assert(std::is_same_v<std::iterator_traits<BIIt>::pointer, int*>);
+    static_assert(std::is_same_v<std::iterator_traits<BIIt>::difference_type, std::ptrdiff_t>);
+    static_assert(std::is_same_v<std::iterator_traits<BIIt>::iterator_category, std::bidirectional_iterator_tag>);
+
+    using RAIt = ReverseIterator<TestRandomAccessIterator<int>>;
+    static_assert(std::is_same_v<std::iterator_traits<RAIt>::value_type, int>);
+    static_assert(std::is_same_v<std::iterator_traits<RAIt>::reference, int&>);
+    static_assert(std::is_same_v<std::iterator_traits<RAIt>::pointer, int*>);
+    static_assert(std::is_same_v<std::iterator_traits<RAIt>::difference_type, std::ptrdiff_t>);
+    static_assert(std::is_same_v<std::iterator_traits<RAIt>::iterator_category, std::random_access_iterator_tag>);
+}
+
 TEST(ReverseIteratorTest, BaseConstructorAndDereference)
 {
     int arr[] = {1, 2, 3};
-    ReverseIterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 3));
+    ReverseIterator<TestBidirectionalIterator<int>> birit(TestBidirectionalIterator<int>(arr + 3));
+    ReverseIterator<TestRandomAccessIterator<int>> rarit(TestRandomAccessIterator<int>(arr + 3));
 
-    EXPECT_EQ(*rit, 3);
+    EXPECT_EQ(*birit, 3);
+    EXPECT_EQ(*rarit, 3);
 }
 
 TEST(ReverseIteratorTest, DefaultConstructor)
 {
-    ReverseIterator<TestRandomAccessIterator<int>> rit;
+    ReverseIterator<TestBidirectionalIterator<int>> birit;
+    ReverseIterator<TestRandomAccessIterator<int>> rarit;
     SUCCEED();
 }
 

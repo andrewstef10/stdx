@@ -19,135 +19,86 @@ namespace stdads {
         using ReverseIterator = stdads::ReverseIterator<Iterator>;
         using ConstReverseIterator = stdads::ReverseIterator<ConstIterator>;
 
-        /**
-         * @brief Implicitly defined default constructor.
-         *
-         * Creates an Array with the default compiler generated constructor for arrays.
-         * If T is a class type, each element's default constructor will be called.
-         * If T is a primitive type, the array will be initalized with garbage data.
-         */
+
+        /// @brief Implicitly defined default constructor.
+        /// Creates an Array with the default compiler generated constructor for arrays.
+        /// If T is a class type, each element's default constructor will be called.
+        /// If T is a primitive type, the array will be initalized with garbage data.
         Array() = default;
 
-        /**
-         * @brief Implicitly defined Copy constructor.
-         *
-         * Creates a copy of another array.
-         */
-        Array(const Array& other) = default;
+        /// @brief Implicitly defined Copy constructor.
+        Array(const Array&) = default;
 
-        /**
-         * @brief Implicitly defined Move constructor.
-         *
-         * Moves another array to this array.
-         */
-        Array(Array&& other) = default;
+        /// @brief Implicitly defined Move constructor.
+        Array(Array&&) = default;
 
-        /**
-         * @brief Fill constructor.
-         *
-         * Creates an array where each element equals value.
-         */
+        /// @brief Fill constructor.
+        /// Creates an array and sets each element equal to value.
+        /// @param value Value used to fill the array
         Array(const T& value) { Fill(value); }
 
-        /**
-         * @brief Aggregate initialization constructor.
-         *
-         * Creates an array with {T1, T2 ...} syntax
-         */
+        /// @brief Aggregate initialization constructor.
+        /// Creates an array with {T1, T2 ...} syntax
+        /// @param init The initialization list to init this to
         Array(std::initializer_list<T> init);
 
-        /**
-         * @brief Implicitly defined destructor.
-         */
+        /// @brief Implicitly defined destructor.
         ~Array() = default;
 
-        /**
-         * @brief Implicitly defined assignment operator.
-         * 
-         * Overwrites every element of the array with a copy of the corresponding element of another array.
-         *
-         * @param other Array to assign this to.
-         * @return Reference to this object.
-         */
-        Array& operator=(const Array& other) = default;
+        /// @brief Implicitly defined assignment operator.
+        /// Overwrites every element of the array with a copy of the corresponding element of another array.
+        /// @return Reference to this object.
+        Array& operator=(const Array&) = default;
 
-        /**
-         * @brief Implicitly defined move assignment operator.
-         * 
-         * Overwrites every element of the array with the corresponding element of another array.
-         *
-         * @param other Array to assign this to.
-         * @return Reference to this object.
-         */
-        Array& operator=(Array&& other) = default;
+        /// @brief Implicitly defined move assignment operator.
+        /// Overwrites every element of the array with the corresponding element of another array.
+        /// @return Reference to this object.
+        Array& operator=(Array&&) = default;
 
 
         // ===== Element Access =====
 
-        /**
-         * @brief Returns a reference to the element at specified location pos, with bounds checking.
-         * 
-         * If pos is not within the range of the container, an exception of type std::out_of_range is thrown.
-         *
-         * @param pos Position of the element to return.
-         * @return Reference to the requested element.
-         * @exception std::out_of_range if pos is out of range (pos >= Size()).
-         */
+        /// @brief Returns a reference to the element at specified location pos, with bounds checking.
+        /// If pos is not within the range of the container, an exception of type std::out_of_range is thrown.
+        /// @param pos Position of the element to return.
+        /// @return Reference to the requested element.
+        /// @exception std::out_of_range if pos is out of range (pos >= Size()).
         T& At(std::size_t pos);
         const T& At(std::size_t pos) const;
 
-        /**
-         * @brief Returns a reference to the element at specified location pos, without bounds checking.
-         *
-         * @param pos Position of the element to return.
-         * @return Reference to the requested element.
-         */
+        /// @brief Returns a reference to the element at specified location pos, without bounds checking.
+        /// @param index Position of the element to return.
+        /// @return Reference to the requested element.
         T& operator[](std::size_t index) { return data_[index]; }
         const T& operator[](std::size_t index) const { return data_[index]; }
 
-        /**
-         * @brief Returns a pointer to the underlying array serving as element storage.
-         * 
-         * The pointer is such that range [data(), data() + size()) is always a valid range.
-         * If *this is empty, data() is not dereferenceable.
-         * 
-         * @return Pointer to the underlying element storage. For non-empty containers, the returned pointer compares equal to the address of the first element.
-         */
+        /// @brief Returns a pointer to the underlying array serving as element storage.
+        /// The pointer is such that range [data(), data() + size()) is always a valid range.
+        /// If *this is empty, data() is not dereferenceable.
+        /// @return Pointer to the underlying element storage. For non-empty containers, the returned pointer compares equal to the address of the first element.
         T* Data() { return data_; }
         const T* Data() const { return data_; }
 
 
         // ==== Iterators ====
 
-        /**
-         * @brief Returns a contiguous iterator to the first element of *this.
-         * 
-         * If *this is empty, the returned iterator will be equal to end().
-         * 
-         * @return contiguous iterator to the first element.
-         */
+        /// @brief Returns a contiguous iterator to the first element of *this.
+        /// If *this is empty, the returned iterator will be equal to end().
+        /// @return contiguous iterator to the first element.
         Iterator Begin() { return Iterator(data_); }
         ConstIterator Begin() const { return ConstIterator(data_); }
         ConstIterator CBegin() const { return ConstIterator(data_); }
 
-        /**
-         * @brief Returns a contiguous iterator past the last element of *this.
-         * 
-         * This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
-         * 
-         * @return contiguous iterator past the last element.
-         */
+        /// @brief Returns a contiguous iterator past the last element of *this.
+        /// This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+        /// @return contiguous iterator past the last element.
         Iterator End() { return Iterator(data_ + N); }
         ConstIterator End() const { return ConstIterator(data_ + N); }
         ConstIterator CEnd() const { return ConstIterator(data_ + N); }
 
-        /**
-         * @brief Returns a reverse contiguous iterator to the first element of the reversed *this. It corresponds to the last element of the non-reversed *this.
-         * 
-         * If *this is empty, the returned iterator will be equal to end().
-         * 
-         * @return Reverse contiguous iterator to the first element.
-         */
+        /// @brief Returns a reverse contiguous iterator to the first element of the reversed *this. It corresponds to the last element of the non-reversed *this.
+        /// If *this is empty, the returned iterator will be equal to end().
+        /// @return Reverse contiguous iterator to the first element.
         ReverseIterator RBegin() { return ReverseIterator(data_ + N); }
         ConstReverseIterator RBegin() const { return ConstReverseIterator(data_ + N); }
         ConstReverseIterator CRBegin() const { return ConstReverseIterator(data_ + N); }
