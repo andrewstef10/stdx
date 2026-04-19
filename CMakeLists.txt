@@ -127,6 +127,8 @@ if(ENABLE_COVERAGE)
             -r ${CMAKE_SOURCE_DIR}
             --filter ${CMAKE_SOURCE_DIR}/src/
             --filter ${CMAKE_SOURCE_DIR}/include/
+            --exclude-throw-branches
+            --exclude-unreachable-branches
             --html
             --html-details
             --html-self-contained
