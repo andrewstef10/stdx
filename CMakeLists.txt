@@ -133,7 +133,8 @@ if(ENABLE_COVERAGE)
             --html-details
             --html-self-contained
             --html-title "stdads Coverage Report"
-            -o ${COVERAGE_DIR}/index.html
+            --html-details=${COVERAGE_DIR}/index.html
+            --txt=${COVERAGE_DIR}/coverage.txt
             --print-summary
         COMMENT "Generating coverage report..."
     )
