@@ -142,6 +142,16 @@ TEST(ArrayTest, AggregateInitialization_Full) {
 void ConstructInvalidArray() { stdads::Array<int, 3> arr{1, 2, 3, 4}; }
 TEST(ArrayTest, AggregateInitialization_TooManyInitializers) {
     EXPECT_THROW(ConstructInvalidArray(), std::out_of_range);
+
+    try {
+        ConstructInvalidArray();
+    }
+    catch (const std::out_of_range& e) {
+        SUCCEED();
+    }
+    catch (...) {
+        FAIL();
+    }
 }
 
 
@@ -220,6 +230,26 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
 
     EXPECT_THROW(arr.At(3), std::out_of_range);
     EXPECT_THROW(arr.At(100), std::out_of_range);
+
+    try {
+        arr.At(3);
+    }
+    catch (const std::out_of_range& e) {
+        SUCCEED();
+    }
+    catch (...) {
+        FAIL();
+    }
+
+    try {
+        arr.At(100);
+    }
+    catch (const std::out_of_range& e) {
+        SUCCEED();
+    }
+    catch (...) {
+        FAIL();
+    }
 }
 
 TEST(ArrayTest, At_ConstOutOfRange_Throws) {
@@ -227,6 +257,16 @@ TEST(ArrayTest, At_ConstOutOfRange_Throws) {
     const stdads::Array<int, 3>& carr = arr;
 
     EXPECT_THROW(carr.At(3), std::out_of_range);
+
+    try {
+        carr.At(3);
+    }
+    catch (const std::out_of_range& e) {
+        SUCCEED();
+    }
+    catch (...) {
+        FAIL();
+    }
 }
 
 
