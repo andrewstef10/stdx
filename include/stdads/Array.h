@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <stdexcept>
 
+#include <stdads/IComparable.h>
 #include <stdads/Iterator.h>
 
 namespace stdads {
@@ -12,7 +13,7 @@ namespace stdads {
      * @brief Fixed size contiguous array class.
      */
     template<typename T, std::size_t N>
-    class Array {
+    class Array : public IComparable<Array<T, N>> {
     public:
         using Iterator = T*;
         using ConstIterator = const T*;
@@ -79,6 +80,16 @@ namespace stdads {
         T* Data() { return data_; }
         const T* Data() const { return data_; }
 
+        /// @brief Returns a reference to the last element in the container.
+        /// @return Reference to the last element.
+        T& Back() { return data_[N - 1]; }
+        const T& Back() const { return data_[N - 1]; }
+
+        /// @brief Returns a reference to the first element in the container.
+        /// @return Reference to the first element.
+        T& Front() { return data_[0]; }
+        const T& Front() const { return data_[0]; }
+
 
         // ==== Iterators ====
 
@@ -127,6 +138,26 @@ namespace stdads {
         /// @brief Assigns the value to all elements in the container.
         /// @param value The value to assign to the elements.
         void Fill(const T& value);
+
+        /// @brief Exchanges the contents of the container with those of other.
+        /// Does not cause iterators and references to associate with the other container.
+        /// @param other container to exchange the contents with
+        void Swap(Array& other);
+
+
+        // ==== Comparison ====
+
+        /// @brief Compare two arrays for equality.
+        /// The equality comparison is performed by comparing the elements sequentially using operator==, stopping at the first mismatch.
+        /// @param other Other array
+        /// @return True if this is equal to other, false otherwise.
+        bool Equals(const Array& other) const;
+
+        /// @brief Get if this array is less than other
+        /// The less than comparison is performed by comparing the elements sequentially using operator<, stopping at the first mismatch.
+        /// @param other Other array
+        /// @return True if this array is less thn other, false otherwise
+        bool LessThan(const Array& other) const;
 
     private:
         T data_[N];
@@ -185,6 +216,43 @@ namespace stdads {
         {
             data_[i] = value;
         }
+    }
+
+    template<typename T, std::size_t N>
+    inline void Array<T, N>::Swap(Array<T, N>& other)
+    {
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            T temp = other.data_[i];
+            other.data_[i] = data_[i];
+            data_[i] = temp;
+        }
+    }
+
+    template<typename T, std::size_t N>
+    inline bool Array<T, N>::Equals(const Array& other) const
+    {
+        bool equals = true;
+        for (std::size_t i = 0; equals && i < N; ++i)
+        {
+            equals = data_[i] == other.data_[i];
+        }
+        return equals;
+    }
+
+    template<typename T, std::size_t N>
+    inline bool Array<T, N>::LessThan(const Array& other) const
+    {
+        bool lessThan = false;
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            if (!(data_[i] == other.data_[i]))
+            {
+                lessThan = data_[i] < other.data_[i];
+                break;
+            }
+        }
+        return lessThan;
     }
 
 }

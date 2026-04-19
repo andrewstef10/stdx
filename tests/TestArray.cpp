@@ -44,46 +44,8 @@ TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash) {
 }
 
 
-// ===== Destructor =====
-
-TEST(ArrayTest, Destructor_DestructsAllElements) {
-    TestObject::constructed = 0;
-    TestObject::destructed = 0;
-    stdads::Array<TestObject, 5>* arr = new stdads::Array<TestObject, 5>();
-    EXPECT_EQ(TestObject::constructed, 5);
-    EXPECT_EQ(TestObject::destructed, 0);
-
-    delete arr;
-    EXPECT_EQ(TestObject::destructed, 5);
-}
-
-
-// ===== Aggregate initialization constructor =====
-
-TEST(ArrayConstructorTest, AggregateInitialization_Zeros) {
-    stdads::Array<int, 1000> arr{};
-    for (std::size_t i = 0 ; i < 1000; ++i)
-    {
-        EXPECT_EQ(0, arr[i]);
-    }
-}
-
-TEST(ArrayConstructorTest, AggregateInitialization_Partial) {
-    stdads::Array<int, 3> arr{1, 2};
-    EXPECT_EQ(1, arr[0]);
-    EXPECT_EQ(2, arr[1]);
-    EXPECT_EQ(0, arr[2]);
-}
-
-TEST(ArrayConstructorTest, AggregateInitialization_Full) {
-    stdads::Array<int, 3> arr{1, 2, 3};
-    EXPECT_EQ(1, arr[0]);
-    EXPECT_EQ(2, arr[1]);
-    EXPECT_EQ(3, arr[2]);
-}
-
-
 // ==== Fill constructor ====
+
 TEST(ArrayConstructorTest, FillConstructor_BasicType) {
     stdads::Array<int, 1000> arr(42);
     for (std::size_t i = 0 ; i < 1000; ++i)
@@ -103,6 +65,83 @@ TEST(ArrayConstructorTest, FillConstructor_ClassType) {
     {
         EXPECT_EQ(76, arr[i].value);
     }
+}
+
+
+// ==== Other Implicitly defined functions ====
+
+TEST(ArrayTest, CopyConstructor)
+{
+    stdads::Array<int, 5> a(11);
+    stdads::Array<int, 5> b(a);
+    EXPECT_EQ(b[0], 11);
+}
+
+TEST(ArrayTest, CopyAssignment)
+{
+    stdads::Array<int, 5> a(11);
+    stdads::Array<int, 5> b;
+    b = a;
+    EXPECT_EQ(b[0], 11);
+}
+
+TEST(ArrayTest, MoveConstructor)
+{
+    stdads::Array<int, 5> a(11);
+    stdads::Array<int, 5> b(std::move(a));
+    EXPECT_EQ(b[0], 11);
+}
+
+TEST(ArrayTest, MoveAssignment)
+{
+    stdads::Array<int, 5> a(11);
+    stdads::Array<int, 5> b;
+    b = std::move(a);
+    EXPECT_EQ(b[0], 11);
+}
+
+
+// ===== Destructor =====
+
+TEST(ArrayTest, Destructor_DestructsAllElements) {
+    TestObject::constructed = 0;
+    TestObject::destructed = 0;
+    stdads::Array<TestObject, 5>* arr = new stdads::Array<TestObject, 5>();
+    EXPECT_EQ(TestObject::constructed, 5);
+    EXPECT_EQ(TestObject::destructed, 0);
+
+    delete arr;
+    EXPECT_EQ(TestObject::destructed, 5);
+}
+
+
+// ===== Aggregate initialization constructor =====
+
+TEST(ArrayTest, AggregateInitialization_Zeros) {
+    stdads::Array<int, 1000> arr{};
+    for (std::size_t i = 0 ; i < 1000; ++i)
+    {
+        EXPECT_EQ(0, arr[i]);
+    }
+}
+
+TEST(ArrayTest, AggregateInitialization_Partial) {
+    stdads::Array<int, 3> arr{1, 2};
+    EXPECT_EQ(1, arr[0]);
+    EXPECT_EQ(2, arr[1]);
+    EXPECT_EQ(0, arr[2]);
+}
+
+TEST(ArrayTest, AggregateInitialization_Full) {
+    stdads::Array<int, 3> arr{1, 2, 3};
+    EXPECT_EQ(1, arr[0]);
+    EXPECT_EQ(2, arr[1]);
+    EXPECT_EQ(3, arr[2]);
+}
+
+void ConstructInvalidArray() { stdads::Array<int, 3> arr{1, 2, 3, 4}; }
+TEST(ArrayTest, AggregateInitialization_TooManyInitializers) {
+    EXPECT_THROW(ConstructInvalidArray(), std::out_of_range);
 }
 
 
@@ -218,6 +257,19 @@ TEST(ArrayTest, Data_ConstVersion) {
 
     EXPECT_EQ(ptr[0], 7);
     EXPECT_EQ(ptr[1], 8);
+}
+
+
+// ===== Back() =====
+
+TEST(ArrayTest, FrontBack) {
+    stdads::Array<int, 3> arr{1, 2, 3};
+    const stdads::Array<int, 3> constArr{1, 2, 3};
+
+    EXPECT_EQ(arr.Front(), 1);
+    EXPECT_EQ(arr.Back(), 3);
+    EXPECT_EQ(constArr.Front(), 1);
+    EXPECT_EQ(constArr.Back(), 3);
 }
 
 
@@ -506,4 +558,214 @@ TEST(ArrayFillTest, FillsAllElementsOverrides)
     {
         EXPECT_EQ(arr[i], 42);
     }
+}
+
+
+// ==== Swap() ====
+
+TEST(ArraySwapTest, Swaps)
+{
+    stdads::Array<int, 3> a = {0, 1, 2};
+    stdads::Array<int, 3> b = {3, 4, 5};
+    a.Swap(b);
+
+    for (std::size_t i = 0; i < 3; ++i)
+    {
+        EXPECT_EQ(a[i], 3 + i);
+        EXPECT_EQ(b[i], i);
+    }
+}
+
+TEST(ArraySwapTest, SwapDoesNotAlias)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{4, 5, 6};
+
+    int* a_ptr = &a[0];
+    int* b_ptr = &b[0];
+
+    a.Swap(b);
+
+    // After swap, pointers should still refer to their own storage
+    EXPECT_EQ(&a[0], a_ptr);
+    EXPECT_EQ(&b[0], b_ptr);
+}
+
+
+
+
+// === operator== / operator!= ====
+
+TEST(ArrayRelationalTest, EqualitySameValues)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{1, 2, 3};
+
+    EXPECT_TRUE(a == b);
+    EXPECT_FALSE(a != b);
+}
+
+TEST(ArrayRelationalTest, InequalityDifferentValues)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{1, 2, 4};
+
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+}
+
+// ==============================
+// Less Than (Lexicographical)
+// ==============================
+
+TEST(ArrayRelationalTest, LessThanBasic)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{1, 2, 4};
+
+    EXPECT_TRUE(a < b);
+    EXPECT_FALSE(b < a);
+}
+
+TEST(ArrayRelationalTest, LessThanFirstElement)
+{
+    stdads::Array<int, 3> a{0, 9, 9};
+    stdads::Array<int, 3> b{1, 0, 0};
+
+    EXPECT_TRUE(a < b);
+}
+
+TEST(ArrayRelationalTest, LessThanMiddleElement)
+{
+    stdads::Array<int, 3> a{1, 2, 9};
+    stdads::Array<int, 3> b{1, 3, 0};
+
+    EXPECT_TRUE(a < b);
+}
+
+// ==============================
+// Greater Than
+// ==============================
+
+TEST(ArrayRelationalTest, GreaterThanBasic)
+{
+    stdads::Array<int, 3> a{1, 2, 4};
+    stdads::Array<int, 3> b{1, 2, 3};
+
+    EXPECT_TRUE(a > b);
+    EXPECT_FALSE(b > a);
+}
+
+// ==============================
+// Less Than or Equal
+// ==============================
+
+TEST(ArrayRelationalTest, LessEqualEqualCase)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{1, 2, 3};
+
+    EXPECT_TRUE(a <= b);
+    EXPECT_TRUE(b <= a);
+}
+
+TEST(ArrayRelationalTest, LessEqualLessCase)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{1, 2, 4};
+
+    EXPECT_TRUE(a <= b);
+    EXPECT_FALSE(b <= a);
+}
+
+// ==============================
+// Greater Than or Equal
+// ==============================
+
+TEST(ArrayRelationalTest, GreaterEqualEqualCase)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{1, 2, 3};
+
+    EXPECT_TRUE(a >= b);
+    EXPECT_TRUE(b >= a);
+}
+
+TEST(ArrayRelationalTest, GreaterEqualGreaterCase)
+{
+    stdads::Array<int, 3> a{1, 2, 4};
+    stdads::Array<int, 3> b{1, 2, 3};
+
+    EXPECT_TRUE(a >= b);
+    EXPECT_FALSE(b >= a);
+}
+
+// ==============================
+// All Operators Consistency
+// ==============================
+
+TEST(ArrayRelationalTest, OperatorConsistency)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{1, 2, 4};
+
+    EXPECT_TRUE(a < b);
+    EXPECT_TRUE(a <= b);
+    EXPECT_FALSE(a > b);
+    EXPECT_FALSE(a >= b);
+    EXPECT_FALSE(a == b);
+    EXPECT_TRUE(a != b);
+}
+
+// ==============================
+// Self Comparison
+// ==============================
+
+TEST(ArrayRelationalTest, SelfComparison)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+
+    EXPECT_TRUE(a == a);
+    EXPECT_FALSE(a != a);
+    EXPECT_FALSE(a < a);
+    EXPECT_FALSE(a > a);
+    EXPECT_TRUE(a <= a);
+    EXPECT_TRUE(a >= a);
+}
+
+// ==============================
+// Larger Array Lexicographical
+// ==============================
+
+TEST(ArrayRelationalTest, LargerArrayComparison)
+{
+    stdads::Array<int, 5> a{1, 2, 3, 4, 5};
+    stdads::Array<int, 5> b{1, 2, 3, 4, 6};
+
+    EXPECT_TRUE(a < b);
+    EXPECT_TRUE(b > a);
+}
+
+// ==============================
+// Edge Case: All Equal Except Last
+// ==============================
+
+TEST(ArrayRelationalTest, LastElementDifference)
+{
+    stdads::Array<int, 4> a{1, 2, 3, 4};
+    stdads::Array<int, 4> b{1, 2, 3, 5};
+
+    EXPECT_TRUE(a < b);
+}
+
+// ==============================
+// Edge Case: Completely Different
+// ==============================
+
+TEST(ArrayRelationalTest, CompletelyDifferent)
+{
+    stdads::Array<int, 3> a{9, 9, 9};
+    stdads::Array<int, 3> b{1, 1, 1};
+
+    EXPECT_TRUE(a > b);
 }

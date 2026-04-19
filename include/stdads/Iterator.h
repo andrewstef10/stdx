@@ -5,6 +5,8 @@
 #include <iterator>
 #include <type_traits>
 
+#include <stdads/IComparable.h>
+
 namespace stdads {
 
     // Forward declarations
@@ -75,7 +77,9 @@ namespace stdads {
     /// @tparam Category Category The type of iterator
     template<typename Derived, typename T,
         typename Difference = std::ptrdiff_t, typename Pointer = T*, typename Reference = T&, typename Category = std::forward_iterator_tag>
-    class ForwardIterator : public Iterator<Category, T, Difference, Pointer, Reference> {
+    class ForwardIterator
+        : public Iterator<Category, T, Difference, Pointer, Reference>
+        , public IEquatable<Derived> {
     public:
 
         /// @brief Pre-increment operator
@@ -95,18 +99,6 @@ namespace stdads {
             this->GetDerived().Increment();
             return temp;
         }
-
-        /// @brief Equality operator
-        /// @param lhs left hand side iterator
-        /// @param rhs right had side iterator
-        /// @return True if lhs is equal to rhs, false otherwise.
-        friend bool operator==(const Derived& lhs, const Derived& rhs) { return lhs.Equals(rhs); }
-
-        /// @brief Inequality operator 
-        /// @param lhs left hand side iterator
-        /// @param rhs right had side iterator
-        /// @return True if lhs is not equal to rhs, false otherwise.
-        friend bool operator!=(const Derived& lhs, const Derived& rhs) { return !lhs.Equals(rhs); }
 
         /// @brief Dereference operator
         /// @return A reference to this iterator object
@@ -147,7 +139,8 @@ namespace stdads {
     /// @tparam Category Category The type of iterator
     template<typename Derived, typename T,
         typename Difference = std::ptrdiff_t, typename Pointer = T*, typename Reference = T&, typename Category = std::bidirectional_iterator_tag>
-    class BidirectionalIterator : public ForwardIterator<Derived, T, Difference, Pointer, Reference, Category> {
+    class BidirectionalIterator
+        : public ForwardIterator<Derived, T, Difference, Pointer, Reference, Category> {
     public:
 
         /// @brief Pre-decrement operator
@@ -197,7 +190,9 @@ namespace stdads {
     /// @tparam Category Category The type of iterator
     template<typename Derived, typename T,
         typename Difference = std::ptrdiff_t, typename Pointer = T*, typename Reference = T&, typename Category = std::random_access_iterator_tag>
-    class RandomAccessIterator : public BidirectionalIterator<Derived, T, Difference, Pointer, Reference, Category> {
+    class RandomAccessIterator
+        : public BidirectionalIterator<Derived, T, Difference, Pointer, Reference, Category>
+        , public IComparable<Derived> {
     public:
 
         /// @brief Addition assignment operator. Advances this iterator by n.
@@ -254,30 +249,6 @@ namespace stdads {
         /// @param n Number of elements to offset from the current iterator position
         /// @return A reference to the iterator at *this + n
         Reference operator[](Difference n) const { return *(this->GetDerived() + n); }
-
-        /// @brief Less than operator
-        /// @param lhs left hand side iterator
-        /// @param rhs right had side iterator
-        /// @return True if lhs is less than rhs, false otherwise.
-        friend bool operator<(const Derived& lhs, const Derived& rhs) { return lhs.LessThan(rhs); }
-
-        /// @brief Greater than operator
-        /// @param lhs left hand side iterator
-        /// @param rhs right had side iterator
-        /// @return True if lhs is greater than rhs, false otherwise.
-        friend bool operator>(const Derived& lhs, const Derived& rhs) { return rhs.LessThan(lhs); }
-
-        /// @brief Less than or equal to operator
-        /// @param lhs left hand side iterator
-        /// @param rhs right had side iterator
-        /// @return True if lhs is less than or equal to rhs, false otherwise.
-        friend bool operator<=(const Derived& lhs, const Derived& rhs) { return !(lhs > rhs); }
-
-        /// @brief Greater than or equal to operator
-        /// @param lhs left hand side iterator
-        /// @param rhs right had side iterator
-        /// @return True if lhs is greater than or equal to rhs, false otherwise.
-        friend bool operator>=(const Derived& lhs, const Derived& rhs) { return !(lhs < rhs); }
 
     protected:
         // ==== RandomAccessIterator should not be constructed directly ====

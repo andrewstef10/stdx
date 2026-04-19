@@ -173,6 +173,13 @@ TEST(CustomForwardIteratorTest, MoveAssignment)
     EXPECT_EQ(*target, 7);
 }
 
+TEST(CustomForwardIteratorTest, Destructor)
+{
+    int arr[] = {1, 2, 3};
+    TestForwardIterator<int>* it = new  TestForwardIterator<int>(arr);
+    delete it;
+}
+
 TEST(CustomForwardIteratorTest, PreIncrement)
 {
     int arr[] = {1, 2, 3};
@@ -276,6 +283,13 @@ TEST(CustomBidirectionalIteratorTest, MoveAssignment)
     target = std::move(it);
 
     EXPECT_EQ(*target, 7);
+}
+
+TEST(CustomBidirectionalIteratorTest, Destructor)
+{
+    int arr[] = {1, 2, 3};
+    TestBidirectionalIterator<int>* it = new  TestBidirectionalIterator<int>(arr);
+    delete it;
 }
 
 TEST(CustomBidirectionalIteratorTest, PreIncrement)
@@ -412,6 +426,13 @@ TEST(CustomRandomAccessIteratorTest, MoveAssignment)
     target = std::move(it);
 
     EXPECT_EQ(*target, 7);
+}
+
+TEST(CustomRandomAccessIteratorTest, Destructor)
+{
+    int arr[] = {1, 2, 3};
+    TestRandomAccessIterator<int>* it = new  TestRandomAccessIterator<int>(arr);
+    delete it;
 }
 
 TEST(CustomRandomAccessIteratorTest, PreIncrement)
@@ -700,6 +721,13 @@ TEST(ReverseIteratorTest, MoveAssignment)
     b = std::move(a);
 
     EXPECT_EQ(*b, 3);
+}
+
+TEST(ReverseIteratorTest, Destructor)
+{
+    int arr[] = {1, 2, 3};
+    ReverseIterator<TestRandomAccessIterator<int>>* it = new ReverseIterator<TestRandomAccessIterator<int>>(TestRandomAccessIterator<int>(arr + 3));
+    delete it;
 }
 
 TEST(ReverseIteratorTest, ArrowOperator)
