@@ -170,6 +170,9 @@ TEST(ArrayTest, Empty_ReturnsFalseForNonZeroSize) {
 TEST(ArrayTest, Empty_ReturnsTrueForZeroSize) {
     stdads::Array<int, 0> arr;
     EXPECT_TRUE(arr.Empty());
+
+    stdads::Array<TestObject, 0> arr1;
+    EXPECT_TRUE(arr1.Empty());
 }
 
 
@@ -456,6 +459,20 @@ TEST(ArrayIteratorTest, SingleElementForwardIteration)
     ++cit;
     EXPECT_EQ(it, arr.End());
     EXPECT_EQ(cit, arr.CEnd());
+}
+
+TEST(ArrayIteratorTest, SizeZeroArray)
+{
+    stdads::Array<int, 0> arr;
+    const stdads::Array<int, 0> constArr{};
+
+    EXPECT_EQ(arr.Begin(), arr.End());
+    EXPECT_EQ(constArr.Begin(), constArr.End());
+    EXPECT_EQ(arr.CBegin(), arr.CEnd());
+
+    EXPECT_EQ(arr.RBegin(), arr.REnd());
+    EXPECT_EQ(constArr.RBegin(), constArr.REnd());
+    EXPECT_EQ(arr.CRBegin(), arr.CREnd());
 }
 
 

@@ -185,7 +185,7 @@ namespace stdads {
         friend bool operator>=(const Array& lhs, const Array& rhs) { return !lhs.LessThan(rhs); }
 
     
-        T data_[N];
+        T data_[N == 0 ? 1 : N];
     };
 
 
