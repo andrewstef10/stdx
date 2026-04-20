@@ -220,9 +220,11 @@ TEST(ArrayTest, At_ConstAccess) {
 
 TEST(ArrayTest, At_OutOfRange_Throws) {
     stdads::Array<int, 3> arr;
+    stdads::Array<int, 2> arr2;
 
     EXPECT_THROW(arr.At(3), std::out_of_range);
     EXPECT_THROW(arr.At(100), std::out_of_range);
+    EXPECT_THROW(arr2.At(2), std::out_of_range);
 
     try {
         arr.At(3);

@@ -20,30 +20,12 @@ namespace stdads {
         using ConstReverseIterator = stdads::ReverseIterator<ConstIterator>;
 
 
-        // /// @brief Implicitly defined default constructor.
-        // /// Creates an Array with the default compiler generated constructor for arrays.
-        // /// If T is a class type, each element's default constructor will be called.
-        // /// If T is a primitive type, the array will be initalized with garbage data.
-        // Array() = default;
+        // ==== Constructor ====
 
-        // /// @brief Implicitly defined Copy constructor.
-        // Array(const Array&) = default;
-
-        // /// @brief Implicitly defined Move constructor.
-        // Array(Array&&) = default;
-
-        // /// @brief Implicitly defined destructor.
-        // ~Array() = default;
-
-        // /// @brief Implicitly defined assignment operator.
-        // /// Overwrites every element of the array with a copy of the corresponding element of another array.
-        // /// @return Reference to this object.
-        // Array& operator=(const Array&) = default;
-
-        // /// @brief Implicitly defined move assignment operator.
-        // /// Overwrites every element of the array with the corresponding element of another array.
-        // /// @return Reference to this object.
-        // Array& operator=(Array&&) = default;
+        /// Implicitly defined default constructor.
+        /// Creates an Array with the default compiler generated constructor for arrays.
+        /// If T is a class type, each element's default constructor will be called.
+        /// If T is a primitive type, the array will be initalized with garbage data.
 
 
         // ===== Element Access =====
