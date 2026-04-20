@@ -44,63 +44,6 @@ TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash) {
 }
 
 
-// ==== Fill constructor ====
-
-TEST(ArrayConstructorTest, FillConstructor_BasicType) {
-    stdads::Array<int, 1000> arr(42);
-    for (std::size_t i = 0 ; i < 1000; ++i)
-    {
-        EXPECT_EQ(42, arr[i]);
-    }
-}
-
-TEST(ArrayConstructorTest, FillConstructor_ClassType) {
-    TestObject testObject(76); // custom test object with 76
-    TestObject::constructed = 0;
-    EXPECT_EQ(0, TestObject::constructed);
-
-    stdads::Array<TestObject, 1000> arr(testObject);
-    EXPECT_EQ(1000, TestObject::constructed);
-    for (std::size_t i = 0 ; i < 1000; ++i)
-    {
-        EXPECT_EQ(76, arr[i].value);
-    }
-}
-
-
-// ==== Other Implicitly defined functions ====
-
-TEST(ArrayTest, CopyConstructor)
-{
-    stdads::Array<int, 5> a(11);
-    stdads::Array<int, 5> b(a);
-    EXPECT_EQ(b[0], 11);
-}
-
-TEST(ArrayTest, CopyAssignment)
-{
-    stdads::Array<int, 5> a(11);
-    stdads::Array<int, 5> b;
-    b = a;
-    EXPECT_EQ(b[0], 11);
-}
-
-TEST(ArrayTest, MoveConstructor)
-{
-    stdads::Array<int, 5> a(11);
-    stdads::Array<int, 5> b(std::move(a));
-    EXPECT_EQ(b[0], 11);
-}
-
-TEST(ArrayTest, MoveAssignment)
-{
-    stdads::Array<int, 5> a(11);
-    stdads::Array<int, 5> b;
-    b = std::move(a);
-    EXPECT_EQ(b[0], 11);
-}
-
-
 // ===== Destructor =====
 
 TEST(ArrayTest, Destructor_DestructsAllElements) {
@@ -112,6 +55,9 @@ TEST(ArrayTest, Destructor_DestructsAllElements) {
 
     delete arr;
     EXPECT_EQ(TestObject::destructed, 5);
+
+    stdads::Array<int, 5>* arr2 = new stdads::Array<int, 5>();
+    delete arr2;
 }
 
 
@@ -123,13 +69,46 @@ TEST(ArrayTest, AggregateInitialization_Zeros) {
     {
         EXPECT_EQ(0, arr[i]);
     }
+
+    TestObject::constructed = 0;
+    stdads::Array<TestObject, 1000> arr2{};
+    EXPECT_EQ(1000, TestObject::constructed);
+    for (std::size_t i = 0 ; i < 1000; ++i)
+    {
+        EXPECT_EQ(42, arr2[i].value);
+    }
 }
 
 TEST(ArrayTest, AggregateInitialization_Partial) {
-    stdads::Array<int, 3> arr{1, 2};
-    EXPECT_EQ(1, arr[0]);
-    EXPECT_EQ(2, arr[1]);
-    EXPECT_EQ(0, arr[2]);
+    std::array<int, 3> arr1{1};
+    EXPECT_EQ(1, arr1[0]);
+    EXPECT_EQ(0, arr1[1]);
+    EXPECT_EQ(0, arr1[2]);
+
+    std::array<int, 3> arr2{1, 2};
+    EXPECT_EQ(1, arr2[0]);
+    EXPECT_EQ(2, arr2[1]);
+    EXPECT_EQ(0, arr2[2]);
+
+    TestObject::constructed = 0;
+    stdads::Array<TestObject, 3> arr3{TestObject(10)};
+    EXPECT_EQ(3, TestObject::constructed);
+    EXPECT_EQ(10, arr3[0].value);
+    EXPECT_EQ(42, arr3[1].value);
+    EXPECT_EQ(42, arr3[2].value);
+
+    // TestObject::constructed = 0;
+    // std::array<TestObject, 3> arr4{TestObject(10)};
+    // EXPECT_EQ(3, TestObject::constructed);
+    // EXPECT_EQ(10, arr4[0].value);
+    // EXPECT_EQ(42, arr4[1].value);
+    // EXPECT_EQ(42, arr4[2].value);
+
+    stdads::Array<TestObject, 3> arr4{TestObject(10), TestObject(11)};
+    EXPECT_EQ(6, TestObject::constructed);
+    EXPECT_EQ(10, arr4[0].value);
+    EXPECT_EQ(11, arr4[1].value);
+    EXPECT_EQ(42, arr4[2].value);
 }
 
 TEST(ArrayTest, AggregateInitialization_Full) {
@@ -139,19 +118,37 @@ TEST(ArrayTest, AggregateInitialization_Full) {
     EXPECT_EQ(3, arr[2]);
 }
 
-void ConstructInvalidArray() { stdads::Array<int, 3> arr{1, 2, 3, 4}; }
-TEST(ArrayTest, AggregateInitialization_TooManyInitializers) {
-    EXPECT_THROW(ConstructInvalidArray(), std::out_of_range);
 
-    try {
-        ConstructInvalidArray();
-    }
-    catch (const std::out_of_range& e) {
-        SUCCEED();
-    }
-    catch (...) {
-        FAIL();
-    }
+// ==== Other Implicitly defined functions ====
+
+TEST(ArrayTest, CopyConstructor)
+{
+    stdads::Array<int, 5> a{11};
+    stdads::Array<int, 5> b(a);
+    EXPECT_EQ(b[0], 11);
+}
+
+TEST(ArrayTest, CopyAssignment)
+{
+    stdads::Array<int, 5> a{11};
+    stdads::Array<int, 5> b;
+    b = a;
+    EXPECT_EQ(b[0], 11);
+}
+
+TEST(ArrayTest, MoveConstructor)
+{
+    stdads::Array<int, 5> a{11};
+    stdads::Array<int, 5> b(std::move(a));
+    EXPECT_EQ(b[0], 11);
+}
+
+TEST(ArrayTest, MoveAssignment)
+{
+    stdads::Array<int, 5> a{11};
+    stdads::Array<int, 5> b;
+    b = std::move(a);
+    EXPECT_EQ(b[0], 11);
 }
 
 
@@ -584,6 +581,18 @@ TEST(ArrayFillTest, FillsEmptyArray)
     }
 }
 
+TEST(ArrayFillTest, FillsEmptyArrayClassType)
+{
+    stdads::Array<TestObject, 5> arr;
+    const TestObject testObj(10);
+    arr.Fill(testObj);
+
+    for (std::size_t i = 0; i < 5; ++i)
+    {
+        EXPECT_EQ(arr[i].value, 10);
+    }
+}
+
 TEST(ArrayFillTest, FillsAllElementsOverrides)
 {
     stdads::Array<int, 5> arr{1, 2, 3, 4, 5};
@@ -629,6 +638,137 @@ TEST(ArraySwapTest, SwapDoesNotAlias)
     // After swap, pointers should still refer to their own storage
     EXPECT_EQ(&a[0], a_ptr);
     EXPECT_EQ(&b[0], b_ptr);
+}
+
+
+// ==== operator+ ====
+
+// ==============================
+// Basic Functionality
+// ==============================
+
+TEST(ArrayConcatTest, BasicConcatenation)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 2> b{4, 5};
+
+    auto result = a + b;
+
+    static_assert(std::is_same<decltype(result), stdads::Array<int, 5>>::value, "Wrong return type");
+
+    EXPECT_EQ(1, result[0]);
+    EXPECT_EQ(2, result[1]);
+    EXPECT_EQ(3, result[2]);
+    EXPECT_EQ(4, result[3]);
+    EXPECT_EQ(5, result[4]);
+}
+
+// ==============================
+// Different Sizes
+// ==============================
+
+TEST(ArrayConcatTest, DifferentSizes)
+{
+    stdads::Array<int, 1> a{42};
+    stdads::Array<int, 4> b{1, 2, 3, 4};
+
+    auto result = a + b;
+
+    EXPECT_EQ(42, result[0]);
+    EXPECT_EQ(1, result[1]);
+    EXPECT_EQ(2, result[2]);
+    EXPECT_EQ(3, result[3]);
+    EXPECT_EQ(4, result[4]);
+}
+
+// ==============================
+// Empty Arrays
+// ==============================
+
+TEST(ArrayConcatTest, LeftEmpty)
+{
+    stdads::Array<int, 0> a;
+    stdads::Array<int, 3> b{1, 2, 3};
+
+    stdads::Array<int, 3> result = a + b;
+
+    EXPECT_EQ(1, result[0]);
+    EXPECT_EQ(2, result[1]);
+    EXPECT_EQ(3, result[2]);
+}
+
+TEST(ArrayConcatTest, RightEmpty)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 0> b;
+
+    stdads::Array<int, 3> result = a + b;
+
+    EXPECT_EQ(1, result[0]);
+    EXPECT_EQ(2, result[1]);
+    EXPECT_EQ(3, result[2]);
+}
+
+// Uncomment to confirm compile error
+// TEST(ArrayConcatTest, BothEmpty)
+// {
+//     stdads::Array<int, 0> a;
+//     stdads::Array<int, 0> b;
+//     auto result = a + b;
+// }
+
+// ==============================
+// Order Preservation
+// ==============================
+
+TEST(ArrayConcatTest, OrderPreserved)
+{
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{4, 5, 6};
+
+    auto result = a + b;
+
+    for (int i = 0; i < 3; ++i)
+        EXPECT_EQ(a[i], result[i]);
+
+    for (int i = 0; i < 3; ++i)
+        EXPECT_EQ(b[i], result[i + 3]);
+}
+
+// ==============================
+// Chaining
+// ==============================
+
+TEST(ArrayConcatTest, Chaining)
+{
+    stdads::Array<int, 1> a{1};
+    stdads::Array<int, 1> b{2};
+    stdads::Array<int, 1> c{3};
+
+    auto result = a + b + c;
+
+    EXPECT_EQ(1, result[0]);
+    EXPECT_EQ(2, result[1]);
+    EXPECT_EQ(3, result[2]);
+}
+
+// ==============================
+// Non-Trivial Type
+// ==============================
+
+TEST(ArrayConcatTest, NonTrivialType)
+{
+    stdads::Array<TestObject, 2> a{TestObject(1), TestObject(2)};
+    stdads::Array<TestObject, 2> b{TestObject(3), TestObject(4)};
+
+    TestObject::constructed = 0;
+    auto result = a + b;
+
+    EXPECT_EQ(4, TestObject::constructed);
+    EXPECT_EQ(1, result[0].value);
+    EXPECT_EQ(2, result[1].value);
+    EXPECT_EQ(3, result[2].value);
+    EXPECT_EQ(4, result[3].value);
 }
 
 

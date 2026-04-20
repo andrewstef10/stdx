@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <stdexcept>
 
-#include <stdads/IComparable.h>
 #include <stdads/Iterator.h>
 
 namespace stdads {
@@ -13,48 +12,38 @@ namespace stdads {
      * @brief Fixed size contiguous array class.
      */
     template<typename T, std::size_t N>
-    class Array : public IComparable<Array<T, N>> {
-    public:
+    struct Array {
+
         using Iterator = T*;
         using ConstIterator = const T*;
         using ReverseIterator = stdads::ReverseIterator<Iterator>;
         using ConstReverseIterator = stdads::ReverseIterator<ConstIterator>;
 
 
-        /// @brief Implicitly defined default constructor.
-        /// Creates an Array with the default compiler generated constructor for arrays.
-        /// If T is a class type, each element's default constructor will be called.
-        /// If T is a primitive type, the array will be initalized with garbage data.
-        Array() = default;
+        // /// @brief Implicitly defined default constructor.
+        // /// Creates an Array with the default compiler generated constructor for arrays.
+        // /// If T is a class type, each element's default constructor will be called.
+        // /// If T is a primitive type, the array will be initalized with garbage data.
+        // Array() = default;
 
-        /// @brief Implicitly defined Copy constructor.
-        Array(const Array&) = default;
+        // /// @brief Implicitly defined Copy constructor.
+        // Array(const Array&) = default;
 
-        /// @brief Implicitly defined Move constructor.
-        Array(Array&&) = default;
+        // /// @brief Implicitly defined Move constructor.
+        // Array(Array&&) = default;
 
-        /// @brief Fill constructor.
-        /// Creates an array and sets each element equal to value.
-        /// @param value Value used to fill the array
-        Array(const T& value) { Fill(value); }
+        // /// @brief Implicitly defined destructor.
+        // ~Array() = default;
 
-        /// @brief Aggregate initialization constructor.
-        /// Creates an array with {T1, T2 ...} syntax
-        /// @param init The initialization list to init this to
-        Array(std::initializer_list<T> init);
+        // /// @brief Implicitly defined assignment operator.
+        // /// Overwrites every element of the array with a copy of the corresponding element of another array.
+        // /// @return Reference to this object.
+        // Array& operator=(const Array&) = default;
 
-        /// @brief Implicitly defined destructor.
-        ~Array() = default;
-
-        /// @brief Implicitly defined assignment operator.
-        /// Overwrites every element of the array with a copy of the corresponding element of another array.
-        /// @return Reference to this object.
-        Array& operator=(const Array&) = default;
-
-        /// @brief Implicitly defined move assignment operator.
-        /// Overwrites every element of the array with the corresponding element of another array.
-        /// @return Reference to this object.
-        Array& operator=(Array&&) = default;
+        // /// @brief Implicitly defined move assignment operator.
+        // /// Overwrites every element of the array with the corresponding element of another array.
+        // /// @return Reference to this object.
+        // Array& operator=(Array&&) = default;
 
 
         // ===== Element Access =====
@@ -159,35 +148,59 @@ namespace stdads {
         /// @return True if this array is less thn other, false otherwise
         bool LessThan(const Array& other) const;
 
-    private:
+        /// @brief Equality operator
+        /// @param lhs left hand side
+        /// @param rhs right had side
+        /// @return True if lhs is equal to rhs, false otherwise.
+        friend bool operator==(const Array& lhs, const Array& rhs) { return lhs.Equals(rhs); }
+
+        /// @brief Inequality operator 
+        /// @param lhs left hand side iterator
+        /// @param rhs right had side iterator
+        /// @return True if lhs is not equal to rhs, false otherwise.
+        friend bool operator!=(const Array& lhs, const Array& rhs) { return !lhs.Equals(rhs); }
+
+        /// @brief Less than operator
+        /// @param lhs left hand sid
+        /// @param rhs right had side
+        /// @return True if lhs is less than rhs, false otherwise.
+        friend bool operator<(const Array& lhs, const Array& rhs) { return lhs.LessThan(rhs); }
+
+        /// @brief Greater than operator
+        /// @param lhs left hand side
+        /// @param rhs right had side
+        /// @return True if lhs is greater than rhs, false otherwise.
+        friend bool operator>(const Array& lhs, const Array& rhs) { return rhs.LessThan(lhs); }
+
+        /// @brief Less than or equal to operator
+        /// @param lhs left hand side
+        /// @param rhs right had side
+        /// @return True if lhs is less than or equal to rhs, false otherwise.
+        friend bool operator<=(const Array& lhs, const Array& rhs) { return !rhs.LessThan(lhs); }
+
+        /// @brief Greater than or equal to operator
+        /// @param lhs left hand side
+        /// @param rhs right had side
+        /// @return True if lhs is greater than or equal to rhs, false otherwise.
+        friend bool operator>=(const Array& lhs, const Array& rhs) { return !lhs.LessThan(rhs); }
+
+    
         T data_[N];
     };
 
 
+    // ==== Array Non Member functions ====
+
+    /// @brief Combines two arrays
+    /// @tparam M Size of the fhs Array
+    /// @param lhs Left hand side Array
+    /// @param rhs Right hand side Array
+    /// @return An Array size N + M with contents of lhs and then rhs
+    template<typename T, std::size_t N, std::size_t M>
+    Array<T, N + M> operator+(const Array<T, N>& lhs, const Array<T, M>& rhs);
+
+
     // ===== Inline Array Implementation =====
-
-    template<typename T, std::size_t N>
-    inline Array<T, N>::Array(std::initializer_list<T> init)
-    {
-        if (init.size() > N)
-        {
-            throw std::out_of_range("Too many initializers");
-        }
-
-        // Copy provided values
-        size_t i = 0;
-        for (const T& value : init)
-        {
-            data_[i] = value;
-            ++i;
-        }
-        
-        // Default init the rest
-        for (; i < N; ++i)
-        {
-            data_[i] = T();
-        }
-    }
 
     template<typename T, std::size_t N>
     inline T& Array<T, N>::At(std::size_t pos)
@@ -253,6 +266,23 @@ namespace stdads {
             }
         }
         return lessThan;
+    }
+
+    template<typename T, std::size_t N, std::size_t M>
+    inline Array<T, N + M> operator+(const Array<T, N>& lhs, const Array<T, M>& rhs)
+    {
+        static_assert(N + M > 0, "Adding two arrays of size 0 is not allowed");
+        Array<T, N + M> combinedArray;
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            combinedArray[i] = lhs[i];
+        }
+        for (std::size_t i = 0; i < M; ++i)
+        {
+            combinedArray[i + N] = rhs[i];
+        }
+
+        return combinedArray;
     }
 
 }
