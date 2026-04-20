@@ -80,12 +80,12 @@ TEST(ArrayTest, AggregateInitialization_Zeros) {
 }
 
 TEST(ArrayTest, AggregateInitialization_Partial) {
-    std::array<int, 3> arr1{1};
+    stdads::Array<int, 3> arr1{1};
     EXPECT_EQ(1, arr1[0]);
     EXPECT_EQ(0, arr1[1]);
     EXPECT_EQ(0, arr1[2]);
 
-    std::array<int, 3> arr2{1, 2};
+    stdads::Array<int, 3> arr2{1, 2};
     EXPECT_EQ(1, arr2[0]);
     EXPECT_EQ(2, arr2[1]);
     EXPECT_EQ(0, arr2[2]);
@@ -96,13 +96,6 @@ TEST(ArrayTest, AggregateInitialization_Partial) {
     EXPECT_EQ(10, arr3[0].value);
     EXPECT_EQ(42, arr3[1].value);
     EXPECT_EQ(42, arr3[2].value);
-
-    // TestObject::constructed = 0;
-    // std::array<TestObject, 3> arr4{TestObject(10)};
-    // EXPECT_EQ(3, TestObject::constructed);
-    // EXPECT_EQ(10, arr4[0].value);
-    // EXPECT_EQ(42, arr4[1].value);
-    // EXPECT_EQ(42, arr4[2].value);
 
     stdads::Array<TestObject, 3> arr4{TestObject(10), TestObject(11)};
     EXPECT_EQ(6, TestObject::constructed);
