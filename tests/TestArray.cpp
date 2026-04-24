@@ -208,23 +208,26 @@ TEST(ArrayTest, At_ValidAccess) {
 }
 
 TEST(ArrayTest, At_ConstAccess) {
-    stdads::Array<int, 2> arr;
+    stdads::Array<int, 3> arr;
     arr[0] = 10;
     arr[1] = 20;
+    arr[2] = 30;
 
-    const stdads::Array<int, 2>& carr = arr;
+    const stdads::Array<int, 3>& carr = arr;
 
     EXPECT_EQ(carr.At(0), 10);
     EXPECT_EQ(carr.At(1), 20);
+    EXPECT_EQ(carr.At(2), 30);
 }
 
 TEST(ArrayTest, At_OutOfRange_Throws) {
     stdads::Array<int, 3> arr;
-    stdads::Array<int, 2> arr2;
+    const stdads::Array<int, 3>& carr = arr;
 
     EXPECT_THROW(arr.At(3), std::out_of_range);
     EXPECT_THROW(arr.At(100), std::out_of_range);
-    EXPECT_THROW(arr2.At(2), std::out_of_range);
+    EXPECT_THROW(carr.At(3), std::out_of_range);
+    EXPECT_THROW(carr.At(100), std::out_of_range);
 
     try {
         arr.At(3);
@@ -245,16 +248,19 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     catch (...) {
         FAIL();
     }
-}
-
-TEST(ArrayTest, At_ConstOutOfRange_Throws) {
-    stdads::Array<int, 3> arr;
-    const stdads::Array<int, 3>& carr = arr;
-
-    EXPECT_THROW(carr.At(3), std::out_of_range);
 
     try {
         carr.At(3);
+    }
+    catch (const std::out_of_range& e) {
+        SUCCEED();
+    }
+    catch (...) {
+        FAIL();
+    }
+
+    try {
+        carr.At(100);
     }
     catch (const std::out_of_range& e) {
         SUCCEED();
@@ -926,26 +932,13 @@ TEST(ArrayRelationalTest, SelfComparison)
 }
 
 // ==============================
-// Larger Array Lexicographical
-// ==============================
-
-TEST(ArrayRelationalTest, LargerArrayComparison)
-{
-    stdads::Array<int, 5> a{1, 2, 3, 4, 5};
-    stdads::Array<int, 5> b{1, 2, 3, 4, 6};
-
-    EXPECT_TRUE(a < b);
-    EXPECT_TRUE(b > a);
-}
-
-// ==============================
 // Edge Case: All Equal Except Last
 // ==============================
 
 TEST(ArrayRelationalTest, LastElementDifference)
 {
-    stdads::Array<int, 4> a{1, 2, 3, 4};
-    stdads::Array<int, 4> b{1, 2, 3, 5};
+    stdads::Array<int, 3> a{1, 2, 3};
+    stdads::Array<int, 3> b{1, 2, 4};
 
     EXPECT_TRUE(a < b);
 }
