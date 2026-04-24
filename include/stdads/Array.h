@@ -20,12 +20,16 @@ namespace stdads {
         using ConstReverseIterator = stdads::ReverseIterator<ConstIterator>;
 
 
-        // ==== Constructor ====
+        // ==== Implicitly-defined member functions ====
+        
+        // Constructor:
+        // Initializes the array following the rules of aggregate initialization (note that default initialization may result in indeterminate values for non-class T)
 
-        /// Implicitly defined default constructor.
-        /// Creates an Array with the default compiler generated constructor for arrays.
-        /// If T is a class type, each element's default constructor will be called.
-        /// If T is a primitive type, the array will be initalized with garbage data.
+        // Destructor:
+        // Destroys every element of the array
+
+        // operator=:
+        // Overwrites every element of the array with the corresponding element of another array
 
 
         // ===== Element Access =====
@@ -120,47 +124,54 @@ namespace stdads {
 
         /// @brief Compare two arrays for equality.
         /// The equality comparison is performed by comparing the elements sequentially using operator==, stopping at the first mismatch.
+        /// NOTE: T must be equality comparable and implement operator==
         /// @param other Other array
         /// @return True if this is equal to other, false otherwise.
         bool Equals(const Array& other) const;
 
         /// @brief Get if this array is less than other
-        /// The less than comparison is performed by comparing the elements sequentially using operator<, stopping at the first mismatch.
+        /// NOTE: T must be less than comparable and implement operator<
         /// @param other Other array
         /// @return True if this array is less thn other, false otherwise
         bool LessThan(const Array& other) const;
 
         /// @brief Equality operator
+        /// NOTE: T must be equality comparable and implement operator==
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is equal to rhs, false otherwise.
         friend bool operator==(const Array& lhs, const Array& rhs) { return lhs.Equals(rhs); }
 
-        /// @brief Inequality operator 
+        /// @brief Inequality operator
+        /// NOTE: T must be equality comparable and implement operator==
         /// @param lhs left hand side iterator
         /// @param rhs right had side iterator
         /// @return True if lhs is not equal to rhs, false otherwise.
         friend bool operator!=(const Array& lhs, const Array& rhs) { return !lhs.Equals(rhs); }
 
         /// @brief Less than operator
+        /// NOTE: T must be less than comparable and implement operator<
         /// @param lhs left hand sid
         /// @param rhs right had side
         /// @return True if lhs is less than rhs, false otherwise.
         friend bool operator<(const Array& lhs, const Array& rhs) { return lhs.LessThan(rhs); }
 
         /// @brief Greater than operator
+        /// NOTE: T must be less than comparable and implement operator<
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is greater than rhs, false otherwise.
         friend bool operator>(const Array& lhs, const Array& rhs) { return rhs.LessThan(lhs); }
 
         /// @brief Less than or equal to operator
+        /// NOTE: T must be less than comparable and implement operator<
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is less than or equal to rhs, false otherwise.
         friend bool operator<=(const Array& lhs, const Array& rhs) { return !rhs.LessThan(lhs); }
 
         /// @brief Greater than or equal to operator
+        /// NOTE: T must be less than comparable and implement operator<
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is greater than or equal to rhs, false otherwise.

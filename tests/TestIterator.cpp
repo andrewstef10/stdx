@@ -28,7 +28,8 @@ public:
     // ==== Required by ForwardIterator ====
     void Increment() { ++ptr_; }
     bool Equals(const TestForwardIterator& other) const { return ptr_ == other.ptr_; }
-    T& Dereference() const { return *ptr_; }
+    T& operator*() const { return *ptr_; }
+    T* operator->() const { return ptr_; }
 
 private:
     T* ptr_;
@@ -55,7 +56,8 @@ public:
     // ==== Required by ForwardIterator ====
     void Increment() { ++ptr_; }
     bool Equals(const TestBidirectionalIterator& other) const { return ptr_ == other.ptr_; }
-    T& Dereference() const { return *ptr_; }
+    T& operator*() const { return *ptr_; }
+    T* operator->() const { return ptr_; }
 
     // ==== Required by Bidirectional Iterator ====
     void Decrement() { --ptr_; }
@@ -85,7 +87,8 @@ public:
     // ==== Required by ForwardIterator ====
     void Increment() { ++ptr_; }
     bool Equals(const TestRandomAccessIterator& other) const { return ptr_ == other.ptr_; }
-    T& Dereference() const { return *ptr_; }
+    T& operator*() const { return *ptr_; }
+    T* operator->() const { return ptr_; }
 
     // ==== Required by Bidirectional Iterator ====
     void Decrement() { --ptr_; }
