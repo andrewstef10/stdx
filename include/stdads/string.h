@@ -2,6 +2,7 @@
 #define string_H
 
 #include <cstddef>
+#include <stdads/iterator.h>
 
 namespace stdads {
 
@@ -146,6 +147,11 @@ namespace stdads {
     class string {
     public:
 
+        using iterator = char*;
+        using const_iterator = const char*;
+        using reverse_iterator = stdads::reverse_iterator<iterator>;
+        using const_reverse_iterator = stdads::reverse_iterator<const_iterator>;
+
         /**
          * @brief Default constructor.
          *
@@ -258,6 +264,37 @@ namespace stdads {
          */
         char& operator[](std::size_t pos) { return get_data()[pos]; }
         const char& operator[](std::size_t pos) const { return get_data()[pos]; }
+
+
+        //////////////////////// Iterators ////////////////////////
+
+        /// @brief Returns a contiguous iterator to the first element of *this.
+        /// If *this is empty, the returned iterator will be equal to end().
+        /// @return contiguous iterator to the first element.
+        iterator begin() { return iterator(get_data()); }
+        const_iterator begin() const { return const_iterator(get_data()); }
+        const_iterator cbegin() const { return const_iterator(get_data()); }
+
+        /// @brief Returns a contiguous iterator past the last element of *this.
+        /// This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+        /// @return contiguous iterator past the last element.
+        iterator end() { return iterator(get_data() + m_size); }
+        const_iterator end() const { return const_iterator(get_data() + m_size); }
+        const_iterator cend() const { return const_iterator(get_data() + m_size); }
+
+        /// @brief Returns a reverse contiguous iterator to the first element of the reversed *this. It corresponds to the last element of the non-reversed *this.
+        /// If *this is empty, the returned iterator will be equal to end().
+        /// @return Reverse contiguous iterator to the first element.
+        reverse_iterator rbegin() { return reverse_iterator(get_data() + m_size); }
+        const_reverse_iterator rbegin() const { return const_reverse_iterator(get_data() + m_size); }
+        const_reverse_iterator crbegin() const { return const_reverse_iterator(get_data() + m_size); }
+
+        /// @brief Returns a reverse contiguous iterator past the last element of the reversed *this. It corresponds to the element preceding the first element of the non-reversed *this.
+        /// This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+        /// @return Reverse contiguous iterator to the element following the last element.
+        reverse_iterator rend() { return reverse_iterator(get_data()); }
+        const_reverse_iterator rend() const { return const_reverse_iterator(get_data()); }
+        const_reverse_iterator crend() const { return const_reverse_iterator(get_data()); }
 
 
         //////////////////////// Modifiers ////////////////////////

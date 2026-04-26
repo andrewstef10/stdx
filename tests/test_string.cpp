@@ -1258,3 +1258,240 @@ TEST(StringIndexTests, ConstObjectAccess)
     EXPECT_EQ('o', s[4]);
     EXPECT_EQ('\0', s[5]);
 }
+
+
+// ===== begin() / end() =====
+
+TEST(StringIteratorTest, BeginPointsToFirstElement)
+{
+    stdads::string s = "hello";
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = s.cbegin();
+    EXPECT_EQ(*it, 'h');
+    EXPECT_EQ(*cit, 'h');
+}
+
+TEST(StringIteratorTest, EndPointsPastLastElement)
+{
+    stdads::string s = "hello";
+    const stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::iterator begin = s.begin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::iterator end = s.end();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cend = s.cend();
+    EXPECT_EQ(end - begin, 5);
+    EXPECT_EQ(begin - end, -5);
+    EXPECT_EQ(cend - begin, 5);
+    EXPECT_EQ(begin - cend, -5);
+
+    // end is not dereferenceable. Ensure decrementing gives us the last element
+    EXPECT_EQ(*--end, 'o');
+    EXPECT_EQ(*--cend, 'o');
+}
+
+TEST(StringIteratorTest, IterateForwardFromBeginToEnd)
+{
+    stdads::string s = "hello";
+
+    const char expected[] = {'h', 'e', 'l', 'l', 'o'};
+    int i = 0;
+    int j = 0;
+
+    for (stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin(); it != s.end(); ++it)
+    {
+        EXPECT_EQ(*it, expected[i++]);
+    }
+    for (stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = s.cbegin(); cit != s.cend(); ++cit)
+    {
+        EXPECT_EQ(*cit, expected[j++]);
+    }
+    
+    EXPECT_EQ(5, i);
+    EXPECT_EQ(5, j);
+}
+
+TEST(StringIteratorTest, IterateForwardRangeBasedForLoop)
+{
+    stdads::string s = "hello";
+
+    const char expected[] = {'h', 'e', 'l', 'l', 'o'};
+    int i = 0;
+
+    for (auto& x : s)
+    {
+        EXPECT_EQ(x, expected[i++]);
+    }
+    
+    EXPECT_EQ(5, i);
+}
+
+TEST(StringIteratorTest, ConstIterationMatchesNonConst)
+{
+    stdads::string s = "hello";
+
+    int i = 0;
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = s.cbegin();
+    for (; it != s.end() && cit != s.cend(); ++it, ++cit)
+    {
+        EXPECT_EQ(*it, *cit);
+        ++i;
+    }
+    EXPECT_EQ(5, i);
+}
+
+TEST(StringIteratorTest, BeginEqualsEndForEmptyString)
+{
+    stdads::string s = "";
+    EXPECT_EQ(s.begin(), s.end());
+    EXPECT_EQ(s.cbegin(), s.cend());
+}
+
+TEST(StringIteratorTest, ConvertIteratorToConstIterator)
+{
+    stdads::string s = "hello";
+
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = it;
+
+    const stdads::string cs = "hello";
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cbegin = cs.begin(); // must be const iterator
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cend = cs.end(); // must be const iterator
+}
+
+TEST(StringIteratorTest, SingleElementForwardIteration)
+{
+    stdads::string s = "h";
+
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = s.cbegin();
+    EXPECT_EQ(*it, 'h');
+    EXPECT_EQ(*cit, 'h');
+
+    ++it;
+    ++cit;
+    EXPECT_EQ(it, s.end());
+    EXPECT_EQ(cit, s.cend());
+}
+
+TEST(StringIteratorTest, SizeZeroString)
+{
+    stdads::string s = "";
+    const stdads::string consts = s;
+
+    EXPECT_EQ(s.begin(), s.end());
+    EXPECT_EQ(consts.begin(), consts.end());
+    EXPECT_EQ(s.cbegin(), s.cend());
+
+    EXPECT_EQ(s.rbegin(), s.rend());
+    EXPECT_EQ(consts.rbegin(), consts.rend());
+    EXPECT_EQ(s.crbegin(), s.crend());
+}
+
+
+// ===== rbegin() / rend() =====
+
+TEST(StringIteratorTest, RBeginPointsToLastElement)
+{
+    stdads::string s = "hello";
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = s.crbegin();
+    EXPECT_EQ(*rit, 'o');
+    EXPECT_EQ(*crit, 'o');
+}
+
+TEST(StringIteratorTest, REndPointsBeforeFirstElement)
+{
+    stdads::string s = "hello";
+
+    const stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rbegin = s.rbegin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rend = s.rend();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crend = s.crend();
+    EXPECT_EQ(rend - rbegin, 5);
+    EXPECT_EQ(rbegin - rend, -5);
+    EXPECT_EQ(crend - rbegin, 5);
+    EXPECT_EQ(rbegin - crend, -5);
+
+    // end is not dereferenceable. Ensure decrementing gives us the last element
+    EXPECT_EQ(*--rend, 'h');
+    EXPECT_EQ(*--crend, 'h');
+}
+
+TEST(StringIteratorTest, IterateReverseFromRBeginToREnd)
+{
+    stdads::string s = "hello";
+
+    const char expected[] = {'o', 'l', 'l', 'e', 'h'};
+    int i = 0;
+    int j = 0;
+
+    for (stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin(); rit != s.rend(); ++rit)
+    {
+        EXPECT_EQ(*rit, expected[i++]);
+    }
+    for (stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = s.crbegin(); crit != s.crend(); ++crit)
+    {
+        EXPECT_EQ(*crit, expected[j++]);
+    }
+    
+    EXPECT_EQ(5, i);
+    EXPECT_EQ(5, j);
+}
+
+TEST(StringIteratorTest, ConstReverseIterationMatchesNonConst)
+{
+    stdads::string s = "hello";
+
+    int i = 0;
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = s.crbegin();
+    for (; rit != s.rend() && crit != s.crend(); ++rit, ++crit)
+    {
+        EXPECT_EQ(*rit, *crit);
+        ++i;
+    }
+    EXPECT_EQ(5, i);
+}
+
+TEST(StringIteratorTest, RBeginEqualsREndForEmptyString)
+{
+    stdads::string s = "";
+    EXPECT_EQ(s.rbegin(), s.rend());
+    EXPECT_EQ(s.crbegin(), s.crend());
+}
+
+TEST(StringIteratorTest, ConvertReverseIteratorToConstReverseIterator)
+{
+    stdads::string s = "hello";
+
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = rit;
+
+    const stdads::string cs = "hello";
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crbegin = cs.rbegin(); // must be const iterator
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crend = cs.rend(); // must be const iterator
+}
+
+TEST(StringIteratorTest, ReverseIteratorBaseRelationship)
+{
+    stdads::string s = "hello";
+
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::iterator base = rit.base();
+
+    // base() should point to end()
+    EXPECT_EQ(base, s.end());
+}
+
+TEST(StringIteratorTest, SingleElementReverseIteration)
+{
+    stdads::string s = "h";
+
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
+    stdads::string<stdads::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = s.crbegin();
+    EXPECT_EQ(*rit, 'h');
+    EXPECT_EQ(*crit, 'h');
+
+    ++rit;
+    ++crit;
+    EXPECT_EQ(rit, s.rend());
+    EXPECT_EQ(crit, s.crend());
+}
