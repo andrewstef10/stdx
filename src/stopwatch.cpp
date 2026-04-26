@@ -1,4 +1,4 @@
-#include <stdads/Stopwatch.h>
+#include <stdads/stopwatch.h>
 
 namespace stdads {
 

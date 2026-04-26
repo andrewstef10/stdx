@@ -3,7 +3,7 @@
 #include <numeric>
 #include <vector>
 
-#include <stdads/Iterator.h>
+#include <stdads/iterator.h>
 
 
 /// @brief Test class used to test creating a custom forward iterator
