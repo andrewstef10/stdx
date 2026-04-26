@@ -9,7 +9,7 @@ namespace stdads {
      * @param c The character to check.
      * @return True if c is a letter a-z ignoring case, false otherwise.
      */
-    bool IsAlpha(char c);
+    bool is_alpha(char c);
 
      /**
      * @brief Checks whether c is a decimal digit.
@@ -17,7 +17,7 @@ namespace stdads {
      * @param c The character to check.
      * @return True if c is 0 - 9, false otherwise.
      */
-    bool IsDigit(char c);
+    bool is_digit(char c);
 
     /**
      * @brief Checks whether c is a digit of the provided base.
@@ -26,7 +26,7 @@ namespace stdads {
      * @param base The base of the character to check in range 1 - 36.
      * @return True if character c is a valid digit of base base, false otherwise.
      */
-    bool IsDigitOfBase(char c, int base);
+    bool is_digit_of_base(char c, int base);
 
     /**
      * @brief Convert a character c to a digit where c is a valid digit of the provided base.
@@ -35,7 +35,7 @@ namespace stdads {
      * @param base The base of the character to convert (default 10 for decimal)
      * @return Digit representation of character c, or -1 if the character is not a valid character of base base.
      */
-    int CharToDigit(char c, int base = 10);
+    int char_to_digit(char c, int base = 10);
 
     /**
      * @brief Convert a uppercase letter (A-Z) to lowercase.
@@ -46,7 +46,7 @@ namespace stdads {
      * @param c Character to be converted.
      * @return The lowercase equivalent to c, if such value exists, or c (unchanged) otherwise.
      */
-    char ToLower(char c);
+    char to_lower(char c);
 
     /**
      * @brief Convert a lowercase letter (a-z) to uppercase.
@@ -57,7 +57,7 @@ namespace stdads {
      * @param c Character to be converted.
      * @return The uppercase equivalent to c, if such value exists, or c (unchanged) otherwise.
      */
-    char ToUpper(char c);
+    char to_upper(char c);
 
 }
 

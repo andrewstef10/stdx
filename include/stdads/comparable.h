@@ -1,70 +1,70 @@
-#ifndef ICOMPARABLE_H
-#define ICOMPARABLE_H
+#ifndef COMPARABLE_H
+#define COMPARABLE_H
 
-#include <stdads/IEquatable.h>
+#include <stdads/equatable.h>
 
 namespace stdads {
 
     /// @brief CRTP base class that provides full comparison operators.
     ///
-    /// This class extends @ref IEquatable to automatically provide all relational
+    /// This class extends @ref equatable to automatically provide all relational
     /// comparison operators (`<`, `>`, `<=`, `>=`) for a derived type by requiring
     /// the implementation of a single member function:
     ///
-    ///     bool LessThan(const Derived& other) const;
+    ///     bool less_than(const Derived& other) const;
     ///
-    /// All comparison operators are defined in terms of `LessThan`, ensuring
+    /// All comparison operators are defined in terms of `less_than`, ensuring
     /// consistent and minimal implementation effort for derived types.
     ///
     /// Example usage:
     /// @code
-    /// struct MyType : public IComparable<MyType> {
+    /// struct MyType : public comparable<MyType> {
     ///     int value;
     ///
-    ///     bool Equals(const MyType& other) const {
+    ///     bool equals(const MyType& other) const {
     ///         return value == other.value;
     ///     }
     ///
-    ///     bool LessThan(const MyType& other) const {
+    ///     bool less_than(const MyType& other) const {
     ///         return value < other.value;
     ///     }
     /// };
     /// @endcode
     ///
-    /// @note The LessThan function should define a strict weak ordering:
-    /// - Irreflexive: a.LessThan(a) == false
-    /// - Asymmetric: if a.LessThan(b) then !b.LessThan(a)
-    /// - Transitive: if a.LessThan(b) and b.LessThan(c), then a.LessThan(c)
+    /// @note The less_than function should define a strict weak ordering:
+    /// - Irreflexive: a.less_than(a) == false
+    /// - Asymmetric: if a.less_than(b) then !b.less_than(a)
+    /// - Transitive: if a.less_than(b) and b.less_than(c), then a.less_than(c)
     ///
     /// @tparam Derived The type that inherits from this class and implements:
-    /// - bool Equals(const Derived&) const  (from IEquatable)
-    /// - bool LessThan(const Derived&) const
+    /// - bool equals(const Derived&) const  (from equatable)
+    /// - bool less_than(const Derived&) const
     template<typename Derived>
-    struct IComparable : public IEquatable<Derived> {
+    struct comparable : public equatable<Derived> {
 
         /// @brief Less than operator
         /// @param lhs left hand sid
         /// @param rhs right had side
         /// @return True if lhs is less than rhs, false otherwise.
-        friend bool operator<(const Derived& lhs, const Derived& rhs) { return lhs.LessThan(rhs); }
+        friend bool operator<(const Derived& lhs, const Derived& rhs) { return lhs.less_than(rhs); }
 
         /// @brief Greater than operator
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is greater than rhs, false otherwise.
-        friend bool operator>(const Derived& lhs, const Derived& rhs) { return rhs.LessThan(lhs); }
+        friend bool operator>(const Derived& lhs, const Derived& rhs) { return rhs.less_than(lhs); }
 
         /// @brief Less than or equal to operator
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is less than or equal to rhs, false otherwise.
-        friend bool operator<=(const Derived& lhs, const Derived& rhs) { return !rhs.LessThan(lhs); }
+        friend bool operator<=(const Derived& lhs, const Derived& rhs) { return !rhs.less_than(lhs); }
 
         /// @brief Greater than or equal to operator
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is greater than or equal to rhs, false otherwise.
-        friend bool operator>=(const Derived& lhs, const Derived& rhs) { return !lhs.LessThan(rhs); }
+        friend bool operator>=(const Derived& lhs, const Derived& rhs) { return !lhs.less_than(rhs); }
     };
 }
 

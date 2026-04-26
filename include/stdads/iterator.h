@@ -1,23 +1,23 @@
-#ifndef ITERATORBASE_H
-#define ITERATORBASE_H
+#ifndef ITERATOR_H
+#define ITERATOR_H
 
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
 
-#include <stdads/IComparable.h>
+#include <stdads/comparable.h>
 
 namespace stdads {
 
     // Forward declarations
     template<typename Derived, typename T, typename Difference, typename Pointer, typename Reference, typename Category>
-    class ForwardIterator;
+    class forward_iterator;
 
     template<typename Derived, typename T, typename Difference, typename Pointer, typename Reference, typename Category>
-    class BidirectionalIterator;
+    class bidirectional_iterator;
 
     template<typename Derived, typename T, typename Difference, typename Pointer, typename Reference, typename Category>
-    class RandomAccessIterator;
+    class random_access_iterator;
 
 
     /// @brief Iterator base class selector tags
@@ -32,16 +32,21 @@ namespace stdads {
     /// @tparam Reference Iterator reference
     template<typename Category, typename Derived, typename T,
         typename Difference = std::ptrdiff_t, typename Pointer = T*, typename Reference = T&>
-    struct IteratorBaseSelector;
+    struct iterator_base_selector;
 
     template<typename Derived, typename T, typename Difference, typename Pointer, typename Reference>
-    struct IteratorBaseSelector<std::bidirectional_iterator_tag, Derived, T, Difference, Pointer, Reference> {
-        using type = BidirectionalIterator<Derived, T, Difference, Pointer, Reference, std::bidirectional_iterator_tag>;
+    struct iterator_base_selector<std::forward_iterator_tag, Derived, T, Difference, Pointer, Reference> {
+        using type = forward_iterator<Derived, T, Difference, Pointer, Reference, std::forward_iterator_tag>;
     };
 
     template<typename Derived, typename T, typename Difference, typename Pointer, typename Reference>
-    struct IteratorBaseSelector<std::random_access_iterator_tag, Derived, T, Difference, Pointer, Reference> {
-        using type = RandomAccessIterator<Derived, T, Difference, Pointer, Reference, std::random_access_iterator_tag>;
+    struct iterator_base_selector<std::bidirectional_iterator_tag, Derived, T, Difference, Pointer, Reference> {
+        using type = bidirectional_iterator<Derived, T, Difference, Pointer, Reference, std::bidirectional_iterator_tag>;
+    };
+
+    template<typename Derived, typename T, typename Difference, typename Pointer, typename Reference>
+    struct iterator_base_selector<std::random_access_iterator_tag, Derived, T, Difference, Pointer, Reference> {
+        using type = random_access_iterator<Derived, T, Difference, Pointer, Reference, std::random_access_iterator_tag>;
     };
 
 
@@ -53,7 +58,7 @@ namespace stdads {
     /// @tparam Reference Reference to the iterators value type
     template<typename Category, typename T,
         typename Difference = std::ptrdiff_t, typename Pointer = T*, typename Reference = T&>
-    struct Iterator {
+    struct iterator {
         using iterator_category = Category;
         using value_type        = T;
         using difference_type   = Difference;
@@ -67,8 +72,8 @@ namespace stdads {
     /// This class implements all forward iterator requirements, and requires Derived to implement the following:
     ///     - Reference operator*() const
     ///     - Pointer operator->() const
-    ///     - void Increment()
-    ///     - bool Equals(const MyIterator& other) const   
+    ///     - void increment()
+    ///     - bool equals(const MyIterator& other) const   
     ///
     /// @tparam Derived CRTP Derived class
     /// @tparam T The iterator's underlying value type
@@ -78,17 +83,17 @@ namespace stdads {
     /// @tparam Category Category The type of iterator
     template<typename Derived, typename T,
         typename Difference = std::ptrdiff_t, typename Pointer = T*, typename Reference = T&, typename Category = std::forward_iterator_tag>
-    class ForwardIterator
-        : public Iterator<Category, T, Difference, Pointer, Reference>
-        , public IEquatable<Derived> {
+    class forward_iterator
+        : public iterator<Category, T, Difference, Pointer, Reference>
+        , public equatable<Derived> {
     public:
 
         /// @brief Pre-increment operator
         /// @return A reference to this iterator after the increment
         Derived& operator++()
         {
-            this->GetDerived().Increment();
-            return this->GetDerived();
+            this->derived().increment();
+            return this->derived();
         }
 
         /// @brief Post-increment operator
@@ -96,20 +101,20 @@ namespace stdads {
         /// @return Copy of this iterator before the increment
         Derived operator++(int)
         {
-            Derived temp = this->GetDerived();
-            this->GetDerived().Increment();
+            Derived temp = this->derived();
+            this->derived().increment();
             return temp;
         }
 
     protected:
-        // ==== ForwardIterator should not be constructed directly ====
-        ForwardIterator() = default;
-        ~ForwardIterator() = default;
+        // ==== forward_iterator should not be constructed directly ====
+        forward_iterator() = default;
+        ~forward_iterator() = default;
 
         /// @brief Helper function to cast this to a Derived reference
         /// @return Derived reference
-        Derived&       GetDerived()       { return static_cast<Derived&>(*this); }
-        const Derived& GetDerived() const { return static_cast<const Derived&>(*this); }
+        Derived&       derived()       { return static_cast<Derived&>(*this); }
+        const Derived& derived() const { return static_cast<const Derived&>(*this); }
     };
 
 
@@ -118,9 +123,9 @@ namespace stdads {
     /// This class implements all bidirectional iterator requirements, and requires Derived to implement the following:
     ///     - Reference operator*() const
     ///     - Pointer operator->() const
-    ///     - void Increment()
-    ///     - bool Equals(const MyIterator& other) const
-    ///     - void Decrement()
+    ///     - void increment()
+    ///     - bool equals(const MyIterator& other) const
+    ///     - void decrement()
     ///
     /// @tparam Derived CRTP Derived class
     /// @tparam T The iterator's underlying value type
@@ -130,16 +135,16 @@ namespace stdads {
     /// @tparam Category Category The type of iterator
     template<typename Derived, typename T,
         typename Difference = std::ptrdiff_t, typename Pointer = T*, typename Reference = T&, typename Category = std::bidirectional_iterator_tag>
-    class BidirectionalIterator
-        : public ForwardIterator<Derived, T, Difference, Pointer, Reference, Category> {
+    class bidirectional_iterator
+        : public forward_iterator<Derived, T, Difference, Pointer, Reference, Category> {
     public:
 
         /// @brief Pre-decrement operator
         /// @return A reference to this iterator after the decrement
         Derived& operator--()
         {
-            this->GetDerived().Decrement();
-            return this->GetDerived();
+            this->derived().decrement();
+            return this->derived();
         }
 
         /// @brief Post-decrement operator
@@ -147,15 +152,15 @@ namespace stdads {
         /// @return Copy of this iterator before the decrement
         Derived operator--(int)
         {
-            Derived temp = this->GetDerived();
-            this->GetDerived().Decrement();
+            Derived temp = this->derived();
+            this->derived().decrement();
             return temp;
         }
 
     protected:
-        // ==== BidirectionalIterator should not be constructed directly ====
-        BidirectionalIterator() = default;
-        ~BidirectionalIterator() = default;
+        // ==== bidirectional_iterator should not be constructed directly ====
+        bidirectional_iterator() = default;
+        ~bidirectional_iterator() = default;
     };
 
 
@@ -164,12 +169,12 @@ namespace stdads {
     /// This class implements all random access iterator requirements, and requires Derived to implement the following:
     ///     - Reference operator*() const
     ///     - Pointer operator->() const
-    ///     - void Increment()
-    ///     - bool Equals(const MyIterator& other) const
-    ///     - void Decrement()
-    ///     - void Advance(Difference n)
-    ///     - Difference DistanceTo(const MyIterator& other) const
-    ///     - bool LessThan(const MyIterator& other) const
+    ///     - void increment()
+    ///     - bool equals(const MyIterator& other) const
+    ///     - void decrement()
+    ///     - void advance(Difference n)
+    ///     - Difference distance_to(const MyIterator& other) const
+    ///     - bool less_than(const MyIterator& other) const
     ///
     /// @tparam Derived CRTP Derived class
     /// @tparam T The iterator's underlying value type
@@ -179,9 +184,9 @@ namespace stdads {
     /// @tparam Category Category The type of iterator
     template<typename Derived, typename T,
         typename Difference = std::ptrdiff_t, typename Pointer = T*, typename Reference = T&, typename Category = std::random_access_iterator_tag>
-    class RandomAccessIterator
-        : public BidirectionalIterator<Derived, T, Difference, Pointer, Reference, Category>
-        , public IComparable<Derived> {
+    class random_access_iterator
+        : public bidirectional_iterator<Derived, T, Difference, Pointer, Reference, Category>
+        , public comparable<Derived> {
     public:
 
         /// @brief Addition assignment operator. Advances this iterator by n.
@@ -189,8 +194,8 @@ namespace stdads {
         /// @return A reference to this iterator
         Derived& operator+=(Difference n)
         {
-            this->GetDerived().Advance(n);
-            return this->GetDerived();
+            this->derived().advance(n);
+            return this->derived();
         }
 
         /// @brief Subtraction assignment operator. Retreats this iterator by n.
@@ -198,8 +203,8 @@ namespace stdads {
         /// @return A reference to this iterator
         Derived& operator-=(Difference n)
         {
-            this->GetDerived().Advance(-n);
-            return this->GetDerived();
+            this->derived().advance(-n);
+            return this->derived();
         }
 
         /// @brief Addition operator
@@ -207,7 +212,7 @@ namespace stdads {
         /// @return Iterator advanced by n
         Derived operator+(Difference n) const
         {
-            Derived temp = this->GetDerived();
+            Derived temp = this->derived();
             temp += n;
             return temp;
         }
@@ -223,7 +228,7 @@ namespace stdads {
         /// @return An Iterator retreated by n
         Derived operator-(Difference n) const
         {
-            Derived temp = this->GetDerived();
+            Derived temp = this->derived();
             temp -= n;
             return temp;
         }
@@ -232,25 +237,25 @@ namespace stdads {
         /// @param lhs left hand side iterator
         /// @param rhs right had side iterator
         /// @return The difference between two iterators
-        friend Difference operator-(const Derived& lhs, const Derived& rhs) { return lhs.DistanceTo(rhs); }
+        friend Difference operator-(const Derived& lhs, const Derived& rhs) { return lhs.distance_to(rhs); }
         
         /// @brief Subscript operator
         /// @param n Number of elements to offset from the current iterator position
         /// @return A reference to the iterator at *this + n
-        Reference operator[](Difference n) const { return *(this->GetDerived() + n); }
+        Reference operator[](Difference n) const { return *(this->derived() + n); }
 
     protected:
-        // ==== RandomAccessIterator should not be constructed directly ====
-        RandomAccessIterator() = default;
-        ~RandomAccessIterator() = default;
+        // ==== random_access_iterator should not be constructed directly ====
+        random_access_iterator() = default;
+        ~random_access_iterator() = default;
     };
 
 
     /// @brief Class to reverse an iterator
     /// @tparam Iterator The base iterator class to reverse
     template <typename Iterator>
-    class ReverseIterator
-        : public IteratorBaseSelector<typename std::iterator_traits<Iterator>::iterator_category, ReverseIterator<Iterator>
+    class reverse_iterator
+        : public iterator_base_selector<typename std::iterator_traits<Iterator>::iterator_category, reverse_iterator<Iterator>
         , typename std::iterator_traits<Iterator>::value_type
         , typename std::iterator_traits<Iterator>::difference_type
         , typename std::iterator_traits<Iterator>::pointer
@@ -264,54 +269,54 @@ namespace stdads {
         using reference         = typename std::iterator_traits<Iterator>::reference;
         using pointer           = typename std::iterator_traits<Iterator>::pointer;
 
-        static_assert(std::is_base_of<std::bidirectional_iterator_tag, iterator_category>::value, "ReverseIterator requires bidirectional or better iterator");
+        static_assert(std::is_base_of<std::bidirectional_iterator_tag, iterator_category>::value, "reverse_iterator requires bidirectional or better iterator");
 
 
         /// @brief Default constructor
         /// Reverses Iterator calling Iterator's default constructor
         /// NOTE: Constructor is only enabled for iterators that are at least bidirectional iterators
-        ReverseIterator() : base_() {}
+        reverse_iterator() : m_base() {}
 
         /// @brief Iterator constructor. Reverses Iterator it
         /// @param it Iterator to reverse
-        ReverseIterator(Iterator it) : base_(it) {}
+        reverse_iterator(Iterator it) : m_base(it) {}
 
         /// @brief Implicitly defined Copy constructor.
-        ReverseIterator(const ReverseIterator&) = default;
+        reverse_iterator(const reverse_iterator&) = default;
 
         /// @brief Implicitly defined Move constructor.
-        ReverseIterator(ReverseIterator&&) = default;
+        reverse_iterator(reverse_iterator&&) = default;
 
         /// @brief Implicitly defined destructor.
-        ~ReverseIterator() = default;
+        ~reverse_iterator() = default;
 
         /// @brief Implicitly defined assignment operator
         /// @return Reference to this object
-        ReverseIterator& operator=(const ReverseIterator&) = default;
+        reverse_iterator& operator=(const reverse_iterator&) = default;
 
         /// @brief Implicitly defined move assignment operator
         /// @return Reference to this object
-        ReverseIterator& operator=(ReverseIterator&&) = default;
+        reverse_iterator& operator=(reverse_iterator&&) = default;
 
         /// @brief Const conversion constructor
-        /// @tparam OtherIterator The const version this ReverseIterator
+        /// @tparam OtherIterator The const version this reverse_iterator
         /// NOTE: This constructor is only enabled if OtherIterator::pointer is convertible to this::pointer
         /// @param other The other iterator
         template <
             typename OtherIterator,
             typename = std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<OtherIterator>::pointer, pointer>>
         >
-        ReverseIterator(const ReverseIterator<OtherIterator>& other) : base_(other.Base()) {}
+        reverse_iterator(const reverse_iterator<OtherIterator>& other) : m_base(other.base()) {}
 
         /// @brief Get the reverse iterator's base iterator
         /// @return Base iterator object
-        Iterator Base() const { return base_; }
+        Iterator base() const { return m_base; }
 
         /// @brief Dereference operator
         /// @return A reference to this reverse iterator object
         reference operator*() const
         {
-            Iterator tmp = base_;
+            Iterator tmp = m_base;
             return *--tmp;
         }
 
@@ -319,41 +324,41 @@ namespace stdads {
         /// @return A pointer to this reverse iterator object
         pointer operator->() const
         {
-            Iterator tmp = base_;
+            Iterator tmp = m_base;
             --tmp;
             return tmp.operator->();
         }
 
         /// @brief Increments the reverse iterator
-        void Increment() { --base_; }
+        void increment() { --m_base; }
 
-        /// @brief Determines if ReverseIterator other is equal to this
-        /// @param other Other ReverseIterator
+        /// @brief Determines if reverse_iterator other is equal to this
+        /// @param other Other reverse_iterator
         /// @return True if other is equal to this, false otherwise
-        bool Equals(const ReverseIterator& other) const { return base_ == other.base_; }
+        bool equals(const reverse_iterator& other) const { return m_base == other.m_base; }
 
         /// @brief Decrements the reverse iterator
-        void Decrement() { ++base_; };
+        void decrement() { ++m_base; };
 
         /// @brief Advances the reverse iterator
         /// NOTE: Function is only available for iterators that are at least random access iterators
         /// @param n Number of elements to advance
-        void Advance(difference_type n) { base_ -= n; };
+        void advance(difference_type n) { m_base -= n; };
 
         /// @brief Gets the distance from this iterator to other
         /// NOTE: Function is only available for iterators that are at least random access iterators
         /// @param other Other reverse iterator
         /// @return The distance between this and other
-        difference_type DistanceTo(const ReverseIterator& other) const { return other.base_ - base_; }
+        difference_type distance_to(const reverse_iterator& other) const { return other.m_base - m_base; }
 
-        /// @brief Determines if ReverseIterator other is less than this
+        /// @brief Determines if reverse_iterator other is less than this
         /// NOTE: Function is only available for iterators that are at least random access iterators
-        /// @param other Other ReverseIterator
+        /// @param other Other reverse_iterator
         /// @return True if other is less than this, false otherwise
-        bool LessThan(const ReverseIterator& other) const { return other.base_ < base_; }
+        bool less_than(const reverse_iterator& other) const { return other.m_base < m_base; }
 
     private:
-        Iterator base_;
+        Iterator m_base;
     };
 
 }

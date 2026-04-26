@@ -26,7 +26,7 @@ namespace stdads {
      *               This parameter can also be a null pointer (default param option), in which case it is not used.
      * @return Integral number representation of str, or 0 if no valid conversion could be performed.
      */
-    long Strtol(const char* str, int base = 10, char** endptr = 0);
+    long strtol(const char* str, int base = 10, char** endptr = 0);
 }
 
 #endif

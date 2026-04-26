@@ -1,5 +1,5 @@
-#ifndef IEQUATABLE_H
-#define IEQUATABLE_H
+#ifndef EQUATABLE_H
+#define EQUATABLE_H
 
 namespace stdads {
 
@@ -8,38 +8,38 @@ namespace stdads {
     /// This class enables a derived type to automatically gain `operator==` and
     /// `operator!=` by implementing a single member function:
     ///
-    ///     bool Equals(const Derived& other) const;
+    ///     bool equals(const Derived& other) const;
     ///
-    /// The comparison operators are defined in terms of this `Equals` function,
+    /// The comparison operators are defined in terms of this `equals` function,
     /// ensuring consistent equality semantics across all derived types.
     ///
     /// Example usage:
     /// @code
-    /// struct MyType : public IEquatable<MyType> {
+    /// struct MyType : public equatable<MyType> {
     ///     int value;
     ///
-    ///     bool Equals(const MyType& other) const {
+    ///     bool equals(const MyType& other) const {
     ///         return value == other.value;
     ///     }
     /// };
     /// @endcode
     ///
     /// @tparam Derived The type that inherits from this class and implements
-    /// `bool Equals(const Derived&) const`.
+    /// `bool equals(const Derived&) const`.
     template<typename Derived>
-    struct IEquatable {
+    struct equatable {
 
         /// @brief Equality operator
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is equal to rhs, false otherwise.
-        friend bool operator==(const Derived& lhs, const Derived& rhs) { return lhs.Equals(rhs); }
+        friend bool operator==(const Derived& lhs, const Derived& rhs) { return lhs.equals(rhs); }
 
         /// @brief Inequality operator 
         /// @param lhs left hand side iterator
         /// @param rhs right had side iterator
         /// @return True if lhs is not equal to rhs, false otherwise.
-        friend bool operator!=(const Derived& lhs, const Derived& rhs) { return !lhs.Equals(rhs); }
+        friend bool operator!=(const Derived& lhs, const Derived& rhs) { return !lhs.equals(rhs); }
     };
 }
 

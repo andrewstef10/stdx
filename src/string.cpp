@@ -1,4 +1,4 @@
-#include <stdads/String.h>
+#include <stdads/string.h>
 
 namespace stdads {
 

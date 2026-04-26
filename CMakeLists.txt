@@ -51,11 +51,11 @@ endfunction()
 # Library
 # ============================================================
 add_library(stdads
-    src/Ctype.cpp
+    src/ctype.cpp
     src/math.cpp
-    src/Stdadslib.cpp
-    src/Stopwatch.cpp
-    src/String.cpp
+    src/stdadslib.cpp
+    src/stopwatch.cpp
+    src/string.cpp
 )
 
 target_include_directories(stdads
@@ -88,14 +88,14 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(stdads_tests
-    tests/TestArray.cpp
-    tests/TestCtype.cpp
-    tests/TestIterator.cpp
+    tests/test_array.cpp
+    tests/test_ctype.cpp
+    tests/test_iterator.cpp
     tests/test_math.cpp
-    tests/TestNumUtils.cpp
-    tests/TestStdadslib.cpp
-    tests/TestStopwatch.cpp
-    tests/TestString.cpp
+    tests/test_num_utils.cpp
+    tests/test_stdadslib.cpp
+    tests/test_stopwatch.cpp
+    tests/test_string.cpp
 )
 
 target_link_libraries(stdads_tests
