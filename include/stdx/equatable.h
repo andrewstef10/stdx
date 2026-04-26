@@ -1,7 +1,7 @@
 #ifndef EQUATABLE_H
 #define EQUATABLE_H
 
-namespace stdads {
+namespace stdx {
 
     /// @brief CRTP base class that provides equality and inequality operators.
     ///

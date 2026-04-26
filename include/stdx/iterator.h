@@ -5,9 +5,9 @@
 #include <iterator>
 #include <type_traits>
 
-#include <stdads/comparable.h>
+#include <stdx/comparable.h>
 
-namespace stdads {
+namespace stdx {
 
     // Forward declarations
     template<typename Derived, typename T, typename Difference, typename Pointer, typename Reference, typename Category>

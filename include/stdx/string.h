@@ -2,9 +2,9 @@
 #define string_H
 
 #include <cstddef>
-#include <stdads/iterator.h>
+#include <stdx/iterator.h>
 
-namespace stdads {
+namespace stdx {
 
     /**
      * @brief The default capacity of a string in bytes
@@ -149,8 +149,8 @@ namespace stdads {
 
         using iterator = char*;
         using const_iterator = const char*;
-        using reverse_iterator = stdads::reverse_iterator<iterator>;
-        using const_reverse_iterator = stdads::reverse_iterator<const_iterator>;
+        using reverse_iterator = stdx::reverse_iterator<iterator>;
+        using const_reverse_iterator = stdx::reverse_iterator<const_iterator>;
 
         /**
          * @brief Default constructor.

@@ -4,9 +4,9 @@
 #include <cstddef>
 #include <stdexcept>
 
-#include <stdads/iterator.h>
+#include <stdx/iterator.h>
 
-namespace stdads {
+namespace stdx {
 
     /**
      * @brief Fixed size contiguous array class.
@@ -16,8 +16,8 @@ namespace stdads {
 
         using iterator = T*;
         using const_iterator = const T*;
-        using reverse_iterator = stdads::reverse_iterator<iterator>;
-        using const_reverse_iterator = stdads::reverse_iterator<const_iterator>;
+        using reverse_iterator = stdx::reverse_iterator<iterator>;
+        using const_reverse_iterator = stdx::reverse_iterator<const_iterator>;
 
 
         // ==== Implicitly-defined member functions ====

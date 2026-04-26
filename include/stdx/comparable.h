@@ -1,9 +1,9 @@
 #ifndef COMPARABLE_H
 #define COMPARABLE_H
 
-#include <stdads/equatable.h>
+#include <stdx/equatable.h>
 
-namespace stdads {
+namespace stdx {
 
     /// @brief CRTP base class that provides full comparison operators.
     ///

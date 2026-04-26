@@ -1,7 +1,7 @@
 #ifndef MATH_H
 #define MATH_H
 
-namespace stdads {
+namespace stdx {
 
     /**
      * @brief Gets the absolute value of a number

@@ -1,16 +1,16 @@
-#include <stdads/ctype.h>
-#include <stdads/num_utils.h>
+#include <stdx/ctype.h>
+#include <stdx/num_utils.h>
 
-namespace stdads {
+namespace stdx {
 
     bool is_alpha(char c)
     {
-        return stdads::within(c, 'A', 'Z') || stdads::within(c, 'a', 'z');
+        return stdx::within(c, 'A', 'Z') || stdx::within(c, 'a', 'z');
     }
 
     bool is_digit(char c)
     {
-        return stdads::within(c, '0', '9');
+        return stdx::within(c, '0', '9');
     }
 
     bool is_digit_of_base(char c, int base)
@@ -36,7 +36,7 @@ namespace stdads {
         else if (base <= 10) // bases 2 - 10
         {
             // bases 2 - 10 only contain digits in range 0 - (base - 1)
-            if (stdads::within(c, '0', static_cast<char>('0' + (base - 1))))
+            if (stdx::within(c, '0', static_cast<char>('0' + (base - 1))))
             {
                 result = c - '0';
             }
@@ -44,15 +44,15 @@ namespace stdads {
         else if (base <= 36) // bases 11 - 36
         {
             // bases 11 - 36 contain digits and letters in range a - (base - 11)
-            if (stdads::within(c, '0', '9'))
+            if (stdx::within(c, '0', '9'))
             {
                 result = c - '0';
             }
-            else if (stdads::within(c, 'a', static_cast<char>('a' + (base - 11))))
+            else if (stdx::within(c, 'a', static_cast<char>('a' + (base - 11))))
             {
                 result = (c - 'a') + 10;
             }
-            else if (stdads::within(c, 'A', static_cast<char>('A' + (base - 11))))
+            else if (stdx::within(c, 'A', static_cast<char>('A' + (base - 11))))
             {
                 result = (c - 'A') + 10;
             }
@@ -62,7 +62,7 @@ namespace stdads {
 
     char to_lower(char c)
     {
-        if (stdads::within(c, 'A', 'Z'))
+        if (stdx::within(c, 'A', 'Z'))
         {
             c += 32;
         }
@@ -71,7 +71,7 @@ namespace stdads {
 
     char to_upper(char c)
     {
-        if (stdads::within(c, 'a', 'z'))
+        if (stdx::within(c, 'a', 'z'))
         {
             c -= 32;
         }
