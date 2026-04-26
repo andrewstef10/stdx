@@ -1,11 +1,11 @@
-#include <stdads/Stdadslib.h>
+#include <stdads/stdadslib.h>
 
 #include <cstddef>
-#include <stdads/Ctype.h>
+#include <stdads/ctype.h>
 
 namespace stdads {
 
-    long Strtol(const char* str, int base, char** endptr)
+    long strtol(const char* str, int base, char** endptr)
     {
         // Set endptr to str. Will be overridden if parsing is successful.
         if (endptr)
@@ -76,7 +76,7 @@ namespace stdads {
         bool valid = false;
         while (*str != '\0')
         {
-            int digit = stdads::CharToDigit(*str, base);
+            int digit = stdads::char_to_digit(*str, base);
             if (digit < 0)
             {
                 break;

@@ -51,11 +51,11 @@ endfunction()
 # Library
 # ============================================================
 add_library(stdads
-    src/Ctype.cpp
+    src/ctype.cpp
     src/math.cpp
-    src/Stdadslib.cpp
-    src/Stopwatch.cpp
-    src/String.cpp
+    src/stdadslib.cpp
+    src/stopwatch.cpp
+    src/string.cpp
 )
 
 target_include_directories(stdads
@@ -88,12 +88,14 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(stdads_tests
-    tests/TestCtype.cpp
+    tests/test_array.cpp
+    tests/test_ctype.cpp
+    tests/test_iterator.cpp
     tests/test_math.cpp
-    tests/TestNumUtils.cpp
-    tests/TestStdadslib.cpp
-    tests/TestStopwatch.cpp
-    tests/TestString.cpp
+    tests/test_num_utils.cpp
+    tests/test_stdadslib.cpp
+    tests/test_stopwatch.cpp
+    tests/test_string.cpp
 )
 
 target_link_libraries(stdads_tests
@@ -125,11 +127,14 @@ if(ENABLE_COVERAGE)
             -r ${CMAKE_SOURCE_DIR}
             --filter ${CMAKE_SOURCE_DIR}/src/
             --filter ${CMAKE_SOURCE_DIR}/include/
+            --exclude-throw-branches
+            --exclude-unreachable-branches
             --html
             --html-details
             --html-self-contained
             --html-title "stdads Coverage Report"
-            -o ${COVERAGE_DIR}/index.html
+            --html-details=${COVERAGE_DIR}/index.html
+            --txt=${COVERAGE_DIR}/coverage.txt
             --print-summary
         COMMENT "Generating coverage report..."
     )

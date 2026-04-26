@@ -14,7 +14,7 @@ namespace stdads {
      * @return True if val is greater than or equal to low AND val is less than or equal to high.
      */
     template<typename T>
-    bool Within(const T& val, const T& low, const T& high);
+    bool within(const T& val, const T& low, const T& high);
 
     /**
      * @brief Get if a value val is within values low and high (exclusive).
@@ -27,7 +27,7 @@ namespace stdads {
      * @return True if val is greater than low AND val is less than high.
      */
     template<typename T>
-    bool WithinExclusive(const T& val, const T& low, const T& high);
+    bool within_exclusive(const T& val, const T& low, const T& high);
 
     /**
      * @brief Get if a value val is outside values low and high (exclusive).
@@ -40,7 +40,7 @@ namespace stdads {
      * @return True if val is less than low OR val is greater than high.
      */
     template<typename T>
-    bool Outside(const T& val, const T& low, const T& high);
+    bool outside(const T& val, const T& low, const T& high);
 
     /**
      * @brief Get if a value val is outside values low and high (inclusive).
@@ -53,7 +53,7 @@ namespace stdads {
      * @return True if val is less than or equal to low OR val is greater than or equal to high.
      */
     template<typename T>
-    bool OutsideInclusive(const T& val, const T& low, const T& high);
+    bool outside_inclusive(const T& val, const T& low, const T& high);
 
     /**
      * @brief Clamp a value val so that it is within a range.
@@ -66,38 +66,38 @@ namespace stdads {
      * @return True if the value val was clamped.
      */
     template<typename T>
-    bool Clamp(T& val, const T& low, const T& high);
+    bool clamp(T& val, const T& low, const T& high);
 
 
 
     // inline implementation //
 
     template<typename T>
-    inline bool Within(const T& val, const T& low, const T& high)
+    inline bool within(const T& val, const T& low, const T& high)
     {
         return val >= low && val <= high;
     }
 
     template<typename T>
-    inline bool WithinExclusive(const T& val, const T& low, const T& high)
+    inline bool within_exclusive(const T& val, const T& low, const T& high)
     {
         return val > low && val < high;
     }
 
     template<typename T>
-    inline bool Outside(const T& val, const T& low, const T& high)
+    inline bool outside(const T& val, const T& low, const T& high)
     {
         return val < low || val > high;
     }
 
     template<typename T>
-    inline bool OutsideExclusive(const T& val, const T& low, const T& high)
+    inline bool outside_inclusive(const T& val, const T& low, const T& high)
     {
         return val <= low || val >= high;
     }
 
     template<typename T>
-    inline bool Clamp(T& val, const T& low, const T& high)
+    inline bool clamp(T& val, const T& low, const T& high)
     {
         bool limited = false;
         if (val < low)
