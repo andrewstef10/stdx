@@ -1,6 +1,6 @@
-#include <stdads/string.h>
+#include <stdx/string.h>
 
-namespace stdads {
+namespace stdx {
 
     const void* memchr(const void* ptr, int value, std::size_t num)
     {

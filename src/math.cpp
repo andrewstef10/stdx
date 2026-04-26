@@ -1,6 +1,6 @@
-#include <stdads/math.h>
+#include <stdx/math.h>
 
-namespace stdads {
+namespace stdx {
 
     float abs(float value)              { return (value < 0.0f) ? -value : value; }
     double abs(double value)            { return (value < 0.0) ? -value : value; }

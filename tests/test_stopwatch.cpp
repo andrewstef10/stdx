@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
-#include <stdads/stopwatch.h>
+#include <stdx/stopwatch.h>
 
 #include <thread>
 
 TEST(StopWatchTest, DefaultState)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     EXPECT_FALSE(sw.running());
     EXPECT_DOUBLE_EQ(0.0, sw.get_elapsed_time_sec());
@@ -13,7 +13,7 @@ TEST(StopWatchTest, DefaultState)
 
 TEST(StopWatchTest, StartSetsRunning)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     sw.start();
     EXPECT_TRUE(sw.running());
@@ -21,7 +21,7 @@ TEST(StopWatchTest, StartSetsRunning)
 
 TEST(StopWatchTest, StopSetsNotRunning)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     sw.start();
     sw.stop();
@@ -30,7 +30,7 @@ TEST(StopWatchTest, StopSetsNotRunning)
 
 TEST(StopWatchTest, StopNotRunningTimerDoesNothing)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     sw.stop();
     EXPECT_FALSE(sw.running());
@@ -39,7 +39,7 @@ TEST(StopWatchTest, StopNotRunningTimerDoesNothing)
 
 TEST(StopWatchTest, ElapsedTimeIncreasesWhileRunning)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     sw.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -58,7 +58,7 @@ TEST(StopWatchTest, ElapsedTimeIncreasesWhileRunning)
 
 TEST(StopWatchTest, ElapsedTimeStopsAfterStop)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     sw.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -73,7 +73,7 @@ TEST(StopWatchTest, ElapsedTimeStopsAfterStop)
 
 TEST(StopWatchTest, ResetClearsTime)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     sw.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -86,7 +86,7 @@ TEST(StopWatchTest, ResetClearsTime)
 
 TEST(StopWatchTest, StartWithResetClearsTime)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     sw.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -100,7 +100,7 @@ TEST(StopWatchTest, StartWithResetClearsTime)
 
 TEST(StopWatchTest, MultipleStartCallsDoNothingIfAlreadyRunning)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     sw.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -115,7 +115,7 @@ TEST(StopWatchTest, MultipleStartCallsDoNothingIfAlreadyRunning)
 
 TEST(StopWatchTest, MeasuresApproximately100ms)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     std::chrono::steady_clock::time_point realStart = std::chrono::steady_clock::now();
     sw.start();
@@ -137,19 +137,19 @@ TEST(StopWatchTest, MeasuresApproximately100ms)
 
 TEST(StopWatchTest, CopyConstructorAndAssignmentOperator)
 {
-    stdads::stopwatch sw;
+    stdx::stopwatch sw;
 
     sw.start();
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     sw.stop();
 
     // Copy stopped timer
-    stdads::stopwatch copy(sw);
+    stdx::stopwatch copy(sw);
     EXPECT_EQ(sw.running(), copy.running());
     EXPECT_EQ(sw.get_elapsed_time_sec(), copy.get_elapsed_time_sec());
     EXPECT_NE(&sw, &copy);
 
-    stdads::stopwatch assignmentCopy;
+    stdx::stopwatch assignmentCopy;
     assignmentCopy = sw;
     EXPECT_EQ(sw.running(), assignmentCopy.running());
     EXPECT_EQ(sw.get_elapsed_time_sec(), assignmentCopy.get_elapsed_time_sec());
@@ -159,11 +159,11 @@ TEST(StopWatchTest, CopyConstructorAndAssignmentOperator)
     // Copy running timer
     sw.start();
 
-    stdads::stopwatch copy2(sw);
+    stdx::stopwatch copy2(sw);
     EXPECT_EQ(sw.running(), copy2.running());
     EXPECT_NE(&sw, &copy);
 
-    stdads::stopwatch assignmentCopy2;
+    stdx::stopwatch assignmentCopy2;
     assignmentCopy2 = sw;
     EXPECT_EQ(sw.running(), assignmentCopy2.running());
     EXPECT_NE(&sw, &assignmentCopy2);

@@ -3,7 +3,7 @@
 
 #include <chrono>
 
-namespace stdads {
+namespace stdx {
 
     class stopwatch {
     public:

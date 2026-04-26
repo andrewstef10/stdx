@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(stdads LANGUAGES CXX)
+project(stdx LANGUAGES CXX)
 
 # ---- Global Settings ----
 set(CMAKE_CXX_STANDARD 20)
@@ -50,21 +50,21 @@ endfunction()
 # ============================================================
 # Library
 # ============================================================
-add_library(stdads
+add_library(stdx
     src/ctype.cpp
     src/math.cpp
-    src/stdadslib.cpp
+    src/stdxlib.cpp
     src/stopwatch.cpp
     src/string.cpp
 )
 
-target_include_directories(stdads
+target_include_directories(stdx
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-check_enable_sanitizers(stdads)
-check_enable_coverage(stdads)
+check_enable_sanitizers(stdx)
+check_enable_coverage(stdx)
 
 
 # ============================================================
@@ -87,28 +87,28 @@ FetchContent_MakeAvailable(googletest)
 # ============================================================
 enable_testing()
 
-add_executable(stdads_tests
+add_executable(stdx_tests
     tests/test_array.cpp
     tests/test_ctype.cpp
     tests/test_iterator.cpp
     tests/test_math.cpp
     tests/test_num_utils.cpp
-    tests/test_stdadslib.cpp
+    tests/test_stdxlib.cpp
     tests/test_stopwatch.cpp
     tests/test_string.cpp
 )
 
-target_link_libraries(stdads_tests
+target_link_libraries(stdx_tests
     PRIVATE
-        stdads
+        stdx
         gtest
         gtest_main
 )
 
-check_enable_sanitizers(stdads_tests)
-check_enable_coverage(stdads_tests)
+check_enable_sanitizers(stdx_tests)
+check_enable_coverage(stdx_tests)
 
-add_test(NAME stdads_tests COMMAND stdads_tests)
+add_test(NAME stdx_tests COMMAND stdx_tests)
 
 
 # ============================================================
@@ -132,7 +132,7 @@ if(ENABLE_COVERAGE)
             --html
             --html-details
             --html-self-contained
-            --html-title "stdads Coverage Report"
+            --html-title "stdx Coverage Report"
             --html-details=${COVERAGE_DIR}/index.html
             --txt=${COVERAGE_DIR}/coverage.txt
             --print-summary

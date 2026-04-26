@@ -1,6 +1,6 @@
-#include <stdads/stopwatch.h>
+#include <stdx/stopwatch.h>
 
-namespace stdads {
+namespace stdx {
 
     stopwatch::stopwatch()
     : m_startTime()

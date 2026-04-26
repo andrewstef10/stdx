@@ -1,7 +1,7 @@
-#ifndef STDADSLIB_H
-#define STDADSLIB_H
+#ifndef STDXLIB_H
+#define STDXLIB_H
 
-namespace stdads {
+namespace stdx {
 
     /**
      * @brief Parses the C-string str interpreting its content as an integral number of the specified base, which is returned as a long int value.

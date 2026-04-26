@@ -1,7 +1,7 @@
 #ifndef NUM_UTILS_H
 #define NUM_UTILS_H
 
-namespace stdads {
+namespace stdx {
 
     /**
      * @brief Get if a value val is within values low and high (inclusive).

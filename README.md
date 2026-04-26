@@ -1,4 +1,4 @@
-# stdads
+# stdx
 My version of C++ Standard Namespace
 
 
@@ -15,8 +15,8 @@ My version of C++ Standard Namespace
 
 ### Clone the repo
 ```shell
-git clone https://github.com/yourusername/stdads.git
-cd stdads
+git clone https://github.com/yourusername/stdx.git
+cd stdx
 ```
 
 ### Create Build Directory

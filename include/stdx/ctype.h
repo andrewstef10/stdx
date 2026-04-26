@@ -1,7 +1,7 @@
 #ifndef CTYPE_H
 #define CTYPE_H
 
-namespace stdads {
+namespace stdx {
 
     /**
      * @brief Checks whether c is an alphabetic letter (a-z) ignoreing case.

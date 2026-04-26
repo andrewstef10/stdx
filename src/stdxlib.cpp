@@ -1,9 +1,9 @@
-#include <stdads/stdadslib.h>
+#include <stdx/stdxlib.h>
 
 #include <cstddef>
-#include <stdads/ctype.h>
+#include <stdx/ctype.h>
 
-namespace stdads {
+namespace stdx {
 
     long strtol(const char* str, int base, char** endptr)
     {
@@ -76,7 +76,7 @@ namespace stdads {
         bool valid = false;
         while (*str != '\0')
         {
-            int digit = stdads::char_to_digit(*str, base);
+            int digit = stdx::char_to_digit(*str, base);
             if (digit < 0)
             {
                 break;
