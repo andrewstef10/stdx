@@ -563,6 +563,264 @@ TEST(StrlenTest, LongString) {
     EXPECT_EQ(26u, result);
 }
 
+// -------------------------
+// contains
+// -------------------------
+
+TEST(ContainsTest, FindsExistingChar)
+{
+    const char* str = "hello";
+    EXPECT_TRUE(stdx::contains(str, 'e'));
+    EXPECT_TRUE(stdx::contains(str, 'h'));
+    EXPECT_TRUE(stdx::contains(str, 'l'));
+    EXPECT_TRUE(stdx::contains(str, 'o'));
+}
+
+TEST(ContainsTest, ReturnsFalseIfMissing)
+{
+    const char* str = "hello";
+    EXPECT_FALSE(stdx::contains(str, 'z'));
+    EXPECT_FALSE(stdx::contains(str, '\0'));
+}
+
+TEST(ContainsTest, EmptyString)
+{
+    const char* str = "";
+    EXPECT_FALSE(stdx::contains(str, 'a'));
+    EXPECT_FALSE(stdx::contains(str, '\0'));
+}
+
+// -------------------------
+// contains_any
+// -------------------------
+
+TEST(ContainsAnyTest, FindsAnyMatch)
+{
+    const char* str = "hello";
+    EXPECT_TRUE(stdx::contains_any(str, "xyzle"));
+    EXPECT_TRUE(stdx::contains_any(str, "h"));
+    EXPECT_TRUE(stdx::contains_any(str, "l"));
+    EXPECT_TRUE(stdx::contains_any(str, "o"));
+    EXPECT_TRUE(stdx::contains_any(str, "lh"));
+}
+
+TEST(ContainsAnyTest, NoMatch)
+{
+    const char* str = "hello";
+    EXPECT_FALSE(stdx::contains_any(str, "xyz"));
+    EXPECT_FALSE(stdx::contains_any(str, ""));
+    EXPECT_FALSE(stdx::contains_any(str, "\0"));
+}
+
+TEST(ContainsAnyTest, EmptyStr)
+{
+    const char* str = "";
+    EXPECT_FALSE(stdx::contains_any(str, "abc"));
+    EXPECT_FALSE(stdx::contains_any(str, ""));
+    EXPECT_FALSE(stdx::contains_any(str, "\0"));
+}
+
+// -------------------------
+// trim_front
+// -------------------------
+
+TEST(TrimFrontConstTest, TrimsSpaces)
+{
+    const char* cstr = "   hello";
+    char buffer[] = "   hello";
+
+    const char* cresult = stdx::trim_front(cstr, " ");
+    const char* cresultDefaultParams = stdx::trim_front(cstr);
+    char* result = stdx::trim_front(buffer, " ");
+    char* resultDefaultParams = stdx::trim_front(buffer);
+
+    EXPECT_STREQ(cresult, "hello");
+    EXPECT_EQ(cresult, cstr + 3);
+    EXPECT_STREQ(cresultDefaultParams, "hello");
+    EXPECT_EQ(cresultDefaultParams, cstr + 3);
+
+    EXPECT_STREQ(result, "hello");
+    EXPECT_EQ(result, buffer + 3);
+    EXPECT_STREQ(resultDefaultParams, "hello");
+    EXPECT_EQ(resultDefaultParams, buffer + 3);
+
+    EXPECT_STREQ(buffer, "   hello");
+}
+
+TEST(TrimFrontConstTest, NoTrimNeeded)
+{
+    const char* cstr = "hello";
+    char buffer[] = "hello";
+    const char* cresult = stdx::trim_front(cstr, " ");
+    char* result = stdx::trim_front(buffer, " ");
+
+    EXPECT_STREQ(cresult, "hello");
+    EXPECT_EQ(cresult, cstr);
+    EXPECT_STREQ(result, "hello");
+    EXPECT_EQ(result, buffer);
+}
+
+TEST(TrimFrontConstTest, TrimEmptyString)
+{
+    const char* cstr = " hello";
+    char buffer[] = " hello";
+    const char* cresult = stdx::trim_front(cstr, "");
+    const char* result = stdx::trim_front(buffer, "");
+
+    EXPECT_STREQ(cresult, " hello");
+    EXPECT_EQ(cresult, cstr);
+    EXPECT_STREQ(result, " hello");
+    EXPECT_EQ(result, buffer);
+}
+
+TEST(TrimFrontConstTest, TrimsMultipleChars)
+{
+    const char* cstr = "!!!hello";
+    char buffer[] = "!!!hello";
+    const char* cresult = stdx::trim_front(cstr, "!");
+    char* result = stdx::trim_front(buffer, "!");
+
+    EXPECT_STREQ(cresult, "hello");
+    EXPECT_STREQ(result, "hello");
+}
+
+TEST(TrimFrontConstTest, AllTrimmed)
+{
+    const char* cstr = "aaaa";
+    char buffer[] = "aaaa";
+    const char* cresult = stdx::trim_front(cstr, "a");
+    char* result = stdx::trim_front(buffer, "a");
+
+    EXPECT_STREQ(cresult, "");
+    EXPECT_STREQ(cresult, cstr + 4);
+    EXPECT_STREQ(result, "");
+    EXPECT_STREQ(result, buffer + 4);
+}
+
+TEST(TrimFrontConstTest, EmptyString)
+{
+    const char* cstr = "";
+    char buffer[] = "";
+
+    EXPECT_STREQ(stdx::trim_front(cstr, "a"), "");
+    EXPECT_STREQ(stdx::trim_front(cstr, ""), "");
+
+    EXPECT_STREQ(stdx::trim_front(buffer, "a"), "");
+    EXPECT_STREQ(stdx::trim_front(buffer, ""), "");
+}
+
+// -------------------------
+// trim_back
+// -------------------------
+
+TEST(TrimBackTest, TrimsSpaces)
+{
+    char buffer[] = "hello   ";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim_back(buffer, len, " ");
+
+    EXPECT_STREQ(result, "hello");
+    EXPECT_EQ(result, buffer);
+}
+
+TEST(TrimBackTest, NoTrimNeeded)
+{
+    char buffer[] = "hello";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim_back(buffer, len, " ");
+    char* result2 = stdx::trim_back(buffer, len, "");
+
+    EXPECT_STREQ(result, "hello");
+    EXPECT_EQ(result, buffer);
+
+    EXPECT_STREQ(result2, "hello");
+    EXPECT_EQ(result2, buffer);
+}
+
+TEST(TrimBackTest, TrimsExclamation)
+{
+    char buffer[] = "hello!!!";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim_back(buffer, len, "!");
+
+    EXPECT_STREQ(result, "hello");
+    EXPECT_EQ(result, buffer);
+}
+
+TEST(TrimBackTest, AllTrimmed)
+{
+    char buffer[] = "aaaa";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim_back(buffer, len, "a");
+
+    EXPECT_STREQ(result, "");
+    EXPECT_EQ(result[0], '\0');
+    EXPECT_EQ(result, buffer);
+}
+
+TEST(TrimBackTest, TrimsEmptyString)
+{
+    char buffer[] = "";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim_back(buffer, len, "!");
+
+    EXPECT_STREQ(result, "");
+    EXPECT_EQ(result, buffer);
+}
+
+// -------------------------
+// trim (front + back)
+// -------------------------
+
+TEST(TrimTest, TrimsBothSides)
+{
+    char buffer[] = "   hello   ";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim(buffer, len, " ");
+
+    EXPECT_STREQ(result, "hello");
+    EXPECT_EQ(result, buffer + 3);
+}
+
+TEST(TrimTest, OnlyFront)
+{
+    char buffer[] = "   hello";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim(buffer, len, " ");
+
+    EXPECT_STREQ(result, "hello");
+    EXPECT_EQ(result, buffer + 3);
+}
+
+TEST(TrimTest, OnlyBack)
+{
+    char buffer[] = "hello   ";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim(buffer, len, " ");
+
+    EXPECT_STREQ(result, "hello");
+    EXPECT_EQ(result, buffer);
+}
+
+TEST(TrimTest, AllTrimmed)
+{
+    char buffer[] = "aaaa";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim(buffer, len, "a");
+
+    EXPECT_STREQ(result, "");
+}
+
+
 
 // String class constructors
 TEST(StringConstructorTest, DefaultConstructorCreatesEmptyString) {

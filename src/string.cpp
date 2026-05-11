@@ -143,4 +143,83 @@ namespace stdx {
         }
         return len;
     }
+
+    bool contains(const char* str, char c)
+    {
+        bool result = false;
+        for (; *str != '\0'; ++str)
+        {
+            if (*str == c)
+            {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    bool contains_any(const char* str, const char* chars)
+    {
+        bool result = false;
+        for (; *chars != '\0'; ++chars)
+        {
+            if (contains(str, *chars))
+            {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    namespace helper
+    {
+        template <typename CharT>
+        CharT* trim_front_impl(CharT* str, const char* trimChars)
+        {
+            while (*str != '\0' && contains(trimChars, *str))
+            {
+                ++str;
+            }
+            return str;
+        }
+    }
+
+    const char* trim_front(const char* str, const char* trimChars)
+    {
+        return helper::trim_front_impl(str, trimChars);
+    }
+
+    char* trim_front(char* str, const char* trimChars)
+    {
+        return helper::trim_front_impl(str, trimChars);
+    }
+
+    char* trim_back(char* str, std::size_t len, const char* trimChars)
+    {
+        if (len == 0)
+        {
+            return str;
+        }
+
+        char* strEnd = str + len - 1;
+        while (strEnd > str && contains(trimChars, *strEnd))
+        {
+            *strEnd = '\0';
+            --strEnd;
+        }
+
+        // check first character in str if all other trailing characters were trimmed
+        if (str == strEnd && contains(trimChars, *strEnd))
+        {
+            *strEnd = '\0';
+        }
+        return str;
+    }
+
+    char* trim(char* str, std::size_t len, const char* trimChars)
+    {
+        trim_back(str, len, trimChars);
+        return trim_front(str, trimChars);
+    }
 }

@@ -2,7 +2,7 @@
 
 namespace stdx {
 
-    float abs(float value)              { return (value < 0.0f) ? -value : value; }
+    float abs(float value)              { return (value < 0.0F) ? -value : value; }
     double abs(double value)            { return (value < 0.0) ? -value : value; }
     long double abs(long double value)  { return (value < 0.0L) ? -value : value; }
     int abs(int value)                  { return (value < 0) ? -value : value; }
@@ -11,32 +11,32 @@ namespace stdx {
 
     float pow(float base, int exp)
     {
-        float result = 1.0f;
-        int abs_exp = abs(exp);
-        while (abs_exp > 0) 
+        float result = 1.0F;
+        int absExp = abs(exp);
+        while (absExp > 0) 
         {
-            if (abs_exp & 1) 
+            if ((absExp & 1) != 0) 
             {
                 result *= base;
             }
             base *= base;
-            abs_exp >>= 1;
+            absExp >>= 1;
         }
-        return (exp < 0) ? 1.0f / result : result;
+        return (exp < 0) ? 1.0F / result : result;
     }
 
     double pow(double base, int exp)
     {
         double result = 1.0;
-        int abs_exp = abs(exp);
-        while (abs_exp > 0) 
+        int absExp = abs(exp);
+        while (absExp > 0) 
         {
-            if (abs_exp & 1) 
+            if ((absExp & 1) != 0) 
             {
                 result *= base;
             }
             base *= base;
-            abs_exp >>= 1;
+            absExp >>= 1;
         }
         return (exp < 0) ? 1.0 / result : result;
     }

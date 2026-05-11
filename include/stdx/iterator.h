@@ -108,8 +108,7 @@ namespace stdx {
 
     protected:
         // ==== forward_iterator should not be constructed directly ====
-        forward_iterator() = default;
-        ~forward_iterator() = default;
+        forward_iterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 
         /// @brief Helper function to cast this to a Derived reference
         /// @return Derived reference
@@ -159,8 +158,7 @@ namespace stdx {
 
     protected:
         // ==== bidirectional_iterator should not be constructed directly ====
-        bidirectional_iterator() = default;
-        ~bidirectional_iterator() = default;
+        bidirectional_iterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
     };
 
 
@@ -246,8 +244,7 @@ namespace stdx {
 
     protected:
         // ==== random_access_iterator should not be constructed directly ====
-        random_access_iterator() = default;
-        ~random_access_iterator() = default;
+        random_access_iterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
     };
 
 
@@ -263,13 +260,9 @@ namespace stdx {
         >::type
     {
     public:
-        // ===== Iterator Traits (full set defined in base class) =====
-        using iterator_category = typename std::iterator_traits<Iterator>::iterator_category;
-        using difference_type   = typename std::iterator_traits<Iterator>::difference_type;
-        using reference         = typename std::iterator_traits<Iterator>::reference;
-        using pointer           = typename std::iterator_traits<Iterator>::pointer;
+        using traits = std::iterator_traits<Iterator>;
 
-        static_assert(std::is_base_of<std::bidirectional_iterator_tag, iterator_category>::value, "reverse_iterator requires bidirectional or better iterator");
+        static_assert(std::is_base_of<std::bidirectional_iterator_tag, typename traits::iterator_category>::value, "reverse_iterator requires bidirectional or better iterator");
 
 
         /// @brief Default constructor
@@ -304,7 +297,7 @@ namespace stdx {
         /// @param other The other iterator
         template <
             typename OtherIterator,
-            typename = std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<OtherIterator>::pointer, pointer>>
+            typename = std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<OtherIterator>::pointer, typename traits::pointer>>
         >
         reverse_iterator(const reverse_iterator<OtherIterator>& other) : m_base(other.base()) {}
 
@@ -314,7 +307,7 @@ namespace stdx {
 
         /// @brief Dereference operator
         /// @return A reference to this reverse iterator object
-        reference operator*() const
+        traits::reference operator*() const
         {
             Iterator tmp = m_base;
             return *--tmp;
@@ -322,7 +315,7 @@ namespace stdx {
 
         /// @brief Class member access (arrow) operator
         /// @return A pointer to this reverse iterator object
-        pointer operator->() const
+        traits::pointer operator->() const
         {
             Iterator tmp = m_base;
             --tmp;
@@ -343,13 +336,13 @@ namespace stdx {
         /// @brief Advances the reverse iterator
         /// NOTE: Function is only available for iterators that are at least random access iterators
         /// @param n Number of elements to advance
-        void advance(difference_type n) { m_base -= n; };
+        void advance(traits::difference_type n) { m_base -= n; };
 
         /// @brief Gets the distance from this iterator to other
         /// NOTE: Function is only available for iterators that are at least random access iterators
         /// @param other Other reverse iterator
         /// @return The distance between this and other
-        difference_type distance_to(const reverse_iterator& other) const { return other.m_base - m_base; }
+        traits::difference_type distance_to(const reverse_iterator& other) const { return other.m_base - m_base; }
 
         /// @brief Determines if reverse_iterator other is less than this
         /// NOTE: Function is only available for iterators that are at least random access iterators

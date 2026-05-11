@@ -5,8 +5,11 @@ project(stdx LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # exports compile_commands.json to build directory
 
 # ---- Options ----
+option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
 
@@ -20,8 +23,24 @@ message(STATUS "COVERAGE_DIR = ${COVERAGE_DIR}")
 
 
 # ============================================================
-# Compiler Flags functions
+# Compiler Flags / properties functions
 # ============================================================
+function(check_enable_clang_tidy target)
+    if(ENABLE_CLANG_TIDY)
+        find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+
+        if(CLANG_TIDY_EXE)
+            message(STATUS "Found clang-tidy found at: ${CLANG_TIDY_EXE}")
+
+            set_target_properties(stdx PROPERTIES
+                CXX_CLANG_TIDY "${CLANG_TIDY_EXE}"
+            )
+        else()
+            message(WARNING "clang-tidy enabled but not found!")
+        endif()
+    endif()
+endfunction()
+
 function(check_enable_sanitizers target)
     if(ENABLE_ASAN)
         if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -63,6 +82,7 @@ target_include_directories(stdx
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+check_enable_clang_tidy(stdx)
 check_enable_sanitizers(stdx)
 check_enable_coverage(stdx)
 
@@ -118,7 +138,7 @@ if(ENABLE_COVERAGE)
     find_program(GCOVR_PATH gcovr)
 
     if(NOT GCOVR_PATH)
-        message(FATAL_ERROR "gcovr not found! Install it with: sudo apt install gcovr")
+        message(FATAL_ERROR "gcovr enabled but not found! Install it with: sudo apt install gcovr")
     endif()
 
     add_custom_target(coverage

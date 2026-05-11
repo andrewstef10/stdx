@@ -40,7 +40,8 @@ namespace stdx {
     /// - bool equals(const Derived&) const  (from equatable)
     /// - bool less_than(const Derived&) const
     template<typename Derived>
-    struct comparable : public equatable<Derived> {
+    class comparable : public equatable<Derived> {
+    public:
 
         /// @brief Less than operator
         /// @param lhs left hand sid
@@ -65,6 +66,10 @@ namespace stdx {
         /// @param rhs right had side
         /// @return True if lhs is greater than or equal to rhs, false otherwise.
         friend bool operator>=(const Derived& lhs, const Derived& rhs) { return !lhs.less_than(rhs); }
+
+    protected:
+        // ==== comparable should not be constructed directly ====
+        comparable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
     };
 }
 

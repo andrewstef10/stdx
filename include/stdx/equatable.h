@@ -27,7 +27,8 @@ namespace stdx {
     /// @tparam Derived The type that inherits from this class and implements
     /// `bool equals(const Derived&) const`.
     template<typename Derived>
-    struct equatable {
+    class equatable {
+    public:
 
         /// @brief Equality operator
         /// @param lhs left hand side
@@ -40,6 +41,10 @@ namespace stdx {
         /// @param rhs right had side iterator
         /// @return True if lhs is not equal to rhs, false otherwise.
         friend bool operator!=(const Derived& lhs, const Derived& rhs) { return !lhs.equals(rhs); }
+
+    protected:
+        // ==== equatable should not be constructed directly ====
+        equatable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
     };
 }
 

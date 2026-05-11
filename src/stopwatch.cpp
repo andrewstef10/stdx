@@ -3,30 +3,9 @@
 namespace stdx {
 
     stopwatch::stopwatch()
-    : m_startTime()
-    , m_stopTime()
-    , m_running(false)
+    : m_running(false)
     {
         reset();
-    }
-
-    stopwatch::stopwatch(const stopwatch& other)
-    : m_startTime(other.m_startTime)
-    , m_stopTime(other.m_stopTime)
-    , m_running(other.m_running)
-    {
-    }
-
-    stopwatch::~stopwatch()
-    {
-    }
-
-    stopwatch& stopwatch::operator=(const stopwatch& other)
-    {
-        m_startTime = other.m_startTime;
-        m_stopTime = other.m_stopTime;
-        m_running = other.m_running;
-        return *this;
     }
 
     void stopwatch::start(bool resetStopwatch)

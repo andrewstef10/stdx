@@ -16,24 +16,33 @@ namespace stdx {
         stopwatch();
 
         /**
-         * @brief Copy constructor.
-         *
-         * @param other stopwatch to copy.
+         * @brief Default Destructor.
          */
-        stopwatch(const stopwatch& other);
+        ~stopwatch() = default;
 
         /**
-         * @brief Destructor.
+         * @brief Copy constructor.
+         *
+         * @param
          */
-        ~stopwatch();
+        stopwatch(const stopwatch&) = default;
 
         /**
          * @brief Assignment operator.
          *
-         * @param other stopwatch to assign this to.
+         * @param 
          * @return Reference to this object
          */
-        stopwatch& operator=(const stopwatch& other);
+        stopwatch& operator=(const stopwatch&) = default;
+
+        /// @brief Move constructor
+        /// @param 
+        stopwatch(stopwatch&&) = default;
+
+        /// @brief Move assignment operator
+        /// @param  
+        /// @return Reference to this object
+        stopwatch& operator=(stopwatch&&) = default;
 
         /**
          * @brief Starts the stopwatch.
