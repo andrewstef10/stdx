@@ -13,6 +13,8 @@ Checks: >
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-use-default-member-init,
 
   -modernize-use-trailing-return-type,
   -modernize-use-constraints,
@@ -20,6 +22,7 @@ Checks: >
   -modernize-use-nodiscard,
   -modernize-avoid-c-arrays,
   -modernize-type-traits,
+  -modernize-use-default-member-init,
 
 # Treat all enabled checks as errors
 WarningsAsErrors: "*"
