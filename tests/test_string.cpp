@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <stdx/string.h>
+#include <cstring>
 
 // memchar tests
 TEST(MemchrTest, FindCharacter) {
