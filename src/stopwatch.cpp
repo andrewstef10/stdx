@@ -15,11 +15,13 @@ namespace stdx {
             if (resetStopwatch)
             {
                 reset();
+                int test2 = 0;
             }
             else
             {
                 m_startTime = now();
             }
+            int test = 17;
             m_running = true;
         }
     }

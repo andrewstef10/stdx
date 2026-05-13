@@ -14,9 +14,37 @@ env:
 
 
 jobs:
+  clang_tidy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y clang-tidy cmake ninja-build
+
+      - name: Configure CMake
+        run: >
+          cmake -S ${{ github.workspace }}
+          -B ${{ env.BUILD_DIR }}
+          -G Ninja
+          -DCMAKE_CXX_COMPILER=clang++
+          -DCMAKE_C_COMPILER=clang
+          -DENABLE_UNIT_TESTS=OFF
+
+      - name: Run clang-tidy
+        run: |
+          run-clang-tidy \
+            -p ${{ env.BUILD_DIR }} \
+            src
+  
   build:
     name: Build & Test (${{ matrix.os }} / ${{ matrix.c_compiler }} / ${{ matrix.build_type }})
     runs-on: ${{ matrix.os }}
+    needs: clang_tidy # Run build after clang-tidy succeeds
 
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations.

@@ -27,8 +27,8 @@ Checks: >
 # Treat all enabled checks as errors
 WarningsAsErrors: "*"
 
-# Only check headers belonging to the project (all files are located in include and src directories)
-HeaderFilterRegex: '.*[\\/](include|src)[\\/].*'
+# Only check headers belonging to the project
+HeaderFilterRegex: '^.*[\\/]include[\\/]stdx[\\/].*'
 
 # Check options for specific modules
 CheckOptions:

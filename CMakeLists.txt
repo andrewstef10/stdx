@@ -9,6 +9,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # exports compile_commands.json to build directory
 
 # ---- Options ----
+option(ENABLE_UNIT_TESTS "Enable building unit tests" ON)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
@@ -82,6 +83,14 @@ target_include_directories(stdx
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+
+if (MSVC)
+    target_compile_options(stdx PRIVATE /W4)
+else()
+    target_compile_options(stdx PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+
 check_enable_clang_tidy(stdx)
 check_enable_sanitizers(stdx)
 check_enable_coverage(stdx)
@@ -90,45 +99,50 @@ check_enable_coverage(stdx)
 # ============================================================
 # Dependencies
 # ============================================================
-include(FetchContent)
+if(ENABLE_UNIT_TESTS)
+    include(FetchContent)
 
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/85087857ad10bd407cd6ed2f52f7ea9752db621f.zip
-  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+    FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/85087857ad10bd407cd6ed2f52f7ea9752db621f.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
 
 
-# ============================================================
-# Tests
-# ============================================================
-enable_testing()
+    # ============================================================
+    # Tests
+    # ============================================================
+    enable_testing()
 
-add_executable(stdx_tests
-    tests/test_array.cpp
-    tests/test_ctype.cpp
-    tests/test_iterator.cpp
-    tests/test_math.cpp
-    tests/test_num_utils.cpp
-    tests/test_stdxlib.cpp
-    tests/test_stopwatch.cpp
-    tests/test_string.cpp
-)
+    add_executable(stdx_tests
+        tests/test_array.cpp
+        tests/test_ctype.cpp
+        tests/test_iterator.cpp
+        tests/test_math.cpp
+        tests/test_num_utils.cpp
+        tests/test_stdxlib.cpp
+        tests/test_stopwatch.cpp
+        tests/test_string.cpp
+    )
 
-target_link_libraries(stdx_tests
-    PRIVATE
-        stdx
-        gtest
-        gtest_main
-)
+    target_link_libraries(stdx_tests
+        PRIVATE
+            stdx
+            gtest
+            gtest_main
+    )
 
-check_enable_sanitizers(stdx_tests)
-check_enable_coverage(stdx_tests)
+    check_enable_sanitizers(stdx_tests)
+    check_enable_coverage(stdx_tests)
 
-add_test(NAME stdx_tests COMMAND stdx_tests)
+    add_test(NAME stdx_tests COMMAND stdx_tests)
+
+else()
+    message(STATUS "Building for unit tests disabled")
+endif()
 
 
 # ============================================================
