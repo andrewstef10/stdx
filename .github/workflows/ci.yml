@@ -43,7 +43,7 @@ jobs:
             src
   
   build:
-    name: Build & Test (${{ matrix.os }} / ${{ matrix.c_compiler }} / ${{ matrix.build_type }})
+    name: Build & Test (${{ matrix.os }} / ${{ matrix.compiler.c }} / ${{ matrix.build_type }})
     runs-on: ${{ matrix.os }}
     needs: clang_tidy # Run build after clang-tidy succeeds
 
