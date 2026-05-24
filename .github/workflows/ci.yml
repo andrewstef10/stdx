@@ -177,7 +177,7 @@ jobs:
       run: ctest --preset gcc-coverage --output-on-failure
 
     - name: Generate Coverage
-      run: cmake --preset gcc-coverage-gen-report
+      run: cmake --build --preset gcc-coverage-gen-report
 
     - name: Upload Coverage Report Artifact
       uses: actions/upload-artifact@v6
