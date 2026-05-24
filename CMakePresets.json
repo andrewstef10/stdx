@@ -1,0 +1,275 @@
+{
+    "version": 6,
+
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}"
+        },
+
+
+        {
+            "name": "windows-dev",
+            "inherits": "base",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-cl",
+                "CMAKE_CXX_COMPILER": "clang-cl",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_CLANG_TIDY": "ON"
+            }
+        },
+
+
+        {
+            "name": "windows-clang-debug",
+            "inherits": "base",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-cl",
+                "CMAKE_CXX_COMPILER": "clang-cl",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "windows-clang-release",
+            "inherits": "base",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-cl",
+                "CMAKE_CXX_COMPILER": "clang-cl",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "windows-cl",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl"
+            }
+        },
+
+
+        {
+            "name": "clang-debug",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "clang-release",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "gcc-debug",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "gcc-release",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+
+
+        {
+            "name": "clang-asan",
+            "inherits": "clang-debug",
+            "cacheVariables": {
+                "ENABLE_ASAN": "ON"
+            }
+        },
+        {
+            "name": "clang-coverage",
+            "inherits": "clang-debug",
+            "cacheVariables": {
+                "ENABLE_COVERAGE": "ON"
+            }
+        },
+        {
+            "name": "gcc-asan",
+            "inherits": "gcc-debug",
+            "cacheVariables": {
+                "ENABLE_ASAN": "ON"
+            }
+        },
+        {
+            "name": "gcc-coverage",
+            "inherits": "gcc-debug",
+            "cacheVariables": {
+                "ENABLE_COVERAGE": "ON"
+            }
+        }
+    ],
+
+    "buildPresets": [
+        {
+            "name": "windows-dev",
+            "configurePreset": "windows-dev"
+        },
+        {
+            "name": "windows-dev-verbose",
+            "configurePreset": "windows-dev",
+            "nativeToolOptions": ["--verbose"]
+        },
+        {
+            "name": "windows-dev-rebuild",
+            "configurePreset": "windows-dev",
+            "cleanFirst": true
+        },
+        {
+            "name": "windows-dev-rebuild-verbose",
+            "configurePreset": "windows-dev",
+            "cleanFirst": true,
+            "nativeToolOptions": ["-v"]
+        },
+
+
+        {
+            "name": "windows-clang-debug",
+            "configurePreset": "windows-clang-debug"
+        },
+        {
+            "name": "windows-clang-release",
+            "configurePreset": "windows-clang-release"
+        },
+        {
+            "name": "windows-cl-debug",
+            "configurePreset": "windows-cl",
+            "configuration": "Debug"
+        },
+        {
+            "name": "windows-cl-release",
+            "configurePreset": "windows-cl",
+            "configuration": "Release"
+        },
+
+
+        {
+            "name": "clang-debug",
+            "configurePreset": "clang-debug"
+        },
+        {
+            "name": "clang-release",
+            "configurePreset": "clang-release"
+        },
+        
+        {
+            "name": "gcc-debug",
+            "configurePreset": "gcc-debug"
+        },
+        {
+            "name": "gcc-release",
+            "configurePreset": "gcc-release"
+        },
+        
+
+        {
+            "name": "clang-asan",
+            "configurePreset": "clang-asan"
+        },
+        {
+            "name": "clang-coverage",
+            "configurePreset": "clang-coverage"
+        },
+        {
+            "name": "clang-coverage-gen-report",
+            "configurePreset": "clang-coverage",
+            "targets": ["coverage"]
+        },
+        {
+            "name": "gcc-asan",
+            "configurePreset": "gcc-asan"
+        },
+        {
+            "name": "gcc-coverage",
+            "configurePreset": "gcc-coverage"
+        },
+        {
+            "name": "gcc-coverage-gen-report",
+            "configurePreset": "gcc-coverage",
+            "targets": ["coverage"]
+        }
+    ],
+
+    "testPresets": [
+        {
+            "name": "windows-dev",
+            "configurePreset": "windows-dev"
+        },
+
+
+        {
+            "name": "windows-clang-debug",
+            "configurePreset": "windows-clang-debug"
+        },
+        {
+            "name": "windows-clang-release",
+            "configurePreset": "windows-clang-release"
+        },
+        {
+            "name": "windows-cl-debug",
+            "configurePreset": "windows-cl",
+            "configuration": "Debug"
+        },
+        {
+            "name": "windows-cl-release",
+            "configurePreset": "windows-cl",
+            "configuration": "Release"
+        },
+
+
+        {
+            "name": "clang-debug",
+            "configurePreset": "clang-debug"
+        },
+        {
+            "name": "clang-release",
+            "configurePreset": "clang-release"
+        },
+        {
+            "name": "gcc-debug",
+            "configurePreset": "gcc-debug"
+        },
+        {
+            "name": "gcc-release",
+            "configurePreset": "gcc-release"
+        }, 
+
+
+        {
+            "name": "clang-asan",
+            "configurePreset": "clang-asan"
+        },
+        {
+            "name": "clang-coverage",
+            "configurePreset": "clang-coverage"
+        },
+        {
+            "name": "gcc-asan",
+            "configurePreset": "gcc-asan"
+        },
+        {
+            "name": "gcc-coverage",
+            "configurePreset": "gcc-coverage"
+        }
+    ]
+}

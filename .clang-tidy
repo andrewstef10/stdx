@@ -1,0 +1,112 @@
+# Enable standard checks, C++ Core Guidelines, and modernization suggestions
+Checks: >
+  bugprone-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  cppcoreguidelines-*,
+
+  -readability-identifier-length,
+  
+  -bugprone-easily-swappable-parameters,
+
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-use-default-member-init,
+
+  -modernize-use-trailing-return-type,
+  -modernize-use-constraints,
+  -modernize-use-auto,
+  -modernize-use-nodiscard,
+  -modernize-avoid-c-arrays,
+  -modernize-type-traits,
+  -modernize-use-default-member-init,
+
+# Treat all enabled checks as errors
+WarningsAsErrors: "*"
+
+# Only check headers belonging to the project
+HeaderFilterRegex: '^.*[\\/]include[\\/]stdx[\\/].*'
+
+# Check options for specific modules
+CheckOptions:
+  # -------------------------
+  # Variables
+  # -------------------------
+
+  # local variables
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+
+  # function parameters
+  - key: readability-identifier-naming.ParameterCase
+    value: camelBack
+
+  # pointer parameters (optional)
+  - key: readability-identifier-naming.PointerParameterCase
+    value: camelBack
+
+  # Public members
+  - key: readability-identifier-naming.PublicMemberCase
+    value: lower_case
+
+  # Private members
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: m_
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: camelBack
+
+  # -------------------------
+  # Functions
+  # -------------------------
+
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+
+  # -------------------------
+  # Constants
+  # -------------------------
+
+  # constants (constexpr / const globals)
+  - key: readability-identifier-naming.ConstantCase
+    value: UPPER_CASE
+
+  # class/static member constants
+  - key: readability-identifier-naming.MemberConstantCase
+    value: UPPER_CASE
+
+  # global constants (extra explicit safety)
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE
+
+
+  # -------------------------
+  # Classes / Structs / Enums
+  # -------------------------
+
+  - key: readability-identifier-naming.ClassCase
+    value: lower_case
+
+  - key: readability-identifier-naming.StructCase
+    value: lower_case
+
+  - key: readability-identifier-naming.EnumCase
+    value: lower_case
+
+
+  # -------------------------
+  # Macros
+  # -------------------------
+
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
+
+
+  # -------------------------
+  # Other
+  # -------------------------
+
+  - key: readability-magic-numbers.IgnoredIntegerValues
+    value: '0;1;2;3,4;10'

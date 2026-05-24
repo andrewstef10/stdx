@@ -1,5 +1,5 @@
-#ifndef string_H
-#define string_H
+#ifndef STRING_H
+#define STRING_H
 
 #include <cstddef>
 #include <stdx/iterator.h>
@@ -134,6 +134,85 @@ namespace stdx {
      */
     std::size_t strlen(const char* str);
 
+    /// @brief Determines whether a null-terminated C-string contains a character.
+    /// @details Performs a linear search through the string.
+    ///
+    /// Time Complexity:
+    ///     - Time (worst case): O(n), where n is the length of the string `str`.
+    ///     - Space: O(1)
+    ///
+    /// @param str Pointer to the null-terminated string to search.
+    /// @param c Character to search for within the string.
+    /// @return true if the character exists in the string; otherwise false.
+    /// @warning Passing a null pointer results in undefined behavior.
+    bool contains(const char* str, char c);
+
+    /// @brief Determines whether a null-terminated C-string contains any character from another null-terminated C-string.
+    /// @details Performs a linear search through both strings.
+    ///
+    /// Time Complexity:
+    ///     - Time (worst case): O(n * m), where n is the length of `str` and m is the
+    ///     - Space: O(1)
+    ///
+    /// @param str Pointer to the null-terminated string to search.
+    /// @param chars Pointer to the null-terminated string containing the set of
+    ///              characters to search for.
+    /// @return true if any character from chars exists in `str`; otherwise false.
+    /// @warning Passing a null pointer results in undefined behavior.
+    bool contains_any(const char* str, const char* chars);
+
+    /// @brief Removes leading trim characters from a null-terminated C-string.
+    /// @details Does not allocate memory or modify characters.
+    ///
+    /// Time Complexity:
+    ///     - Time (worst case): O(n * m), where n is the length of `str` and m is the length of `trimChars`.
+    ///     - Space: O(1)
+    ///
+    /// @param str Pointer to the null-terminated string to trim.
+    /// @param trimChars Pointer to a null-terminated string containing the set of
+    ///                  characters to remove from the beginning of the string `str`.
+    ///                  Defaults to a space character.
+    /// @return Pointer to the first character in `str` that is not contained in `trimChars`.
+    /// @warning Passing a null pointer results in undefined behavior.
+    const char* trim_front(const char* str, const char* trimChars = " ");
+    char* trim_front(char* str, const char* trimChars = " ");
+
+    /// @brief Removes trailing trim characters from a null-terminated C-string.
+    /// @details Does not allocate memory. Replaces trailing characters found in `trimChars`
+    ///          with the null terminator (`'\0'`), modifying the original buffer.
+    ///
+    /// Time Complexity:
+    ///     - Time (worst case): O(n * m), where n is the length of `str` and m is the length of `trimChars`.
+    ///     - Space: O(1)
+    ///
+    /// @param str Pointer to the null-terminated string to trim.
+    /// @param len Length of the string excluding the null terminator.
+    /// @param trimChars Pointer to a null-terminated string containing the set of
+    ///                  characters to remove from the back of the string `str`.
+    ///                  Defaults to a space character.
+    /// @return Pointer to `str`.
+    /// @warning Passing a null pointer results in undefined behavior.
+    /// @warning `len` must match the actual string length.
+    char* trim_back(char* str, std::size_t len, const char* trimChars = " ");
+
+    /// @brief Removes leading and trailing trim characters from a null-terminated C-string.
+    /// @details Does not allocate memory. Replaces trailing characters found in `trimChars`
+    ///          with the null terminator (`'\0'`), modifying the original buffer.
+    ///
+    /// Time Complexity:
+    ///     - Time (worst case): O(n * m), where n is the length of `str` and m is the length of `trimChars`.
+    ///     - Space: O(1)
+    ///
+    /// @param str Pointer to the null-terminated string to trim.
+    /// @param len Length of the string excluding the null terminator.
+    /// @param trimChars Pointer to a null-terminated string containing the set of
+    ///                  characters to remove from the front and back of the string `str`.
+    ///                  Defaults to a space character.
+    /// @return Pointer to `str`.
+    /// @warning Passing a null pointer results in undefined behavior.
+    /// @warning `len` must match the actual string length.
+    char* trim(char* str, std::size_t len, const char* trimChars = " ");
+
 
     /**
      * @brief string class
@@ -187,15 +266,19 @@ namespace stdx {
          */
         ~string();
 
+        /// @brief Move constructor
+        /// @param  
+        string(string&&) = default;
+
         /**
          * @brief Assigns a new value to the string, replacing its current contents.
          *
          * @param other string object to copy if different from *this.
          * @return Reference to this string object
          */
-        string& operator=(const string& other) { return assign(other.c_str(), other.size()); }
+        string& operator=(const string& other) { assign(other.c_str(), other.size()); return *this; }
         template<std::size_t M>
-        string& operator=(const string<M>& other) { return assign(other.c_str(), other.size()); }
+        string& operator=(const string<M>& other) { assign(other.c_str(), other.size()); return *this; }
 
         /**
          * @brief Assigns a new value to the string, replacing its current contents.
@@ -203,7 +286,7 @@ namespace stdx {
          * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied as the new value for the string.
          * @return Reference to this string object
          */
-        string& operator=(const char* cstr) { return assign(cstr, strlen(cstr)); }
+        string& operator=(const char* cstr) { assign(cstr, strlen(cstr)); return *this; }
 
         /**
          * @brief Assigns a new value to the string, replacing its current contents.
@@ -212,6 +295,11 @@ namespace stdx {
          * @return Reference to this string object
          */
         string& operator=(char c);
+
+        /// @brief Move assignment operator
+        /// @param  
+        /// @return Reference to this string object
+        string& operator=(string&&) = default;
 
 
         //////////////////////// Capacity ////////////////////////
@@ -307,9 +395,9 @@ namespace stdx {
          * @param other A string object, whose value is copied at the end.
          * @return Reference to this string object
          */
-        string& operator+=(const string<N>& other) { return append(other.c_str(), other.size()); }
+        string& operator+=(const string<N>& other) { append(other.c_str(), other.size()); return *this; }
         template<std::size_t M>
-        string& operator+=(const string<M>& other) { return append(other.c_str(), other.size()); }
+        string& operator+=(const string<M>& other) { append(other.c_str(), other.size()); return *this; }
 
         /**
          * @brief Addition Assignment Operator.
@@ -319,7 +407,7 @@ namespace stdx {
          * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the string.
          * @return Reference to this string object
          */
-        string& operator+=(const char* cstr) { return append(cstr, strlen(cstr)); }
+        string& operator+=(const char* cstr) { append(cstr, strlen(cstr)); return *this; }
 
         /**
          * @brief Addition Assignment Operator.
@@ -342,8 +430,11 @@ namespace stdx {
 
         union string_data
         {
-            char stackBuffer[N + 1]; // initial stack allocated memory for this string
-            char* heapPtr; // pointer to strings memory after capacity has grown
+            // initial stack allocated memory for this string
+            char stack_buffer[N + 1];
+            
+            // pointer to strings memory after capacity has grown
+            char* heap_ptr;
         } m_data;
 
 
@@ -352,8 +443,8 @@ namespace stdx {
          * 
          * @returns Pointer to the string's character buffer
          */
-        char* get_data() { return m_capacity > N ? m_data.heapPtr : m_data.stackBuffer; }
-        const char* get_data() const { return m_capacity > N ? m_data.heapPtr : m_data.stackBuffer; }
+        char* get_data() { return m_capacity > N ? m_data.heap_ptr : m_data.stack_buffer; }
+        const char* get_data() const { return m_capacity > N ? m_data.heap_ptr : m_data.stack_buffer; }
 
         /**
          * @brief Delete any dynamically allocated memory for this class
@@ -378,7 +469,7 @@ namespace stdx {
          * @param cstrLength The length of the cstr
          * @returns Reference to this string object
          */
-        string& assign(const char* cstr, std::size_t cstrLength);
+        void assign(const char* cstr, std::size_t cstrLength);
 
         /**
          * @brief Append a C string to the end of this string
@@ -389,7 +480,7 @@ namespace stdx {
          * @param cstrLength The length of the cstr
          * @returns Reference to this string object
          */
-        string& append(const char* cstr, std::size_t cstrLength);
+        void append(const char* cstr, std::size_t cstrLength);
     };
 
 
@@ -526,14 +617,16 @@ namespace stdx {
     inline string<N>& string<N>::operator=(char c)
     {
         char buff[] = {c, '\0'};
-        return assign(buff, 1);
+        assign(buff, 1);
+        return *this;
     }
 
     template<std::size_t N>
     inline string<N>& string<N>::operator+=(char c)
     {
         char buff[] = {c, '\0'};
-        return append(buff, 1);
+        append(buff, 1);
+        return *this;
     }
 
     template<std::size_t N>
@@ -548,8 +641,8 @@ namespace stdx {
     {
         if (m_capacity > N)
         {
-            delete[] m_data.heapPtr;
-            m_data.heapPtr = 0;
+            delete[] m_data.heap_ptr;
+            m_data.heap_ptr = 0;
         }
     }
 
@@ -572,25 +665,24 @@ namespace stdx {
     }
 
     template<std::size_t N>
-    inline string<N>& string<N>::assign(const char* cstr, std::size_t cstrLength)
+    inline void string<N>::assign(const char* cstr, std::size_t cstrLength)
     {
         if (cstrLength > m_capacity)
         {
             // need to allocate more memory
             deallocate();
             m_capacity = calculate_new_capacity(cstrLength);
-            m_data.heapPtr = new char[m_capacity + 1];
+            m_data.heap_ptr = new char[m_capacity + 1];
         }
 
         m_size = cstrLength;
         char* data = get_data();
         memcpy(data, cstr, cstrLength); // assign all but the null term
         data[m_size] = '\0';
-        return *this;
     }
 
     template<std::size_t N>
-    inline string<N>& string<N>::append(const char* cstr, std::size_t cstrLength)
+    inline void string<N>::append(const char* cstr, std::size_t cstrLength)
     {
         char* data = get_data();
         if (m_size + cstrLength > m_capacity)
@@ -602,14 +694,13 @@ namespace stdx {
 
             deallocate();
             m_capacity = newCapacity;
-            m_data.heapPtr = tempData;
-            data = m_data.heapPtr;
+            m_data.heap_ptr = tempData;
+            data = m_data.heap_ptr;
         }
 
         memcpy(data + m_size, cstr, cstrLength); // append other string excluding the null term
         m_size += cstrLength;
         data[m_size] = '\0';
-        return *this;
     }
 
     template<std::size_t N>
