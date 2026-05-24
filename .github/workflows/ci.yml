@@ -53,36 +53,39 @@ jobs:
 
       # Set up a matrix to run the following configurations:
       # 1. Windows, Debug/Release, MSVC
-      # 2. Linux, Debug/Release, GCC
-      # 3. Linux, Debug/Release, Clang
-      # 4. MacOS, Debug/Release, Apple Clang
+      # 2. Windows, Debug/Release, clang-cl
+      # 3. Linux, Debug/Release, GCC
+      # 4. Linux, Debug/Release, Clang
+      # 5. MacOS, Debug/Release, Apple Clang
       matrix:
+        os: [ubuntu-latest, macos-latest]
         build_type: [Debug, Release]
+        compiler:
+          - { c: gcc,       cpp: g++ }
+          - { c: clang,     cpp: clang++ }
         include:
           # Windows (MSVC)
           - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
+            build_type: Debug
+            compiler: { c: cl, cpp: cl }
+
+          - os: windows-latest
+            build_type: Release
+            compiler: { c: cl, cpp: cl }
 
           # Windows Clang (clang-cl)
           - os: windows-latest
-            c_compiler: clang-cl
-            cpp_compiler: clang-cl
+            build_type: Debug
+            compiler: { c: clang-cl, cpp: clang-cl }
 
-          # Linux GCC
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
+          - os: windows-latest
+            build_type: Release
+            compiler: { c: clang-cl, cpp: clang-cl }
 
-          # Linux Clang
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-
-          # macOS (Apple Clang)
+        exclude:
+          # macOS doesn't have GCC by default
           - os: macos-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+            compiler: { c: gcc, cpp: g++ }
 
     steps:
     - name: Checkout
@@ -92,8 +95,8 @@ jobs:
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       run: >
         cmake -B ${{ env.BUILD_DIR }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }}
+        -DCMAKE_C_COMPILER=${{ matrix.compiler.c }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -S ${{ github.workspace }}
 
