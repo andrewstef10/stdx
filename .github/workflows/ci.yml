@@ -57,7 +57,6 @@ jobs:
       # 3. Linux, Debug/Release, Clang
       # 4. MacOS, Debug/Release, Apple Clang
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Debug, Release]
         include:
           # Windows (MSVC)
