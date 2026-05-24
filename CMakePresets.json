@@ -71,6 +71,13 @@
             }
         },
         {
+            "name": "clang-asan",
+            "inherits": "clang-debug",
+            "cacheVariables": {
+                "ENABLE_ASAN": "ON"
+            }
+        },
+        {
             "name": "gcc-debug",
             "inherits": "base",
             "cacheVariables": {
@@ -86,6 +93,13 @@
                 "CMAKE_C_COMPILER": "gcc",
                 "CMAKE_CXX_COMPILER": "gcc++",
                 "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "gcc-asan",
+            "inherits": "gcc-debug",
+            "cacheVariables": {
+                "ENABLE_ASAN": "ON"
             }
         }
     ],
@@ -142,12 +156,20 @@
             "configurePreset": "clang-release"
         },
         {
+            "name": "clang-asan",
+            "configurePreset": "clang-asan"
+        },
+        {
             "name": "gcc-debug",
             "configurePreset": "gcc-debug"
         },
         {
             "name": "gcc-release",
             "configurePreset": "gcc-release"
+        },
+        {
+            "name": "gcc-asan",
+            "configurePreset": "gcc-asan"
         }
     ],
 
@@ -187,12 +209,20 @@
             "configurePreset": "clang-release"
         },
         {
+            "name": "clang-asan",
+            "configurePreset": "clang-asan"
+        },
+        {
             "name": "gcc-debug",
             "configurePreset": "gcc-debug"
         },
         {
             "name": "gcc-release",
             "configurePreset": "gcc-release"
+        },
+        {
+            "name": "gcc-asan",
+            "configurePreset": "gcc-asan"
         }
     ]
 }
