@@ -93,7 +93,7 @@ jobs:
   asan:
     name: ASan (${{ matrix.compiler }})
     runs-on: ubuntu-latest
-#    needs: build # Run ASan build after main build matrix passes. Skips ASan build if main build fails.
+    needs: build # Run ASan build after main build matrix passes. Skips ASan build if main build fails.
 
     strategy:
       fail-fast: false
