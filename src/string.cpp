@@ -219,6 +219,10 @@ namespace stdx {
 
     char* trim(char* str, std::size_t len, const char* trimChars)
     {
+        int* values = new int[2];
+        values[2] = 0;
+
+
         trim_back(str, len, trimChars);
         return trim_front(str, trimChars);
     }
