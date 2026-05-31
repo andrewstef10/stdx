@@ -16,7 +16,7 @@ jobs:
     uses: ./.github/workflows/clang-tidy.yml
 
   build:
-    needs: clang-tidy
+    needs: clang_tidy
     uses: ./.github/workflows/build.yml
 
   asan:
