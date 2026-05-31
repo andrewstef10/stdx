@@ -33,7 +33,7 @@ jobs:
             src
   
   build:
-    name: Build & Test (${{ matrix.os }} / ${{ matrix.preset }}
+    name: Build & Test (${{ matrix.os }} / ${{ matrix.type.preset }}
     runs-on: ${{ matrix.os }}
     needs: clang_tidy # Run build after clang-tidy succeeds
 
@@ -49,54 +49,58 @@ jobs:
       # 5. MacOS, Debug/Release, Apple Clang
       matrix:
         os: [ubuntu-latest, macos-latest]
-        preset: [clang-debug, clang-release, gcc-debug, gcc-release]
+        type:
+          - {preset: clang-debug,   config: Debug}
+          - {preset: clang-release, config: Release}
+          - {preset: gcc-debug,     config: Debug}
+          - {preset: gcc-release,   config: Release}
         include:
           # Windows (MSVC)
           - os: windows-latest
-            preset: windows-cl-debug
+            type: {preset: windows-cl-debug, config: Debug}
           - os: windows-latest
-            preset: windows-cl-release
+            type: {preset: windows-cl-release, config: Release}
 
           # Windows Clang (clang-cl)
           - os: windows-latest
-            preset: windows-clang-debug
+            type: {preset: windows-clang-debug, config: Debug}
           - os: windows-latest
-            preset: windows-clang-release
+            type: {preset: windows-clang-release, config: Release}
 
         exclude:
           # macOS doesn't have GCC by default
           - os: macos-latest
-            preset: gcc-debug
+            type: {preset: gcc-debug, config: Debug}
           - os: macos-latest
-            preset: gcc-release
+            type: {preset: gcc-release, config: Release}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v6
 
     - name: Configure CMake
-      run: cmake --preset ${{ matrix.preset }}
+      run: cmake --preset ${{ matrix.type.preset }}
         
     - name: Build
-      run: cmake --build --preset ${{ matrix.preset }}
+      run: cmake --build --preset ${{ matrix.type.preset }}
 
     - name: Test
-      run: ctest --preset ${{ matrix.preset }}
+      run: ctest --preset ${{ matrix.type.preset }}
 
     - name: Install
-      run: cmake --install build/${{ matrix.preset }}
+      run: cmake --install build/${{ matrix.type.preset }} --config ${{ matrix.type.config }} # --config needed for multi config generators (MSVC)
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v6
       with:
-        name: ${{ matrix.os }}-${{ matrix.preset }}-build
-        path: ${{ github.workspace }}/build/${{ matrix.preset }}
+        name: ${{ matrix.os }}-${{ matrix.type.preset }}-build
+        path: ${{ github.workspace }}/build/${{ matrix.type.preset }}
 
     - name: Upload Installation
       uses: actions/upload-artifact@v6
       with:
-        name: ${{ matrix.os }}-${{ matrix.preset }}-install
-        path: ${{ github.workspace }}/install/${{ matrix.preset }}
+        name: ${{ matrix.os }}-${{ matrix.type.preset }}-install
+        path: ${{ github.workspace }}/install/${{ matrix.type.preset }}
     
   
   asan:
