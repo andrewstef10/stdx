@@ -6,7 +6,7 @@ include(GNUInstallDirs)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # exports compile_commands.json to build directory
+set(CMAKE_DEBUG_POSTFIX "-d") # postfix all libraries for debug builds
 
 # ---- Options ----
 option(ENABLE_UNIT_TESTS "Enable building unit tests" ON)
@@ -17,14 +17,43 @@ option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
 # ---- Output Directories ----
 set(COVERAGE_DIR ${CMAKE_SOURCE_DIR}/coverage)
 
-message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}") # This is the root of the source tree (where root CMakeLists.txt is located)
-message(STATUS "CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}") # This is the directory of the current CMakeLists.txt
-message(STATUS "CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}") # This is the root of the build tree (where you run cmake. e.g. build/)
-message(STATUS "COVERAGE_DIR = ${COVERAGE_DIR}")
+message(STATUS "----General CMake Variables----")
+message(STATUS "CMAKE_PROJECT_NAME              = ${CMAKE_PROJECT_NAME}")
+message(STATUS "CMAKE_SOURCE_DIR                = ${CMAKE_SOURCE_DIR}") # This is the root of the source tree (where root CMakeLists.txt is located)
+message(STATUS "CMAKE_CURRENT_SOURCE_DIR        = ${CMAKE_CURRENT_SOURCE_DIR}") # This is the directory of the current CMakeLists.txt
+message(STATUS "CMAKE_BINARY_DIR                = ${CMAKE_BINARY_DIR}") # This is the root of the build tree (where you run cmake. e.g. build/)
+
+message(STATUS "----Project Install Locations----")
+message(STATUS "CMAKE_INSTALL_PREFIX            = ${CMAKE_INSTALL_PREFIX}") # where running cmake --install will install to
+message(STATUS "CMAKE_INSTALL_BINDIR            = ${CMAKE_INSTALL_BINDIR}") # subdirectory where all executables should be installed to
+message(STATUS "CMAKE_INSTALL_LIBDIR            = ${CMAKE_INSTALL_LIBDIR}") # subdirectory where all library files should be installed to
+message(STATUS "CMAKE_INSTALL_INCLUDEDIR        = ${CMAKE_INSTALL_INCLUDEDIR}") # subdirectory where all header files should be installed to
+
+message(STATUS "----Project Build Output Locations----")
+message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY  = ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}") # where executables will be output after building
+message(STATUS "CMAKE_LIBRARY_OUTPUT_DIRECTORY  = ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}") # where static library files will be output after building
+message(STATUS "CMAKE_ARCHIVE_OUTPUT_DIRECTORY  = ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}") # where shared library files will be output after building
+
+message(STATUS "----Architecture----")
+message(STATUS "CMAKE_SYSTEM_NAME            = ${CMAKE_SYSTEM_NAME}")
+message(STATUS "CMAKE_SYSTEM_VERSION         = ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "CMAKE_SYSTEM_PROCESSOR       = ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "CMAKE_GENERATOR              = ${CMAKE_GENERATOR}")
+message(STATUS "CMAKE_C_COMPILER             = ${CMAKE_C_COMPILER}")
+message(STATUS "CMAKE_CXX_COMPILER           = ${CMAKE_CXX_COMPILER}")
+message(STATUS "CMAKE_C_COMPILER_ID          = ${CMAKE_C_COMPILER_ID}")
+message(STATUS "CMAKE_CXX_COMPILER_ID        = ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "CMAKE_C_COMPILER_VERSION     = ${CMAKE_C_COMPILER_VERSION}")
+message(STATUS "CMAKE_CXX_COMPILER_VERSION   = ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "CMAKE_SIZEOF_VOID_P          = ${CMAKE_SIZEOF_VOID_P}")
+message(STATUS "CMAKE_BUILD_TYPE             = ${CMAKE_BUILD_TYPE}")
+
+message(STATUS "----Other----")
+message(STATUS "COVERAGE_DIR                    = ${COVERAGE_DIR}")
 
 
 # ============================================================
-# Compiler Flags / properties functions
+# Compiler Flags / properties functions for Targets
 # ============================================================
 function(check_enable_clang_tidy target)
     if(ENABLE_CLANG_TIDY)
@@ -33,11 +62,11 @@ function(check_enable_clang_tidy target)
         if(CLANG_TIDY_EXE)
             message(STATUS "Found clang-tidy found at: ${CLANG_TIDY_EXE}")
 
-            set_target_properties(stdx PROPERTIES
+            set_target_properties(${target} PROPERTIES
                 CXX_CLANG_TIDY "${CLANG_TIDY_EXE}"
             )
         else()
-            message(WARNING "clang-tidy enabled but not found!")
+            message(WARNING "clang-tidy enabled but not found! Ensure clang-tidy is installed!")
         endif()
     endif()
 endfunction()
@@ -70,76 +99,15 @@ endfunction()
 # ============================================================
 # Library
 # ============================================================
-add_library(stdx
-    src/ctype.cpp
-    src/math.cpp
-    src/stdxlib.cpp
-    src/stopwatch.cpp
-    src/string.cpp
-)
-
-target_include_directories(stdx
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-
-if (MSVC)
-    target_compile_options(stdx PRIVATE /W4)
-else()
-    target_compile_options(stdx PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
-
-check_enable_clang_tidy(stdx)
-check_enable_sanitizers(stdx)
-check_enable_coverage(stdx)
+add_subdirectory(src)
 
 
 # ============================================================
-# Dependencies
+# Tests
 # ============================================================
 if(ENABLE_UNIT_TESTS)
-    include(FetchContent)
-
-    FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/85087857ad10bd407cd6ed2f52f7ea9752db621f.zip
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    )
-    # For Windows: Prevent overriding the parent project's compiler/linker settings
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
-
-
-    # ============================================================
-    # Tests
-    # ============================================================
     enable_testing()
-
-    add_executable(stdx_tests
-        tests/test_array.cpp
-        tests/test_ctype.cpp
-        tests/test_iterator.cpp
-        tests/test_math.cpp
-        tests/test_num_utils.cpp
-        tests/test_stdxlib.cpp
-        tests/test_stopwatch.cpp
-        tests/test_string.cpp
-    )
-
-    target_link_libraries(stdx_tests
-        PRIVATE
-            stdx
-            gtest
-            gtest_main
-    )
-
-    check_enable_sanitizers(stdx_tests)
-    check_enable_coverage(stdx_tests)
-
-    add_test(NAME stdx_tests COMMAND stdx_tests)
-
+    add_subdirectory(tests)
 else()
     message(STATUS "Building for unit tests disabled")
 endif()
@@ -166,7 +134,7 @@ if(ENABLE_COVERAGE)
             --html
             --html-details
             --html-self-contained
-            --html-title "stdx Coverage Report"
+            --html-title "${CMAKE_PROJECT_NAME} Coverage Report"
             --html-details=${COVERAGE_DIR}/index.html
             --txt=${COVERAGE_DIR}/coverage.txt
             --print-summary
