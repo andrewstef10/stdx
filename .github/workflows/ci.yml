@@ -38,7 +38,7 @@ jobs:
             src
   
   build:
-    name: Build & Test (${{ matrix.os }} / ${{ matrix.compiler.c }} / ${{ matrix.build_type }})
+    name: Build & Test (${{ matrix.os }} / ${{ matrix.preset }}
     runs-on: ${{ matrix.os }}
     needs: clang_tidy # Run build after clang-tidy succeeds
 
@@ -47,63 +47,46 @@ jobs:
       fail-fast: false
 
       # Set up a matrix to run the following configurations:
-      # 1. Windows, Debug/Release, MSVC
+      # 1. Windows, Debug/Release, cl (uses VS multi config generator but is still split up for simplicity)
       # 2. Windows, Debug/Release, clang-cl
       # 3. Linux, Debug/Release, GCC
       # 4. Linux, Debug/Release, Clang
       # 5. MacOS, Debug/Release, Apple Clang
       matrix:
         os: [ubuntu-latest, macos-latest]
-        build_type: [Debug, Release]
-        compiler:
-          - { c: gcc,       cpp: g++ }
-          - { c: clang,     cpp: clang++ }
+        preset: [clang-Debug, clang-release, gcc-debug, gcc-release]
         include:
           # Windows (MSVC)
           - os: windows-latest
-            build_type: Debug
-            compiler: { c: cl, cpp: cl }
-
+            preset: windows-cl-debug
           - os: windows-latest
-            build_type: Release
-            compiler: { c: cl, cpp: cl }
+            preset: windows-cl-release
 
           # Windows Clang (clang-cl)
           - os: windows-latest
-            build_type: Debug
-            compiler: { c: clang-cl, cpp: clang-cl }
-
+            preset: windows-clang-debug
           - os: windows-latest
-            build_type: Release
-            compiler: { c: clang-cl, cpp: clang-cl }
+            preset: windows-clang-release
 
         exclude:
           # macOS doesn't have GCC by default
           - os: macos-latest
-            compiler: { c: gcc, cpp: g++ }
+            preset: gcc-debug
+          - os: macos-latest
+            preset: gcc-release
 
     steps:
     - name: Checkout
       uses: actions/checkout@v6
 
     - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      run: >
-        cmake
-        -S ${{ github.workspace }}
-        -B ${{ env.BUILD_DIR }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }}
-        -DCMAKE_C_COMPILER=${{ matrix.compiler.c }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      run: cmake --preset ${{ matrix.preset }}
         
-
     - name: Build
-      # NOTE: --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.build_type }}
+      run: cmake --build --preset ${{ matrix.preset }}
 
     - name: Test
-      working-directory: ${{ env.BUILD_DIR }}
-      run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
+      run: ctest --preset ${{ matrix.preset }}
     
   
   asan:
