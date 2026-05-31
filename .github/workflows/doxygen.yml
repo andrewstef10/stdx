@@ -1,0 +1,25 @@
+name: Doxygen
+on:
+  workflow_call: {}
+
+jobs:
+  doxygen:
+    name: Doxygen Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Doxygen
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y doxygen
+
+      - name: Generate Documentation
+        run: doxygen Doxyfile
+
+      - name: Upload Documentation Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: doxygen-documentation
+          path: docs/html

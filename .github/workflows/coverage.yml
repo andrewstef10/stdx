@@ -1,0 +1,36 @@
+name: Code Coverage
+on:
+  workflow_call: {}
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install Dependencies
+        run: pip install gcovr
+
+      - name: Configure CMake
+        run: cmake --preset gcc-coverage
+
+      - name: Build
+        run: cmake --build --preset gcc-coverage
+
+      - name: Test
+        run: ctest --preset gcc-coverage --output-on-failure
+
+      - name: Generate Coverage
+        run: cmake --build --preset gcc-coverage-gen-report
+
+      - name: Upload Coverage Report Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report
+          path: ${{ github.workspace }}/coverage
