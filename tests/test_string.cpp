@@ -763,6 +763,19 @@ TEST(TrimBackTest, AllTrimmed)
     EXPECT_EQ(result, buffer);
 }
 
+TEST(TrimBackTest, TrimAllButFirst)
+{
+    char buffer[] = "baaa";
+    std::size_t len = std::strlen(buffer);
+
+    char* result = stdx::trim_back(buffer, len, "a");
+
+    EXPECT_STREQ(result, "b");
+    EXPECT_EQ(result[0], 'b');
+    EXPECT_EQ(result[1], '\0');
+    EXPECT_EQ(result, buffer);
+}
+
 TEST(TrimBackTest, TrimsEmptyString)
 {
     char buffer[] = "";
