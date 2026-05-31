@@ -1,9 +1,14 @@
-# Build directories
+# Build output directory
 /build/
+
+# Install directory
+/install/
+
+# Code coverage output directory
 /coverage/
+
+# Doxygen output directory
 /docs/
-/CMakeFiles/
-/CMakeCache.txt
 
 # Visual Studio
 *.suo
