@@ -1,16 +1,7 @@
-# Build output directory
+# Build directories
 /build/
-
-# Install directory
-/install/
-
-# Code coverage output directory
 /coverage/
-
-# Doxygen output directory
 /docs/
-
-# Cmake droppings
 /CMakeFiles/
 /CMakeCache.txt
 
