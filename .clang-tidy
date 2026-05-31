@@ -5,6 +5,7 @@ Checks: >
   performance-*,
   readability-*,
   cppcoreguidelines-*,
+  clang-analyzer-*,
 
   -readability-identifier-length,
   
