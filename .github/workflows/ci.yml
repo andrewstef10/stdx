@@ -22,14 +22,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      # - name: Install dependencies
-      #   run: |
-      #     sudo apt update
-      #     sudo apt install -y clang-tidy cmake ninja-build
-
       - name: Configure CMake
-        run: >
-          cmake --preset clang-release -DENABLE_UNIT_TESTS=OFF -G Ninja
+        run: cmake --preset clang-release -DENABLE_UNIT_TESTS=OFF -G Ninja
 
       - name: Run clang-tidy
         run: |
@@ -87,6 +81,12 @@ jobs:
 
     - name: Test
       run: ctest --preset ${{ matrix.preset }}
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: ${{ matrix.preset }}-artifacts
+        path: ${{ github.workspace }}/build/${{ matrix.preset }}
     
   
   asan:
@@ -115,9 +115,7 @@ jobs:
       run: cmake --build --preset ${{ matrix.preset }}
 
     - name: Run Tests with ASan
-      run: |
-        ASAN_OPTIONS=detect_leaks=1:abort_on_error=1 \
-        ctest --preset ${{ matrix.preset }} --output-on-failure
+      run: ctest --preset ${{ matrix.preset }}
 
 
   coverage:
@@ -152,7 +150,7 @@ jobs:
       run: cmake --build --preset gcc-coverage
 
     - name: Test
-      run: ctest --preset gcc-coverage --output-on-failure
+      run: ctest --preset gcc-coverage
 
     - name: Generate Coverage
       run: cmake --build --preset gcc-coverage-gen-report
@@ -189,8 +187,7 @@ jobs:
         sudo apt-get install -y doxygen
 
     - name: Generate Documentation
-      run: |
-        doxygen Doxyfile
+      run: doxygen Doxyfile
 
     - name: Upload Documentation Artifact
       uses: actions/upload-artifact@v6

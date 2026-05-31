@@ -33,6 +33,13 @@
             }
         },
         {
+            "name": "base-asan",
+            "hidden": true,
+            "environment": {
+                "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=1:strict_init_order=1:check_initialization_order=1:detect_stack_use_after_return=1:detect_container_overflow=1:detect_invalid_pointer_pairs=2:check_malloc_usable_size=1:detect_leaks=1:allocator_may_return_null=0:handle_segv=1:handle_sigbus=1:handle_abort=1:handle_sigill=1:print_stats=1"
+            }
+        },
+        {
             "name": "base-windows-clang",
             "hidden": true,
             "inherits": "base",
@@ -101,7 +108,7 @@
         },
         {
             "name": "clang-asan",
-            "inherits": "clang-debug",
+            "inherits": ["clang-debug", "base-asan"],
             "cacheVariables": {
                 "ENABLE_ASAN": "ON"
             }
@@ -125,7 +132,7 @@
         },
         {
             "name": "gcc-asan",
-            "inherits": "gcc-debug",
+            "inherits": ["gcc-debug", "base-asan"],
             "cacheVariables": {
                 "ENABLE_ASAN": "ON"
             }
