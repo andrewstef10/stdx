@@ -54,7 +54,7 @@ jobs:
       # 5. MacOS, Debug/Release, Apple Clang
       matrix:
         os: [ubuntu-latest, macos-latest]
-        preset: [clang-Debug, clang-release, gcc-debug, gcc-release]
+        preset: [clang-debug, clang-release, gcc-debug, gcc-release]
         include:
           # Windows (MSVC)
           - os: windows-latest
