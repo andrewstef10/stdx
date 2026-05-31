@@ -83,11 +83,20 @@ jobs:
     - name: Test
       run: ctest --preset ${{ matrix.preset }}
 
+    - name: Install
+      run: cmake --install build/${{ matrix.preset }}
+
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v6
       with:
-        name: ${{ matrix.os }}-${{ matrix.preset }}-artifacts
+        name: ${{ matrix.os }}-${{ matrix.preset }}-build
         path: ${{ github.workspace }}/build/${{ matrix.preset }}
+
+    - name: Upload Installation
+      uses: actions/upload-artifact@v6
+      with:
+        name: ${{ matrix.os }}-${{ matrix.preset }}-install
+        path: ${{ github.workspace }}/install/${{ matrix.preset }}
     
   
   asan:
