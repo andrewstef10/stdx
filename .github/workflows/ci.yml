@@ -54,6 +54,7 @@ jobs:
           - {preset: clang-release, config: Release}
           - {preset: gcc-debug,     config: Debug}
           - {preset: gcc-release,   config: Release}
+          - {preset: default, config: Debug}
         include:
           # Windows (MSVC)
           - os: windows-latest
@@ -66,6 +67,9 @@ jobs:
             type: {preset: windows-clang-debug, config: Debug}
           - os: windows-latest
             type: {preset: windows-clang-release, config: Release}
+
+          - os: windows-latest
+            type: {preset: default, config: Debug}
 
         exclude:
           # macOS doesn't have GCC by default

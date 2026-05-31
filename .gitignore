@@ -10,10 +10,6 @@
 # Doxygen output directory
 /docs/
 
-# Cmake droppings
-/CMakeFiles/
-/CMakeCache.txt
-
 # Visual Studio
 *.suo
 *.user
