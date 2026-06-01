@@ -21,6 +21,7 @@ add_executable(${UNIT_TEST_TARGET_NAME}
     test_stdxlib.cpp
     test_stopwatch.cpp
     test_string.cpp
+    test_vector.cpp
 )
 set_target_properties(${UNIT_TEST_TARGET_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
