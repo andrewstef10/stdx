@@ -47,25 +47,25 @@ namespace stdx {
         /// @param lhs left hand sid
         /// @param rhs right had side
         /// @return True if lhs is less than rhs, false otherwise.
-        friend bool operator<(const Derived& lhs, const Derived& rhs) { return lhs.less_than(rhs); }
+        friend constexpr bool operator<(const Derived& lhs, const Derived& rhs) { return lhs.less_than(rhs); }
 
         /// @brief Greater than operator
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is greater than rhs, false otherwise.
-        friend bool operator>(const Derived& lhs, const Derived& rhs) { return rhs.less_than(lhs); }
+        friend constexpr bool operator>(const Derived& lhs, const Derived& rhs) { return rhs.less_than(lhs); }
 
         /// @brief Less than or equal to operator
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is less than or equal to rhs, false otherwise.
-        friend bool operator<=(const Derived& lhs, const Derived& rhs) { return !rhs.less_than(lhs); }
+        friend constexpr bool operator<=(const Derived& lhs, const Derived& rhs) { return !rhs.less_than(lhs); }
 
         /// @brief Greater than or equal to operator
         /// @param lhs left hand side
         /// @param rhs right had side
         /// @return True if lhs is greater than or equal to rhs, false otherwise.
-        friend bool operator>=(const Derived& lhs, const Derived& rhs) { return !lhs.less_than(rhs); }
+        friend constexpr bool operator>=(const Derived& lhs, const Derived& rhs) { return !lhs.less_than(rhs); }
 
     protected:
         // ==== comparable should not be constructed directly ====

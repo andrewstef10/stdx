@@ -14,14 +14,15 @@ FetchContent_MakeAvailable(googletest)
 set(UNIT_TEST_TARGET_NAME "${CMAKE_PROJECT_NAME}-unittest")
 add_executable(${UNIT_TEST_TARGET_NAME}
     test_array.cpp
+    test_array_list.cpp
     test_ctype.cpp
     test_iterator.cpp
     test_math.cpp
+    test_memory.cpp
     test_num_utils.cpp
     test_stdxlib.cpp
     test_stopwatch.cpp
     test_string.cpp
-    test_vector.cpp
 )
 set_target_properties(${UNIT_TEST_TARGET_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
