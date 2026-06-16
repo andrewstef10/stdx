@@ -344,13 +344,12 @@ namespace stdx {
             return *this;
         }
 
-        clear(); // clear the current elements
-
         constexpr bool POCMA = std::allocator_traits<allocator>::propagate_on_container_move_assignment::value;
         if (POCMA || m_alloc == other.m_alloc)
         {
             // Either our allocator and the memory our allocator allocates need to stay together (if POCMA) OR allocators are equal
-            // Its safe to steal other's buffer and deallocate our own O(n)
+            // Its safe to steal other's buffer and deallocate our own
+            clear();
             std::allocator_traits<allocator>::deallocate(m_alloc, m_data, m_capacity);
 
             if (POCMA)
@@ -373,6 +372,14 @@ namespace stdx {
                 grow(other.m_size);
             }
 
+            // Move assign existing elements in the container
+            std::size_t smallerSize = this->m_size < other.m_size ? this->m_size : other.m_size;
+            for (std::size_t i = 0; i < smallerSize; ++i)
+            {
+                m_data[i] = std::move(other.m_data[i]);
+            }
+
+            // Move construct the remaining elements in other
             for (; this->m_size < other.m_size; ++this->m_size)
             {
                 std::allocator_traits<allocator>::construct(m_alloc, m_data + this->m_size, std::move(other.m_data[this->m_size]));
