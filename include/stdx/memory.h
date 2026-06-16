@@ -63,10 +63,23 @@ namespace stdx {
 
         using value_type = T;
 
+        /// @brief True if any two instances of this allocator can free each other's memory.
+        ///        If is_always_equal is true, then comparing any two containers of this type (operator==) should also return true.
+        /// @details True here because stdx::allocator is stateless and all instances are are considered equal.
         using is_always_equal = std::true_type;
 
+        /// @brief True if this allocator object should itself be copy-assigned into the destination container during container copy assignment.
+        /// @details False here because stdx::allocator is stateless. There is no internal state to transfer.
         using propagate_on_container_copy_assignment = std::false_type;
+
+        /// @brief True if this allocator object should itself be move-assigned into the destination container during container move assignment.
+        /// @details False here because stdx::allocator is stateless. There is no internal state to transfer.
         using propagate_on_container_move_assignment = std::false_type;
+
+        /// @brief True if this allocator object should itself be swapped when two containers are swapped.
+        /// @details False here because stdx::allocator is stateless. There is no internal state to swap.
+        ///          If false and allocators are not equal, swapping containers is undefined behavior because
+        ///          each container would hold memory it cannot legally free with its own allocator.
         using propagate_on_container_swap = std::false_type;
 
         // No longer required c++11+
