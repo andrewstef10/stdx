@@ -32,7 +32,7 @@ namespace stdx {
         // ==== container should not be constructed directly ====
         container() = default;
         ~container() = default;
-        container(const container& other) = default;
+        container(const container& other) {};
 
         container(container&& other) noexcept
         : m_size(other.m_size)
@@ -40,7 +40,7 @@ namespace stdx {
             other.m_size = 0; 
         }
 
-        container& operator=(const container& other) { return *this; }
+        container& operator=(const container& other) = default;
 
         container& operator=(container&& other) noexcept
         { 
