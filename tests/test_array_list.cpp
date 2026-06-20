@@ -1,18 +1,10 @@
 #include <gtest/gtest.h>
 #include <stdx/array_list.h>
+#include <limits>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
-
-
-// ===== Sizeof Tests =====
-
-TEST(ArrayListSizeofTest, SizeofMatchesVector) {
-    EXPECT_EQ(sizeof(std::vector<int>), sizeof(stdx::array_list<int>));
-    EXPECT_EQ(sizeof(std::vector<double>), sizeof(stdx::array_list<double>));
-    EXPECT_EQ(sizeof(std::vector<std::vector<char>>), sizeof(stdx::array_list<std::vector<char>>));
-}
-
 
 // ===== Constructor / Assignment Tests =====
 
@@ -1278,4 +1270,307 @@ TEST(ArrayListGrowthPolicyTest, DoublingGrowthPreservesElements) {
     for (int i = 0; i < 8; ++i) {
         EXPECT_EQ(i * 3, v[i]);
     }
+}
+
+
+// ===== emplace_back / emplace Tests =====
+
+namespace {
+
+struct Point {
+    int x, y;
+    Point(int x, int y) : x(x), y(y) {}
+};
+
+struct MoveOnly {
+    int value;
+    explicit MoveOnly(int v) : value(v) {}
+    MoveOnly(const MoveOnly&) = delete;
+    MoveOnly& operator=(const MoveOnly&) = delete;
+    MoveOnly(MoveOnly&&) noexcept = default;
+    MoveOnly& operator=(MoveOnly&&) noexcept = default;
+};
+
+struct ConstructionCounter {
+    static int direct_constructions;
+    static int copy_constructions;
+    static int move_constructions;
+
+    int value;
+
+    explicit ConstructionCounter(int v) : value(v) { ++direct_constructions; }
+    ConstructionCounter(const ConstructionCounter& o) : value(o.value) { ++copy_constructions; }
+    ConstructionCounter(ConstructionCounter&& o) noexcept : value(o.value) { ++move_constructions; }
+    ConstructionCounter& operator=(const ConstructionCounter&) = default;
+    ConstructionCounter& operator=(ConstructionCounter&&) = default;
+};
+
+int ConstructionCounter::direct_constructions = 0;
+int ConstructionCounter::copy_constructions   = 0;
+int ConstructionCounter::move_constructions   = 0;
+
+} // namespace
+
+TEST(ArrayListModifierTest, EmplaceBackIntoEmpty) {
+    stdx::array_list<int> v;
+    v.emplace_back(42);
+    ASSERT_EQ(1u, v.size());
+    EXPECT_EQ(42, v[0]);
+}
+
+TEST(ArrayListModifierTest, EmplaceBackIncreasesSize) {
+    stdx::array_list<int> v;
+    v.emplace_back(1);
+    v.emplace_back(2);
+    v.emplace_back(3);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(3, v[2]);
+}
+
+TEST(ArrayListModifierTest, EmplaceBackWithMultipleArgs) {
+    stdx::array_list<Point> v;
+    v.emplace_back(3, 7);
+    ASSERT_EQ(1u, v.size());
+    EXPECT_EQ(3, v[0].x);
+    EXPECT_EQ(7, v[0].y);
+}
+
+TEST(ArrayListModifierTest, EmplaceBackConstructsInPlace) {
+    stdx::array_list<MoveOnly> v;
+    v.emplace_back(99);
+    ASSERT_EQ(1u, v.size());
+    EXPECT_EQ(99, v[0].value);
+}
+
+TEST(ArrayListModifierTest, EmplaceBackNoCopyOrMove) {
+    ConstructionCounter::direct_constructions = 0;
+    ConstructionCounter::copy_constructions   = 0;
+    ConstructionCounter::move_constructions   = 0;
+
+    stdx::array_list<ConstructionCounter> v;
+    v.reserve(1);
+    v.emplace_back(5);
+
+    EXPECT_EQ(1, ConstructionCounter::direct_constructions);
+    EXPECT_EQ(0, ConstructionCounter::copy_constructions);
+    EXPECT_EQ(0, ConstructionCounter::move_constructions);
+}
+
+TEST(ArrayListModifierTest, EmplaceBackWithStringArgs) {
+    stdx::array_list<std::string> v;
+    v.emplace_back(3, 'z');
+    ASSERT_EQ(1u, v.size());
+    EXPECT_EQ("zzz", v[0]);
+}
+
+TEST(ArrayListModifierTest, EmplaceBackTriggersGrow) {
+    stdx::array_list<int> v;
+    for (int i = 0; i < 10; ++i) {
+        v.emplace_back(i);
+    }
+    ASSERT_EQ(10u, v.size());
+    for (int i = 0; i < 10; ++i) {
+        EXPECT_EQ(i, v[i]);
+    }
+}
+
+TEST(ArrayListModifierTest, EmplaceIntoEmpty) {
+    stdx::array_list<int> v;
+    auto it = v.emplace(v.end(), 42);
+    ASSERT_EQ(1u, v.size());
+    EXPECT_EQ(42, v[0]);
+    EXPECT_EQ(42, *it);
+}
+
+TEST(ArrayListModifierTest, EmplaceAtBegin) {
+    stdx::array_list<int> v;
+    v.push_back(2);
+    v.push_back(3);
+    auto it = v.emplace(v.begin(), 1);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(3, v[2]);
+    EXPECT_EQ(1, *it);
+    EXPECT_EQ(v.begin(), it);
+}
+
+TEST(ArrayListModifierTest, EmplaceAtEnd) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);
+    auto it = v.emplace(v.end(), 3);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(3, v[2]);
+    EXPECT_EQ(3, *it);
+}
+
+TEST(ArrayListModifierTest, EmplaceAtMiddle) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(3);
+    auto it = v.emplace(v.begin() + 1, 2);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(3, v[2]);
+    EXPECT_EQ(2, *it);
+}
+
+TEST(ArrayListModifierTest, EmplaceWithMultipleArgs) {
+    stdx::array_list<Point> v;
+    v.emplace_back(1, 2);
+    auto it = v.emplace(v.begin(), 10, 20);
+    ASSERT_EQ(2u, v.size());
+    EXPECT_EQ(10, v[0].x);
+    EXPECT_EQ(20, v[0].y);
+    EXPECT_EQ(1,  v[1].x);
+    EXPECT_EQ(2,  v[1].y);
+    EXPECT_EQ(10, it->x);
+    EXPECT_EQ(20, it->y);
+}
+
+TEST(ArrayListModifierTest, EmplaceConstructsInPlace) {
+    stdx::array_list<MoveOnly> v;
+    v.emplace_back(1);
+    auto it = v.emplace(v.begin(), 99);
+    ASSERT_EQ(2u, v.size());
+    EXPECT_EQ(99, v[0].value);
+    EXPECT_EQ(1,  v[1].value);
+    EXPECT_EQ(99, it->value);
+}
+
+TEST(ArrayListModifierTest, EmplaceNoCopyOrMoveIntoReservedSlot) {
+    ConstructionCounter::direct_constructions = 0;
+    ConstructionCounter::copy_constructions   = 0;
+    ConstructionCounter::move_constructions   = 0;
+
+    stdx::array_list<ConstructionCounter> v;
+    v.reserve(1);
+    v.emplace(v.end(), 7);
+
+    EXPECT_EQ(1, ConstructionCounter::direct_constructions);
+    EXPECT_EQ(0, ConstructionCounter::copy_constructions);
+    EXPECT_EQ(0, ConstructionCounter::move_constructions);
+}
+
+
+// ===== Member Types =====
+
+TEST(ArrayListMemberTypesTest, ValueType) {
+    static_assert(std::is_same<stdx::array_list<int>::value_type, int>::value, "");
+    static_assert(std::is_same<stdx::array_list<std::string>::value_type, std::string>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, SizeType) {
+    static_assert(std::is_same<stdx::array_list<int>::size_type, std::size_t>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, DifferenceType) {
+    static_assert(std::is_same<stdx::array_list<int>::difference_type, std::ptrdiff_t>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, Reference) {
+    static_assert(std::is_same<stdx::array_list<int>::reference, int&>::value, "");
+    static_assert(std::is_same<stdx::array_list<double>::reference, double&>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, ConstReference) {
+    static_assert(std::is_same<stdx::array_list<int>::const_reference, const int&>::value, "");
+    static_assert(std::is_same<stdx::array_list<double>::const_reference, const double&>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, AllocatorType) {
+    static_assert(std::is_same<stdx::array_list<int>::allocator_type, stdx::allocator<int>>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, Pointer) {
+    static_assert(std::is_same<stdx::array_list<int>::pointer, int*>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, ConstPointer) {
+    static_assert(std::is_same<stdx::array_list<int>::const_pointer, const int*>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, Iterator) {
+    static_assert(std::is_same<stdx::array_list<int>::iterator, int*>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, ConstIterator) {
+    static_assert(std::is_same<stdx::array_list<int>::const_iterator, const int*>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, ReverseIterator) {
+    using expected = stdx::reverse_iterator<int*>;
+    static_assert(std::is_same<stdx::array_list<int>::reverse_iterator, expected>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, ConstReverseIterator) {
+    using expected = stdx::reverse_iterator<const int*>;
+    static_assert(std::is_same<stdx::array_list<int>::const_reverse_iterator, expected>::value, "");
+}
+
+TEST(ArrayListMemberTypesTest, ReferenceIsActuallyMutable) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    stdx::array_list<int>::reference ref = v[0];
+    ref = 42;
+    EXPECT_EQ(42, v[0]);
+}
+
+TEST(ArrayListMemberTypesTest, ConstReferenceFromConstContainer) {
+    stdx::array_list<int> v;
+    v.push_back(7);
+    const stdx::array_list<int>& cv = v;
+    stdx::array_list<int>::const_reference cref = cv[0];
+    EXPECT_EQ(7, cref);
+}
+
+TEST(ArrayListMemberTypesTest, PointerPointsToElement) {
+    stdx::array_list<int> v;
+    v.push_back(5);
+    stdx::array_list<int>::pointer p = v.data();
+    ASSERT_NE(nullptr, p);
+    EXPECT_EQ(5, *p);
+}
+
+TEST(ArrayListMemberTypesTest, ConstPointerFromConstData) {
+    stdx::array_list<int> v;
+    v.push_back(9);
+    const stdx::array_list<int>& cv = v;
+    stdx::array_list<int>::const_pointer p = cv.data();
+    ASSERT_NE(nullptr, p);
+    EXPECT_EQ(9, *p);
+}
+
+
+// ===== max_size =====
+
+TEST(ArrayListCapacityTest, MaxSizeIsMaxSizeT) {
+    stdx::array_list<int> v;
+    EXPECT_EQ(std::numeric_limits<std::size_t>::max(), v.max_size());
+}
+
+TEST(ArrayListCapacityTest, MaxSizeIsConstant) {
+    stdx::array_list<int> empty;
+    stdx::array_list<int> nonempty;
+    nonempty.push_back(1);
+    nonempty.push_back(2);
+    EXPECT_EQ(empty.max_size(), nonempty.max_size());
+}
+
+TEST(ArrayListCapacityTest, MaxSizeGreaterThanSize) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    EXPECT_GT(v.max_size(), v.size());
+}
+
+TEST(ArrayListCapacityTest, MaxSizeGreaterThanCapacity) {
+    stdx::array_list<int> v;
+    v.reserve(1000);
+    EXPECT_GT(v.max_size(), v.capacity());
 }

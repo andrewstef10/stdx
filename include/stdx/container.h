@@ -1,53 +1,54 @@
 #ifndef CONTAINER_H
 #define CONTAINER_H
 
+#include <cstddef>
+#include <limits>
+
 namespace stdx {
 
     /// @brief A container provides a CRTP base class for all data structures
     /// @tparam Derived The derived class implementing this base class
-    template<typename Derived>
+    /// @tparam T The element type stored in the container
+    template<typename Derived, typename T>
     class container
     {
     public:
 
+        using value_type      = T;
+        using size_type       = std::size_t;
+        using difference_type = std::ptrdiff_t;
+        using reference       = T&;
+        using const_reference = const T&;
+
         /// @brief Returns the number of elements in the container.
         /// @details Complexity: Constant
         /// @return The number of elements in the container.
-        std::size_t size() const noexcept { return m_size; }
+        size_type size() const noexcept { return derived().m_size; }
 
-        /// @brief Checks if the container has no elements, i.e., whether begin() == end().
+        /// @brief Checks if the container has no elements.
         /// @details Complexity: Constant
         /// @return true if the container is empty, false otherwise.
-        bool empty() const noexcept { return m_size == 0; }
+        bool empty() const noexcept { return derived().m_size == 0; }
 
-        // TODO swap ???
-
-    protected:
-        /// @brief Current number of elements stored in the container
-        std::size_t m_size{};
+        /// @brief Returns the maximum number of elements the container is able to hold due to system or implementation limitations.
+        /// @details Complexity: Constant
+        /// @return Maximum number of elements.
+        size_type max_size() const noexcept { return std::numeric_limits<size_type>::max(); }
 
     private:
         friend Derived;
 
-        // ==== container should not be constructed directly ====
         container() = default;
         ~container() = default;
-        container(const container& other) {};
+        container(const container&) = default;
+        container(container&&) noexcept = default;
+        container& operator=(const container&) = default;
+        container& operator=(container&&) noexcept = default;
 
-        container(container&& other) noexcept
-        : m_size(other.m_size)
-        { 
-            other.m_size = 0; 
-        }
-
-        container& operator=(const container& other) = default;
-
-        container& operator=(container&& other) noexcept
-        { 
-            m_size = other.m_size;
-            other.m_size = 0;
-            return *this;
-        }
+        /// @brief Helper function to cast this to a Derived reference
+        /// @return Derived reference
+        Derived&       derived()       { return static_cast<Derived&>(*this); }
+        const Derived& derived() const { return static_cast<const Derived&>(*this); }
     };
 
 
