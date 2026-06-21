@@ -21,23 +21,24 @@ namespace stdx {
         using const_reference = const T&;
 
         /// @brief Returns the number of elements in the container.
-        /// @details Complexity: Constant
+        /// @details Time:  O(1)
+        ///          Space: O(1)
         /// @return The number of elements in the container.
         size_type size() const noexcept { return derived().m_size; }
 
         /// @brief Checks if the container has no elements.
-        /// @details Complexity: Constant
+        /// @details Time:  O(1)
+        ///          Space: O(1)
         /// @return true if the container is empty, false otherwise.
         bool empty() const noexcept { return derived().m_size == 0; }
 
         /// @brief Returns the maximum number of elements the container is able to hold due to system or implementation limitations.
-        /// @details Complexity: Constant
+        /// @details Time:  O(1)
+        ///          Space: O(1)
         /// @return Maximum number of elements.
         size_type max_size() const noexcept { return std::numeric_limits<size_type>::max(); }
 
-    private:
-        friend Derived;
-
+    protected:
         container() = default;
         ~container() = default;
         container(const container&) = default;
@@ -45,6 +46,7 @@ namespace stdx {
         container& operator=(const container&) = default;
         container& operator=(container&&) noexcept = default;
 
+    private:
         /// @brief Helper function to cast this to a Derived reference
         /// @return Derived reference
         Derived&       derived()       { return static_cast<Derived&>(*this); }

@@ -3,7 +3,8 @@
 
 #include <cstddef>
 #include <memory>
-#include <new> // for std::
+#include <new>
+#include <stdexcept>
 
 #include <stdx/equatable.h>
 
@@ -53,6 +54,30 @@ namespace stdx {
             }
             
             return current_capacity;
+        }
+    };
+
+    /// @brief Growth policy for fixed-capacity containers. Always allocates all N slots on the first growth; throws std::length_error if the required capacity exceeds N.
+    /// @details Returning N even for small requests ensures the backing fixed_allocator's buffer is claimed in one shot,
+    ///          which avoids the self-aliasing undefined behaviour that would occur if the same pointer were returned
+    ///          by successive smaller allocations while elements are already present.
+    /// @tparam N           The maximum number of elements this container may ever hold.
+    /// @tparam size_type   The unsigned integer type used for capacity values. Defaults to std::size_t.
+    template<std::size_t N, typename size_type = std::size_t>
+    struct no_growth
+    {
+        /// @brief Returns N for any request that fits; throws std::length_error otherwise.
+        /// @param current_capacity The current allocated capacity (unused).
+        /// @param required_capacity The minimum capacity needed for the pending operation.
+        /// @return N — the fixed capacity of the container.
+        /// @exception std::length_error If required_capacity > N.
+        size_type operator()(size_type /*currentCapacity*/, size_type requiredCapacity) const
+        {
+            if (requiredCapacity > static_cast<size_type>(N))
+            {
+                throw std::length_error("container cannot grow beyond fixed capacity");
+            }
+            return static_cast<size_type>(N);
         }
     };
 
@@ -155,7 +180,7 @@ namespace stdx {
         /// @brief Equality operator
         /// @tparam U Other allocator's type
         /// @param lhs left hand side
-        /// @param rhs right had side
+        /// @param rhs right hand side
         /// @return true always because allocators of any type T are equal
         template<typename U>
         friend constexpr bool operator==(const allocator<T>& lhs, const allocator<U>& rhs) noexcept { return lhs.equals(rhs); }
@@ -163,7 +188,7 @@ namespace stdx {
         /// @brief Inequality operator 
         /// @tparam U Other allocator's type
         /// @param lhs left hand side iterator
-        /// @param rhs right had side iterator
+        /// @param rhs right hand side iterator
         /// @return true always because allocators of any type T are equal
         template<typename U>
         friend constexpr bool operator!=(const allocator<T>& lhs, const allocator<U>& rhs) noexcept { return !lhs.equals(rhs); }
@@ -194,6 +219,116 @@ namespace stdx {
     {
         return static_cast<std::size_t>(-1) / sizeof(T);
     }
+
+
+
+
+    // template<typename T, std::size_t N>
+    // class fixed_allocator : stdx::equatable<fixed_allocator<T, N>>
+    // {
+    // public:
+
+    //     using value_type = T;
+
+    //     /// @brief True if any two instances of this allocator can free each other's memory.
+    //     ///        If is_always_equal is true, then comparing any two containers of this type (operator==) should also return true.
+    //     /// @details False here because stdx::fixed_allocator is statefull. Each stdx::fixed_allocator owns its own fixed amount of memory for the life of the object.
+    //     using is_always_equal = std::false_type;
+
+    //     /// @brief True if this allocator object should itself be copy-assigned into the destination container during container copy assignment.
+    //     /// @details True here because stdx::fixed_allocator is statefull. Each stdx::fixed_allocator owns its own fixed amount of memory for the life of the object.
+    //     using propagate_on_container_copy_assignment = std::true_type;
+
+    //     /// @brief True if this allocator object should itself be move-assigned into the destination container during container move assignment.
+    //     /// @details True here because stdx::fixed_allocator is statefull. Each stdx::fixed_allocator owns its own fixed amount of memory for the life of the object.
+    //     using propagate_on_container_move_assignment = std::true_type;
+
+    //     /// @brief True if this allocator object should itself be swapped when two containers are swapped.
+    //     /// @details True here because stdx::fixed_allocator is statefull. Each stdx::fixed_allocator owns its own fixed amount of memory for the life of the object.
+    //     ///          If false and allocators are not equal, swapping containers is undefined behavior because
+    //     ///          each container would hold memory it cannot legally free with its own allocator.
+    //     using propagate_on_container_swap = std::true_type;
+
+    //     // No longer required c++11+
+    //     // pointer
+    //     // const_pointer
+    //     // reference
+    //     // const_reference
+    //     // size_type
+    //     // difference_type
+
+    //     // construct()
+    //     // destroy()
+
+    //     // rebind
+    //     // address()
+    //     // max_size()
+
+
+    //     /// @brief Default constructor
+    //     fixed_allocator() = default;
+
+    //     /// @brief Copy constructor
+    //     /// @param other allocator to copy.
+    //     fixed_allocator(const fixed_allocator& other) = default;
+
+    //     /// @brief Move constructor
+    //     /// @param other allocator to move.
+    //     fixed_allocator(fixed_allocator&& other) = default;
+
+    //     /// @brief Destructor.
+    //     ~fixed_allocator() = default;
+
+    //     /// @brief Copy assignment operator 
+    //     /// @param other allocator to copy
+    //     /// @return Reference to this object
+    //     fixed_allocator& operator=(const fixed_allocator& other) = default;
+
+    //     /// @brief Move assignment operator
+    //     /// @param other allocator to move
+    //     /// @return Reference to this object
+    //     fixed_allocator& operator=(fixed_allocator&& other) = default;
+
+    //     /// @brief Returns a pointer to the internal stack buffer. Never allocates heap memory.
+    //     /// @details Time:  O(1)
+    //     ///          Space: O(1)
+    //     ///          Element lifetime is managed externally by allocator_traits::construct / ::destroy.
+    //     /// @param n The number of objects to allocate storage for. Must be <= N.
+    //     /// @return Pointer to the start of the raw storage buffer.
+    //     /// @exception std::bad_alloc If n > N.
+    //     T* allocate(std::size_t n);
+
+    //     /// @brief No-op. The stack buffer has no heap memory to release.
+    //     /// @details Time:  O(1)
+    //     ///          Space: O(1)
+    //     void deallocate(T*, std::size_t) noexcept {}
+
+    //     /// @brief Two fixed_allocators are equal only if they are the same object (share the same buffer).
+    //     /// @details Time:  O(1)
+    //     ///          Space: O(1)
+    //     /// @param other Other fixed_allocator.
+    //     /// @return True if both allocators refer to the same buffer.
+    //     bool equals(const fixed_allocator& other) const noexcept { return m_data == other.m_data; }
+
+    // private:
+    //     // Raw uninitialized storage. alignas ensures T objects can be correctly placed here via
+    //     // placement new. Using unsigned char avoids default-constructing T on allocator creation
+    //     // and avoids UB when the default copy/move operates on slots whose T lifetime has ended.
+    //     alignas(alignof(T)) unsigned char m_data[(N == 0 ? 1 : N) * sizeof(T)];
+    // };
+
+
+    // // ===== Inline fixed_allocator Implementation =====
+
+    // template<typename T, std::size_t N>
+    // inline T* fixed_allocator<T, N>::allocate(std::size_t n)
+    // {
+    //     if (n > N)
+    //     {
+    //         throw std::bad_alloc();
+    //     }
+    //     return reinterpret_cast<T*>(m_data);
+    // }
 
 }
 

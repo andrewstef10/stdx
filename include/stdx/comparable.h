@@ -1,13 +1,11 @@
 #ifndef COMPARABLE_H
 #define COMPARABLE_H
 
-#include <stdx/equatable.h>
-
 namespace stdx {
 
     /// @brief CRTP base class that provides full comparison operators.
     ///
-    /// This class extends @ref equatable to automatically provide all relational
+    /// This class automatically provides all relational
     /// comparison operators (`<`, `>`, `<=`, `>=`) for a derived type by requiring
     /// the implementation of a single member function:
     ///
@@ -21,10 +19,6 @@ namespace stdx {
     /// struct MyType : public comparable<MyType> {
     ///     int value;
     ///
-    ///     bool equals(const MyType& other) const {
-    ///         return value == other.value;
-    ///     }
-    ///
     ///     bool less_than(const MyType& other) const {
     ///         return value < other.value;
     ///     }
@@ -37,10 +31,10 @@ namespace stdx {
     /// - Transitive: if a.less_than(b) and b.less_than(c), then a.less_than(c)
     ///
     /// @tparam Derived The type that inherits from this class and implements:
-    /// - bool equals(const Derived&) const  (from equatable)
     /// - bool less_than(const Derived&) const
     template<typename Derived>
-    class comparable : public equatable<Derived> {
+    class comparable
+    {
     public:
 
         /// @brief Less than operator

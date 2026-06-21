@@ -27,7 +27,8 @@ namespace stdx {
     /// @tparam Derived The type that inherits from this class and implements
     /// `bool equals(const Derived&) const`.
     template<typename Derived>
-    class equatable {
+    class equatable
+    {
     public:
 
         /// @brief Equality operator
