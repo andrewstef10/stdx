@@ -99,18 +99,17 @@ namespace stdx {
     template<typename T>
     inline bool clamp(T& val, const T& low, const T& high)
     {
-        bool limited = false;
         if (val < low)
         {
             val = low;
-            limited = true;
+            return true;
         }
-        else if (val > high)
+        if (val > high)
         {
             val = high;
-            limited = true;
+            return true;
         }
-        return limited;
+        return false;
     }
 
 }

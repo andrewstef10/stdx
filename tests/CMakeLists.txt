@@ -16,6 +16,7 @@ add_executable(${UNIT_TEST_TARGET_NAME}
     test_array.cpp
     test_array_list.cpp
     test_ctype.cpp
+    test_fixed_array_list.cpp
     test_iterator.cpp
     test_math.cpp
     test_memory.cpp

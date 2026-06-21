@@ -43,30 +43,22 @@ namespace stdx {
         ///          Space: O(1)
         /// @param index Position of the element to return.
         /// @return Reference to the requested element.
-        reference operator[](size_type index) { return derived().m_data[index]; }
-        const_reference operator[](size_type index) const { return derived().m_data[index]; }
-
-        /// @brief Returns a pointer to the underlying element storage. The range [data(), data() + size()) is always valid.
-        /// @details Time:  O(1)
-        ///          Space: O(1)
-        ///          If the container is empty, data() may be nullptr and is not dereferenceable.
-        /// @return Pointer to the first element, or nullptr if empty.
-        T* data() { return derived().m_data; }
-        const T* data() const { return derived().m_data; }
+        reference operator[](size_type index) { return derived().data()[index]; }
+        const_reference operator[](size_type index) const { return derived().data()[index]; }
 
         /// @brief Returns a reference to the last element. Behavior is undefined if the container is empty.
         /// @details Time:  O(1)
         ///          Space: O(1)
         /// @return Reference to the last element.
-        reference back() { return derived().m_data[derived().m_size - 1]; }
-        const_reference back() const { return derived().m_data[derived().m_size - 1]; }
+        reference back() { return derived().data()[derived().m_size - 1]; }
+        const_reference back() const { return derived().data()[derived().m_size - 1]; }
 
         /// @brief Returns a reference to the first element. Behavior is undefined if the container is empty.
         /// @details Time:  O(1)
         ///          Space: O(1)
         /// @return Reference to the first element.
-        reference front() { return derived().m_data[0]; }
-        const_reference front() const { return derived().m_data[0]; }
+        reference front() { return derived().data()[0]; }
+        const_reference front() const { return derived().data()[0]; }
 
 
         // ==== Iterators ====
@@ -75,33 +67,33 @@ namespace stdx {
         /// @details Time:  O(1)
         ///          Space: O(1)
         /// @return Iterator to the first element.
-        iterator begin() { return iterator(derived().m_data); }
-        const_iterator begin() const { return const_iterator(derived().m_data); }
-        const_iterator cbegin() const { return const_iterator(derived().m_data); }
+        iterator begin() { return iterator(derived().data()); }
+        const_iterator begin() const { return const_iterator(derived().data()); }
+        const_iterator cbegin() const { return const_iterator(derived().data()); }
 
         /// @brief Returns a past-the-end sentinel iterator. The iterator is not dereferenceable.
         /// @details Time:  O(1)
         ///          Space: O(1)
         /// @return Iterator past the last element.
-        iterator end() { return iterator(derived().m_data + derived().m_size); }
-        const_iterator end() const { return const_iterator(derived().m_data + derived().m_size); }
-        const_iterator cend() const { return const_iterator(derived().m_data + derived().m_size); }
+        iterator end() { return iterator(derived().data() + derived().m_size); }
+        const_iterator end() const { return const_iterator(derived().data() + derived().m_size); }
+        const_iterator cend() const { return const_iterator(derived().data() + derived().m_size); }
 
         /// @brief Returns a reverse iterator to the last element (first element of the reversed range). Equals rend() if empty.
         /// @details Time:  O(1)
         ///          Space: O(1)
         /// @return Reverse iterator to the last element.
-        reverse_iterator rbegin() { return reverse_iterator(derived().m_data + derived().m_size); }
-        const_reverse_iterator rbegin() const { return const_reverse_iterator(derived().m_data + derived().m_size); }
-        const_reverse_iterator crbegin() const { return const_reverse_iterator(derived().m_data + derived().m_size); }
+        reverse_iterator rbegin() { return reverse_iterator(derived().data() + derived().m_size); }
+        const_reverse_iterator rbegin() const { return const_reverse_iterator(derived().data() + derived().m_size); }
+        const_reverse_iterator crbegin() const { return const_reverse_iterator(derived().data() + derived().m_size); }
 
         /// @brief Returns a reverse past-the-end sentinel iterator. The iterator is not dereferenceable.
         /// @details Time:  O(1)
         ///          Space: O(1)
         /// @return Reverse iterator past the first element (in reverse order).
-        reverse_iterator rend() { return reverse_iterator(derived().m_data); }
-        const_reverse_iterator rend() const { return const_reverse_iterator(derived().m_data); }
-        const_reverse_iterator crend() const { return const_reverse_iterator(derived().m_data); }
+        reverse_iterator rend() { return reverse_iterator(derived().data()); }
+        const_reverse_iterator rend() const { return const_reverse_iterator(derived().data()); }
+        const_reverse_iterator crend() const { return const_reverse_iterator(derived().data()); }
 
 
         // ==== Comparison ====
@@ -143,7 +135,7 @@ namespace stdx {
         {
             throw std::out_of_range("Index outside the bounds of the container");
         }
-        return data()[index];
+        return derived().data()[index];
     }
 
     template<typename Derived, typename T>
@@ -153,7 +145,7 @@ namespace stdx {
         {
             throw std::out_of_range("Index outside the bounds of the container");
         }
-        return data()[index];
+        return derived().data()[index];
     }
 
     template<typename Derived, typename T>
@@ -166,7 +158,7 @@ namespace stdx {
 
         for (size_type i = 0; i < this->size(); ++i)
         {
-            if (!(data()[i] == other.data()[i]))
+            if (!(derived()[i] == other[i]))
             {
                 return false;
             }
@@ -179,11 +171,11 @@ namespace stdx {
     {
         for (size_type i = 0; i < this->size() && i < other.size(); ++i)
         {
-            if (data()[i] < other.data()[i])
+            if (derived()[i] < other[i])
             {
                 return true;
             }
-            if (other.data()[i] < data()[i])
+            if (other[i] < derived()[i])
             {
                 return false;
             }
