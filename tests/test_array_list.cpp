@@ -806,6 +806,22 @@ TEST(ArrayListModifierTest, InsertAtMiddleMove) {
     EXPECT_EQ("b", *it);
 }
 
+TEST(ArrayListModifierTest, InsertSelfReferenceWithSpareCapacity) {
+    stdx::array_list<int> v;
+    v.reserve(8);            // ensure the in-place (non-reallocating) path is taken
+    v.push_back(10);
+    v.push_back(20);
+    v.push_back(30);
+    // value aliases an element already in the container
+    auto it = v.insert(v.begin(), v[2]);
+    ASSERT_EQ(4u, v.size());
+    EXPECT_EQ(30, v[0]);     // the original v[2] value, not a shifted-over one
+    EXPECT_EQ(10, v[1]);
+    EXPECT_EQ(20, v[2]);
+    EXPECT_EQ(30, v[3]);
+    EXPECT_EQ(30, *it);
+}
+
 TEST(ArrayListModifierTest, EraseFirst) {
     stdx::array_list<int> v;
     v.push_back(1);

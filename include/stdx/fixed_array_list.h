@@ -143,7 +143,6 @@ namespace stdx {
         /// @details Time:  O(n) — shifts elements after pos to make room
         ///          Space: O(1) — no allocation is performed
         ///          Invalidates iterators and references from pos onward.
-        ///          `value` must not be a reference to an element already stored in this container.
         /// @param pos Iterator before which the element is inserted. May be end().
         /// @param value Value to copy-construct into the new element.
         /// @return Iterator to the inserted element.
@@ -171,29 +170,6 @@ namespace stdx {
         template<typename... Args>
         iterator emplace(const_iterator pos, Args&&... args);
 
-        /// @brief Removes the element at `pos`, shifting elements after `pos` to the left.
-        /// @details Time:  O(n) — shifts elements after pos forward by one
-        ///          Space: O(1)
-        ///          Invalidates the iterator at pos and all iterators/references after it.
-        /// @param pos Iterator to the element to remove.
-        /// @return Iterator to the element that followed the removed one, or end() if pos was the last element.
-        iterator erase(const_iterator pos);
-
-        /// @brief Removes all elements in the range [first, last), shifting elements after `last` to the left.
-        /// @details Time:  O(n) — shifts elements after last forward
-        ///          Space: O(1)
-        ///          Invalidates iterators from first onward. Returns last unchanged if the range is empty.
-        /// @param first Iterator to the first element to remove.
-        /// @param last  Iterator past the last element to remove.
-        /// @return Iterator to the element that followed the last removed element.
-        iterator erase(const_iterator first, const_iterator last);
-
-        /// @brief Destroys all elements. size() becomes zero; capacity() remains N.
-        /// @details Time:  O(n) — destructs each element
-        ///          Space: O(1)
-        ///          Invalidates all iterators and references to elements.
-        void clear();
-
         /// @brief Swaps the contents of this container with `other` element-by-element.
         ///        Iterators remain valid but now refer to the other container's elements.
         /// @details Time:  O(n) — swaps elements one-by-one since each object owns its own stack buffer
@@ -202,6 +178,17 @@ namespace stdx {
         void swap(fixed_array_list& other);
 
     private:
+
+        /// @brief Constructs a T at `location` from `args` via placement new. Hook used by the shared insert
+        ///        helpers in contiguous_container. Perfect-forwards, so it copy-, move-, or emplace-constructs
+        ///        with no extra overhead.
+        /// @param location Raw storage to construct into.
+        /// @param args     Arguments forwarded to T's constructor.
+        template<typename... Args>
+        void construct(T* location, Args&&... args)
+        {
+            ::new (static_cast<void*>(location)) T(std::forward<Args>(args)...);
+        }
 
         /// @brief Current number of live elements in the container.
         size_type m_size;
@@ -250,7 +237,7 @@ namespace stdx {
     template<typename T, std::size_t N>
     inline fixed_array_list<T, N>::~fixed_array_list()
     {
-        clear();
+        this->clear();
     }
 
     template<typename T, std::size_t N>
@@ -348,23 +335,13 @@ namespace stdx {
     template<typename T, std::size_t N>
     inline void fixed_array_list<T, N>::push_back(const_reference val)
     {
-        if (m_size == N)
-        {
-            throw std::length_error("Attempted to push_back on a full fixed_array_list");
-        }
-        ::new (data() + m_size) T(val);
-        ++m_size;
+        emplace_back(val);
     }
 
     template<typename T, std::size_t N>
     inline void fixed_array_list<T, N>::push_back(T&& val)
     {
-        if (m_size == N)
-        {
-            throw std::length_error("Attempted to push_back on a full fixed_array_list");
-        }
-        ::new (data() + m_size) T(std::move(val));
-        ++m_size;
+        emplace_back(std::move(val));
     }
 
     template<typename T, std::size_t N>
@@ -373,7 +350,7 @@ namespace stdx {
     {
         if (m_size == N)
         {
-            throw std::length_error("Attempted to emplace_back on a full fixed_array_list");
+            throw std::length_error("Attempted to append to a full fixed_array_list");
         }
         ::new (data() + m_size) T(std::forward<Args>(args)...);
         ++m_size;
@@ -382,71 +359,19 @@ namespace stdx {
     template<typename T, std::size_t N>
     inline void fixed_array_list<T, N>::pop_back()
     {
-        if (m_size == 0)
-        {
-            throw std::length_error("Attempted to pop_back on an empty fixed_array_list");
-        }
         data()[--m_size].~T();
     }
 
     template<typename T, std::size_t N>
     inline typename fixed_array_list<T, N>::iterator fixed_array_list<T, N>::insert(const_iterator pos, const_reference value)
     {
-        if (m_size == N)
-        {
-            throw std::length_error("Attempted to insert on a full fixed_array_list");
-        }
-
-        const size_type INDEX = static_cast<size_type>(pos - data());
-        if (INDEX < m_size)
-        {
-            // Construct a new element at the end of the list and shift all elements up 1
-            ::new (data() + m_size) T(std::move(data()[m_size - 1]));
-            for (size_type i = m_size - 1; i > INDEX; --i)
-            {
-                data()[i] = std::move(data()[i - 1]);
-            }
-
-            // Assign the value at INDEX
-            data()[INDEX] = value;
-        }
-        else
-        {
-            ::new (data() + m_size) T(value);
-        }
-
-        ++m_size;
-        return iterator(data() + INDEX);
+        return emplace(pos, value);
     }
 
     template<typename T, std::size_t N>
     inline typename fixed_array_list<T, N>::iterator fixed_array_list<T, N>::insert(const_iterator pos, T&& value)
     {
-        if (m_size == N)
-        {
-            throw std::length_error("Attempted to insert on a full fixed_array_list");
-        }
-
-        const size_type INDEX = static_cast<size_type>(pos - data());
-        if (INDEX < m_size)
-        {
-            // Construct a new element at the end of the list and shift all elements up 1
-            ::new (data() + m_size) T(std::move(data()[m_size - 1]));
-            for (size_type i = m_size - 1; i > INDEX; --i)
-            {
-                data()[i] = std::move(data()[i - 1]);
-            }
-
-            // Assign the value at INDEX
-            data()[INDEX] = std::move(value);
-        }
-        else
-        {
-            ::new (data() + m_size) T(std::move(value));
-        }
-
-        ++m_size;
-        return iterator(data() + INDEX);
+        return emplace(pos, std::move(value));
     }
 
     template<typename T, std::size_t N>
@@ -455,89 +380,10 @@ namespace stdx {
     {
         if (m_size == N)
         {
-            throw std::length_error("Attempted to emplace on a full fixed_array_list");
+            throw std::length_error("Attempted to insert into a full fixed_array_list");
         }
 
-        const size_type INDEX = static_cast<size_type>(pos - data());
-        if (INDEX < m_size)
-        {
-            // Construct a new element at the end of the list and shift all elements up 1
-            ::new (data() + m_size) T(std::move(data()[m_size - 1]));
-            for (size_type i = m_size - 1; i > INDEX; --i)
-            {
-                data()[i] = std::move(data()[i - 1]);
-            }
-
-            // Assign the value at INDEX
-            data()[INDEX].~T();
-            ::new (data() + INDEX) T(std::forward<Args>(args)...);
-        }
-        else
-        {
-            ::new (data() + m_size) T(std::forward<Args>(args)...);
-        }
-
-        ++m_size;
-        return iterator(data() + INDEX);
-    }
-
-    template<typename T, std::size_t N>
-    inline typename fixed_array_list<T, N>::iterator fixed_array_list<T, N>::erase(const_iterator pos)
-    {
-        if (m_size == 0)
-        {
-            throw std::length_error("Attempted to erase on an empty fixed_array_list");
-        }
-
-        const size_type INDEX = static_cast<size_type>(pos - data());
-        // shift elements to the right of pos down one
-        size_type i = INDEX;
-        for (; i < m_size - 1; ++i)
-        {
-            data()[i] = std::move(data()[i + 1]);
-        }
-
-        // Destroy the last element
-        data()[i].~T();
-
-        --m_size;
-        return iterator(data() + INDEX);
-    }
-
-    template<typename T, std::size_t N>
-    inline typename fixed_array_list<T, N>::iterator fixed_array_list<T, N>::erase(const_iterator first, const_iterator last)
-    {
-        if (m_size == 0)
-        {
-            throw std::length_error("Attempted to erase on an empty fixed_array_list");
-        }
-        
-        const size_type IFIRST = static_cast<size_type>(first - data());
-
-        // remove values in range [first, last)
-        size_type left = IFIRST;
-        size_type right = static_cast<size_type>(last - data());
-        for (; right < m_size; ++left, ++right)
-        {
-            data()[left] = std::move(data()[right]);
-        }
-
-        // destroy the remaining elements
-        while (m_size > left)
-        {
-            data()[--m_size].~T();
-        }
-
-        return iterator(data() + IFIRST);
-    }
-
-    template<typename T, std::size_t N>
-    inline void fixed_array_list<T, N>::clear()
-    {
-        while (m_size > 0)
-        {
-            data()[--m_size].~T();
-        }
+        return this->emplace_inplace(static_cast<size_type>(pos - data()), std::forward<Args>(args)...);
     }
 
     template<typename T, std::size_t N>
