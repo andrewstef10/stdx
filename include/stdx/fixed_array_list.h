@@ -114,7 +114,7 @@ namespace stdx {
         ///          Invalidates the end() iterator.
         /// @param val Value to copy-construct into the new element.
         /// @exception std::length_error If size() == N.
-        void push_back(const_reference val);
+        void push_back(const_reference val) { return emplace_back(val); }
 
         /// @brief Appends `val` to the end of the container by moving it.
         /// @details Time:  O(1)
@@ -122,7 +122,7 @@ namespace stdx {
         ///          Invalidates the end() iterator.
         /// @param val Value to move-construct into the new element.
         /// @exception std::length_error If size() == N.
-        void push_back(T&& val);
+        void push_back(T&& val) { return emplace_back(std::move(val)); }
 
         /// @brief Constructs an element in-place at the end of the container, forwarding `args` to T's constructor.
         /// @details Time:  O(1)
@@ -147,7 +147,7 @@ namespace stdx {
         /// @param value Value to copy-construct into the new element.
         /// @return Iterator to the inserted element.
         /// @exception std::length_error If size() == N.
-        iterator insert(const_iterator pos, const_reference value);
+        iterator insert(const_iterator pos, const_reference value) { return emplace(pos, value); }
 
         /// @brief Inserts `value` before `pos` by moving it, shifting elements after `pos` to the right.
         /// @details Time:  O(n) — shifts elements after pos to make room
@@ -157,7 +157,7 @@ namespace stdx {
         /// @param value Value to move-construct into the new element.
         /// @return Iterator to the inserted element.
         /// @exception std::length_error If size() == N.
-        iterator insert(const_iterator pos, T&& value);
+        iterator insert(const_iterator pos, T&& value) { return emplace(pos, std::move(value)); }
 
         /// @brief Constructs an element in-place before `pos`, forwarding `args` to T's constructor.
         /// @details Time:  O(n) — shifts elements after pos to make room
@@ -179,6 +179,13 @@ namespace stdx {
 
     private:
 
+        /// @brief Current number of live elements in the container.
+        size_type m_size;
+
+        /// @brief Fixed sized storage for this container
+        alignas(T) unsigned char m_data[sizeof(T) * (N == 0 ? 1 : N)];
+
+
         /// @brief Constructs a T at `location` from `args` via placement new. Hook used by the shared insert
         ///        helpers in contiguous_container. Perfect-forwards, so it copy-, move-, or emplace-constructs
         ///        with no extra overhead.
@@ -190,11 +197,12 @@ namespace stdx {
             ::new (static_cast<void*>(location)) T(std::forward<Args>(args)...);
         }
 
-        /// @brief Current number of live elements in the container.
-        size_type m_size;
-
-        /// @brief Fixed sized storage for this container
-        alignas(T) unsigned char m_data[sizeof(T) * (N == 0 ? 1 : N)];
+        /// @brief Destroys the T at `location` by calling its destructor directly.
+        /// @param location Pointer to the live object to destroy.
+        void destroy(T* location)
+        {
+            location->~T();
+        }
     };
 
 
@@ -215,7 +223,7 @@ namespace stdx {
         // Copy construct the elements in other
         for (; m_size < other.m_size; ++m_size)
         {
-            ::new (data() + m_size) T(other[m_size]);
+            construct(data() + m_size, other[m_size]);
         }
     }
 
@@ -227,8 +235,8 @@ namespace stdx {
         // Move construct (steal) the elements in other
         for (; m_size < other.m_size; ++m_size)
         {
-            ::new (data() + m_size) T(std::move(other[m_size]));
-            other[m_size].~T(); // Destroy other's moved-from elements
+            construct(data() + m_size, std::move(other[m_size]));
+            destroy(other.data() + m_size); // Destroy other's moved-from elements
         }
 
         other.m_size = 0;
@@ -261,7 +269,7 @@ namespace stdx {
             // Copy construct remaining elements from other
             for (; i < other.m_size; ++i)
             {
-                ::new (data() + i) T(other[i]);
+                construct(data() + i, other[i]);
             }
         }
         else // this container contains the same or more elements than other
@@ -276,7 +284,7 @@ namespace stdx {
             // Remove remaining elements in this
             for (; i < m_size; ++i)
             {
-                data()[i].~T();
+                destroy(data() + i);
             }
         }
 
@@ -300,14 +308,14 @@ namespace stdx {
             for (; i < m_size; ++i)
             {
                 data()[i] = std::move(other[i]);
-                other[i].~T(); // Destroy other's moved-from elements
+                destroy(other.data() + i); // Destroy other's moved-from elements
             }
 
             // Move construct remaining elements from other
             for (; i < other.m_size; ++i)
             {
-                ::new (data() + i) T(std::move(other[i]));
-                other[i].~T(); // Destroy other's moved-from elements
+                construct(data() + i, std::move(other[i]));
+                destroy(other.data() + i); // Destroy other's moved-from elements
             }
         }
         else // this container contains the same or more elements than other
@@ -317,31 +325,19 @@ namespace stdx {
             for (; i < other.m_size; ++i)
             {
                 data()[i] = std::move(other[i]);
-                other[i].~T(); // Destroy other's moved-from elements
+                destroy(other.data() + i); // Destroy other's moved-from elements
             }
 
             // Remove remaining elements in this
             for (; i < m_size; ++i)
             {
-                data()[i].~T();
+                destroy(data() + i);
             }
         }
 
         m_size = other.m_size;
         other.m_size = 0;
         return *this;
-    }
-
-    template<typename T, std::size_t N>
-    inline void fixed_array_list<T, N>::push_back(const_reference val)
-    {
-        emplace_back(val);
-    }
-
-    template<typename T, std::size_t N>
-    inline void fixed_array_list<T, N>::push_back(T&& val)
-    {
-        emplace_back(std::move(val));
     }
 
     template<typename T, std::size_t N>
@@ -352,26 +348,14 @@ namespace stdx {
         {
             throw std::length_error("Attempted to append to a full fixed_array_list");
         }
-        ::new (data() + m_size) T(std::forward<Args>(args)...);
+        construct(data() + m_size, std::forward<Args>(args)...);
         ++m_size;
     }
 
     template<typename T, std::size_t N>
     inline void fixed_array_list<T, N>::pop_back()
     {
-        data()[--m_size].~T();
-    }
-
-    template<typename T, std::size_t N>
-    inline typename fixed_array_list<T, N>::iterator fixed_array_list<T, N>::insert(const_iterator pos, const_reference value)
-    {
-        return emplace(pos, value);
-    }
-
-    template<typename T, std::size_t N>
-    inline typename fixed_array_list<T, N>::iterator fixed_array_list<T, N>::insert(const_iterator pos, T&& value)
-    {
-        return emplace(pos, std::move(value));
+        destroy(data() + --m_size);
     }
 
     template<typename T, std::size_t N>
@@ -395,7 +379,6 @@ namespace stdx {
         *this = std::move(other);
         other = std::move(temp);
     }
-
 }
 
 #endif

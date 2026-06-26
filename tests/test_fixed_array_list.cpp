@@ -830,6 +830,30 @@ TEST(FixedArrayListModifierTest, InsertMoveAtCapacityThrows) {
     EXPECT_THROW(v.insert(v.begin(), std::string("c")), std::length_error);
 }
 
+TEST(FixedArrayListModifierTest, InsertSelfReferenceWithSpareCapacity) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.push_back(30);
+    // value aliases an element already in the container
+    auto it = v.insert(v.begin(), v[2]);
+    ASSERT_EQ(4u, v.size());
+    EXPECT_EQ(30, v[0]);     // the original v[2] value, not a shifted-over one
+    EXPECT_EQ(10, v[1]);
+    EXPECT_EQ(20, v[2]);
+    EXPECT_EQ(30, v[3]);
+    EXPECT_EQ(30, *it);
+
+    it = v.insert(v.begin(), std::move(v[2]));
+    ASSERT_EQ(5u, v.size());
+    EXPECT_EQ(20, v[0]);
+    EXPECT_EQ(30, v[1]);     // the original v[2] value, not a shifted-over one
+    EXPECT_EQ(10, v[2]);
+    EXPECT_EQ(20, v[3]);
+    EXPECT_EQ(30, v[4]);
+    EXPECT_EQ(20, *it);
+}
+
 TEST(FixedArrayListModifierTest, EmplaceIntoEmpty) {
     stdx::fixed_array_list<int, 5> v;
     auto it = v.emplace(v.end(), 42);

@@ -820,6 +820,15 @@ TEST(ArrayListModifierTest, InsertSelfReferenceWithSpareCapacity) {
     EXPECT_EQ(20, v[2]);
     EXPECT_EQ(30, v[3]);
     EXPECT_EQ(30, *it);
+
+    it = v.insert(v.begin(), std::move(v[2]));
+    ASSERT_EQ(5u, v.size());
+    EXPECT_EQ(20, v[0]);
+    EXPECT_EQ(30, v[1]);     // the original v[2] value, not a shifted-over one
+    EXPECT_EQ(10, v[2]);
+    EXPECT_EQ(20, v[3]);
+    EXPECT_EQ(30, v[4]);
+    EXPECT_EQ(20, *it);
 }
 
 TEST(ArrayListModifierTest, EraseFirst) {

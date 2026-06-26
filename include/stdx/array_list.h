@@ -134,14 +134,14 @@ namespace stdx {
         ///          Space: O(1) amortized — O(n) on reallocation
         ///          Invalidates all iterators and references if reallocation occurs.
         /// @param val Value to copy-construct into the new element.
-        void push_back(const_reference val);
+        void push_back(const_reference val) { return emplace_back(val); }
 
         /// @brief Appends `val` to the end of the container by moving it. Reallocates if size() == capacity().
         /// @details Time:  O(1) amortized — O(n) on reallocation
         ///          Space: O(1) amortized — O(n) on reallocation
         ///          Invalidates all iterators and references if reallocation occurs.
         /// @param val Value to move-construct into the new element.
-        void push_back(T&& val);
+        void push_back(T&& val) { return emplace_back(std::move(val)); }
 
         /// @brief Constructs an element in-place at the end of the container, forwarding `args` to T's constructor.
         /// @details Time:  O(1) amortized — O(n) on reallocation
@@ -164,7 +164,7 @@ namespace stdx {
         /// @param pos Iterator before which the element is inserted. May be end().
         /// @param value Value to copy-construct into the new element.
         /// @return Iterator to the inserted element.
-        iterator insert(const_iterator pos, const_reference value);
+        iterator insert(const_iterator pos, const_reference value) { return emplace(pos, value); }
 
         /// @brief Inserts `value` before `pos` by moving it. Reallocates if size() == capacity().
         /// @details Time:  O(n) — shifts elements after pos to make room
@@ -173,7 +173,7 @@ namespace stdx {
         /// @param pos Iterator before which the element is inserted. May be end().
         /// @param value Value to move-construct into the new element.
         /// @return Iterator to the inserted element.
-        iterator insert(const_iterator pos, T&& value);
+        iterator insert(const_iterator pos, T&& value) { return emplace(pos, std::move(value)); }
 
         /// @brief Constructs an element in-place before `pos`, forwarding `args` to T's constructor.
         /// @details Time:  O(n) — shifts elements after pos to make room
@@ -208,9 +208,6 @@ namespace stdx {
         /// @brief Growth policy for this data structure
         growth_type m_growth;
 
-        void grow(size_type required_capacity);
-
-        void resize(size_type new_capacity);
 
         /// @brief Constructs a T at `location` from `args`, routed through the allocator. Hook used by the
         ///        shared insert helpers in contiguous_container. Perfect-forwards, so it copy-, move-, or
@@ -222,6 +219,22 @@ namespace stdx {
         {
             std::allocator_traits<Allocator>::construct(m_alloc, location, std::forward<Args>(args)...);
         }
+
+        /// @brief Destroys the T at `location` through the allocator.
+        /// @param location Pointer to the live object to destroy.
+        void destroy(T* location)
+        {
+            std::allocator_traits<Allocator>::destroy(m_alloc, location);
+        }
+        
+        /// @brief Allocates a buffer of `new_capacity` elements, moves all existing elements into it, and releases the old buffer.
+        /// @details Time:  O(n) — moves all existing elements into the new buffer
+        ///          Space: O(n) — allocates a new buffer of new_capacity elements
+        ///          Uses std::move_if_noexcept, so elements are copied if T's move constructor may throw.
+        ///          Updates m_data and m_capacity; m_size is unchanged.
+        ///          Invalidates all iterators and references.
+        /// @param new_capacity Target size of the new buffer. Must be >= size().
+        void realloc(size_type new_capacity);
 
         /// @brief Reallocating insert: grows the buffer and places a new element at `index` in a single pass.
         /// @details Each existing element is moved exactly once (no separate grow-then-shift). The new element is
@@ -259,13 +272,13 @@ namespace stdx {
         // Grow capacity to at least the size of other if needed
         if (m_capacity < other.m_size)
         {
-            grow(other.m_size);
+            realloc(m_growth(m_capacity, other.m_size));
         }
 
         // Copy construct the all elements in other
         for (; m_size < other.m_size; ++m_size)
         {
-            std::allocator_traits<Allocator>::construct(m_alloc, m_data + m_size, other.m_data[m_size]);
+            construct(m_data + m_size,  other.m_data[m_size]);
         }
     }
 
@@ -310,7 +323,7 @@ namespace stdx {
         // Grow capacity to at least the size of other if needed
         if (m_capacity < other.m_size)
         {
-            grow(other.m_size);
+            realloc(m_growth(m_capacity, other.m_size));
         }
 
         // Assign elements from other
@@ -326,7 +339,7 @@ namespace stdx {
             // Copy construct remaining elements from other
             for (; i < other.m_size; ++i)
             {
-                std::allocator_traits<Allocator>::construct(m_alloc, m_data + i, other.m_data[i]);
+                construct(m_data + i, other.m_data[i]);
             }
         }
         else // this container contains the same or more elements than other
@@ -341,7 +354,7 @@ namespace stdx {
             // Remove remaining elements in this
             for (; i < m_size; ++i)
             {
-                std::allocator_traits<Allocator>::destroy(m_alloc, m_data + i);
+                destroy(m_data + i);
             }
         }
 
@@ -379,7 +392,7 @@ namespace stdx {
             // We must perform element-wise move into own storage, O(n)
             if (m_capacity < other.m_size)
             {
-                grow(other.m_size);
+                realloc(m_growth(m_capacity, other.m_size));
             }
 
 
@@ -396,7 +409,7 @@ namespace stdx {
                 // Move construct remaining elements from other
                 for (; i < other.m_size; ++i)
                 {
-                    std::allocator_traits<Allocator>::construct(m_alloc, m_data + i, std::move(other.m_data[i]));
+                    construct(m_data + i, std::move(other.m_data[i]));
                 }
             }
             else // this container contains the same or more elements than other
@@ -411,7 +424,7 @@ namespace stdx {
                 // Remove remaining elements in this
                 for (; i < m_size; ++i)
                 {
-                    std::allocator_traits<Allocator>::destroy(m_alloc, m_data + i);
+                    destroy(m_data + i);
                 }
             }
         }
@@ -428,7 +441,7 @@ namespace stdx {
     {
         if (m_capacity < n)
         {
-            grow(n);
+            realloc(m_growth(m_capacity, n));
         }
     }
 
@@ -437,20 +450,8 @@ namespace stdx {
     {
         if (m_capacity > m_size)
         {
-            resize(m_size);
+            realloc(m_size);
         }
-    }
-
-    template<typename T, typename Allocator, typename growth_policy>
-    inline void array_list<T, Allocator, growth_policy>::push_back(const_reference val)
-    {
-        emplace_back(val);
-    }
-
-    template<typename T, typename Allocator, typename growth_policy>
-    inline void array_list<T, Allocator, growth_policy>::push_back(T&& val)
-    {
-        emplace_back(std::move(val));
     }
 
     template<typename T, typename Allocator, typename growth_policy>
@@ -459,29 +460,17 @@ namespace stdx {
     {
         if (m_size == m_capacity)
         {
-            grow(m_size + 1);
+            realloc(m_growth(m_capacity, m_size + 1));
         }
 
-        std::allocator_traits<Allocator>::construct(m_alloc, m_data + m_size, std::forward<Args>(args)...);
+        construct(m_data + m_size, std::forward<Args>(args)...);
         ++m_size;
     }
 
     template<typename T, typename Allocator, typename growth_policy>
     inline void array_list<T, Allocator, growth_policy>::pop_back()
     {
-        std::allocator_traits<Allocator>::destroy(m_alloc, m_data + --m_size);
-    }
-
-    template<typename T, typename Allocator, typename growth_policy>
-    inline typename array_list<T, Allocator, growth_policy>::iterator array_list<T, Allocator, growth_policy>::insert(const_iterator pos, const_reference value)
-    {
-        return emplace(pos, value);
-    }
-
-    template<typename T, typename Allocator, typename growth_policy>
-    inline typename array_list<T, Allocator, growth_policy>::iterator array_list<T, Allocator, growth_policy>::insert(const_iterator pos, T&& value)
-    {
-        return emplace(pos, std::move(value));
+        destroy(m_data + --m_size);
     }
 
     template<typename T, typename Allocator, typename growth_policy>
@@ -515,9 +504,21 @@ namespace stdx {
     }
 
     template<typename T, typename Allocator, typename growth_policy>
-    inline void array_list<T, Allocator, growth_policy>::grow(size_type required_capacity)
+    inline void array_list<T, Allocator, growth_policy>::realloc(size_type new_capacity)
     {
-        resize(m_growth(m_capacity, required_capacity));
+        T* newData = std::allocator_traits<Allocator>::allocate(m_alloc, new_capacity);
+
+        // Copy container contents to new memory (newData)
+        for (size_t i = 0; i < m_size; ++i)
+        {
+            construct(newData + i, std::move_if_noexcept(m_data[i]));
+            destroy(m_data + i);
+        }
+
+        // Deallocate old memory (m_data) and update members
+        std::allocator_traits<Allocator>::deallocate(m_alloc, m_data, m_capacity);
+        m_data = newData;
+        m_capacity = new_capacity;
     }
 
     template<typename T, typename Allocator, typename growth_policy>
@@ -530,7 +531,7 @@ namespace stdx {
         // Construct the new element first so a throwing T constructor leaves *this unchanged.
         try
         {
-            std::allocator_traits<Allocator>::construct(m_alloc, newData + index, std::forward<Args>(args)...);
+            construct(newData + index, std::forward<Args>(args)...);
         }
         catch (...)
         {
@@ -542,13 +543,13 @@ namespace stdx {
         size_type i = 0;
         for (; i < index; ++i)
         {
-            std::allocator_traits<Allocator>::construct(m_alloc, newData + i, std::move_if_noexcept(m_data[i]));
-            std::allocator_traits<Allocator>::destroy(m_alloc, m_data + i);
+            construct(newData + i, std::move_if_noexcept(m_data[i]));
+            destroy(m_data + i);
         }
         for (; i < m_size; ++i)
         {
-            std::allocator_traits<Allocator>::construct(m_alloc, newData + i + 1, std::move_if_noexcept(m_data[i]));
-            std::allocator_traits<Allocator>::destroy(m_alloc, m_data + i);
+            construct(newData + i + 1, std::move_if_noexcept(m_data[i]));
+            destroy(m_data + i);
         }
 
         // Deallocate old memory and update members
@@ -558,25 +559,6 @@ namespace stdx {
         ++m_size;
         return iterator(m_data + index);
     }
-
-    template<typename T, typename Allocator, typename growth_policy>
-    inline void array_list<T, Allocator, growth_policy>::resize(size_type new_capacity)
-    {
-        T* newData = std::allocator_traits<Allocator>::allocate(m_alloc, new_capacity);
-
-        // Copy container contents to new memory (newData)
-        for (size_t i = 0; i < m_size; ++i)
-        {
-            std::allocator_traits<Allocator>::construct(m_alloc, newData + i, std::move_if_noexcept(m_data[i]));
-            std::allocator_traits<Allocator>::destroy(m_alloc, m_data + i);
-        }
-
-        // Deallocate old memory (m_data) and update members
-        std::allocator_traits<Allocator>::deallocate(m_alloc, m_data, m_capacity);
-        m_data = newData;
-        m_capacity = new_capacity;
-    }
-
 }
 
 #endif
