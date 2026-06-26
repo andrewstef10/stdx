@@ -2,7 +2,6 @@
 #define CONTAINER_H
 
 #include <cstddef>
-#include <limits>
 
 namespace stdx {
 
@@ -30,13 +29,13 @@ namespace stdx {
         /// @details Time:  O(1)
         ///          Space: O(1)
         /// @return true if the container is empty, false otherwise.
-        bool empty() const noexcept { return derived().m_size == 0; }
+        bool empty() const noexcept { return size() == 0; }
 
         /// @brief Returns the maximum number of elements the container is able to hold due to system or implementation limitations.
         /// @details Time:  O(1)
         ///          Space: O(1)
         /// @return Maximum number of elements.
-        size_type max_size() const noexcept { return std::numeric_limits<size_type>::max(); }
+        constexpr size_type max_size() const noexcept { return static_cast<size_type>(-1) / sizeof(value_type); }
 
     protected:
         container() = default;
@@ -52,8 +51,6 @@ namespace stdx {
         Derived&       derived()       { return static_cast<Derived&>(*this); }
         const Derived& derived() const { return static_cast<const Derived&>(*this); }
     };
-
-
 }
 
 #endif

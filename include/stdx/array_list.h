@@ -27,6 +27,7 @@ namespace stdx {
         friend stdx::container<array_list, T>;
         friend stdx::contiguous_container<array_list, T>;
 
+        using value_type      = typename container<array_list, T>::value_type;
         using size_type       = typename container<array_list, T>::size_type;
         using reference       = typename container<array_list, T>::reference;
         using const_reference = typename container<array_list, T>::const_reference;
@@ -185,6 +186,27 @@ namespace stdx {
         template<typename... Args>
         iterator emplace(const_iterator pos, Args&&... args);
 
+        /// @brief Resizes the container to contain count elements.
+        /// @details Time:  O(n), where n is the difference between the current size and count; O(n) where n is the current size on reallocation;
+        ///          Space: O(1); O(n) on reallocation;
+        ///          If the current size is equal to count, this function does nothing.
+        ///          If the current size is greater than count, the container is reduced to its first count elements.
+        ///          If the current size is less than count, then additional default-inserted elements are appended.
+        ///          Invalidates all iterators and references if reallocation occurs; if count < size(), invalidates iterators from count onward.
+        /// @param count new size of the container
+        void resize(size_type count) { resize_impl(count); }
+
+        /// @brief Resizes the container to contain count elements.
+        /// @details Time:  O(n), where n is the difference between the current size and count; O(n) where n is the current size on reallocation;
+        ///          Space: O(1); O(n) on reallocation;
+        ///          If the current size is equal to count, this function does nothing.
+        ///          If the current size is greater than count, the container is reduced to its first count elements.
+        ///          If the current size is less than count, then additional copies of value are appended.
+        ///          Invalidates all iterators and references if reallocation occurs; if count < size(), invalidates iterators from count onward.
+        /// @param count new size of the container
+        /// @param value the value to initialize the new elements with
+        void resize(size_type count, const_reference value) { resize_impl(count, value); }
+
         /// @brief Swaps the contents of this container with `other`. Iterators remain valid but now refer to the other container.
         /// @details Time:  O(1)
         ///          Space: O(1)
@@ -237,20 +259,35 @@ namespace stdx {
         void realloc(size_type new_capacity);
 
         /// @brief Reallocating insert: grows the buffer and places a new element at `index` in a single pass.
-        /// @details Each existing element is moved exactly once (no separate grow-then-shift). The new element is
+        /// @details Time:  O(n) — allocates a new buffer and moves all existing elements exactly once
+        ///          Space: O(n) — allocates a new buffer sized by the growth policy
+        ///          Each existing element is moved exactly once (no separate grow-then-shift). The new element is
         ///          constructed first, so a throwing element constructor leaves the container unchanged.
+        ///          Invalidates all iterators and references.
         /// @param index Position at which the new element is constructed (0..m_size).
         /// @param args  Arguments forwarded to T's constructor for the new element.
         /// @return Iterator to the newly constructed element.
         template<typename... Args>
         iterator emplace_realloc(size_type index, Args&&... args);
+
+        /// @brief Resizes the container to contain count elements.
+        /// @details Time:  O(n), where n is the difference between the current size and count; O(n) where n is the current size on reallocation;
+        ///          Space: O(1); O(n) on reallocation;
+        ///          If the current size is equal to count, this function does nothing.
+        ///          If the current size is greater than count, the container is reduced to its first count elements.
+        ///          If the current size is less than count, then additional copies of value are appended.
+        ///          Invalidates all iterators and references if reallocation occurs; if count < size(), invalidates iterators from count onward.
+        /// @param count new size of the container
+        /// @param value the value to initialize the new elements with; leave blank for default initialization;
+        template<typename... Args>
+        void resize_impl(size_type count, Args&&... args);
     };
 
 
     // ===== Inline array_list Implementation =====
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline array_list<T, Allocator, growth_policy>::array_list()
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline array_list<T, Allocator, GrowthPolicy>::array_list()
         : contiguous_container<array_list, T>()
         , m_size(0)
         , m_data(nullptr)
@@ -260,8 +297,8 @@ namespace stdx {
     {
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline array_list<T, Allocator, growth_policy>::array_list(const array_list<T, Allocator, growth_policy>& other)
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline array_list<T, Allocator, GrowthPolicy>::array_list(const array_list<T, Allocator, GrowthPolicy>& other)
         : contiguous_container<array_list, T>(other)
         , m_size(0)
         , m_data(nullptr)
@@ -282,8 +319,8 @@ namespace stdx {
         }
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline array_list<T, Allocator, growth_policy>::array_list(array_list<T, Allocator, growth_policy>&& other)
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline array_list<T, Allocator, GrowthPolicy>::array_list(array_list<T, Allocator, GrowthPolicy>&& other)
         : contiguous_container<array_list, T>(std::move(other))
         , m_size(other.m_size)
         , m_data(other.m_data)
@@ -296,15 +333,15 @@ namespace stdx {
         other.m_capacity = 0;
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline array_list<T, Allocator, growth_policy>::~array_list()
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline array_list<T, Allocator, GrowthPolicy>::~array_list()
     {
         this->clear();
         std::allocator_traits<Allocator>::deallocate(m_alloc, m_data, m_capacity);
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline array_list<T, Allocator, growth_policy>& array_list<T, Allocator, growth_policy>::operator=(const array_list<T, Allocator, growth_policy>& other)
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline array_list<T, Allocator, GrowthPolicy>& array_list<T, Allocator, GrowthPolicy>::operator=(const array_list<T, Allocator, GrowthPolicy>& other)
     {
         if (this == &other)
         {
@@ -362,8 +399,8 @@ namespace stdx {
         return *this;
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline array_list<T, Allocator, growth_policy>& array_list<T, Allocator, growth_policy>::operator=(array_list<T, Allocator, growth_policy>&& other)
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline array_list<T, Allocator, GrowthPolicy>& array_list<T, Allocator, GrowthPolicy>::operator=(array_list<T, Allocator, GrowthPolicy>&& other)
     {
         if (this == &other)
         {
@@ -436,8 +473,8 @@ namespace stdx {
         return *this;
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline void array_list<T, Allocator, growth_policy>::reserve(size_type n)
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline void array_list<T, Allocator, GrowthPolicy>::reserve(size_type n)
     {
         if (m_capacity < n)
         {
@@ -445,8 +482,8 @@ namespace stdx {
         }
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline void array_list<T, Allocator, growth_policy>::shrink_to_fit()
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline void array_list<T, Allocator, GrowthPolicy>::shrink_to_fit()
     {
         if (m_capacity > m_size)
         {
@@ -454,9 +491,9 @@ namespace stdx {
         }
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
+    template<typename T, typename Allocator, typename GrowthPolicy>
     template<typename... Args>
-    inline void array_list<T, Allocator, growth_policy>::emplace_back(Args&&... args)
+    inline void array_list<T, Allocator, GrowthPolicy>::emplace_back(Args&&... args)
     {
         if (m_size == m_capacity)
         {
@@ -467,15 +504,15 @@ namespace stdx {
         ++m_size;
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline void array_list<T, Allocator, growth_policy>::pop_back()
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline void array_list<T, Allocator, GrowthPolicy>::pop_back()
     {
         destroy(m_data + --m_size);
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
+    template<typename T, typename Allocator, typename GrowthPolicy>
     template<typename... Args>
-    inline typename array_list<T, Allocator, growth_policy>::iterator array_list<T, Allocator, growth_policy>::emplace(const_iterator pos, Args&&... args)
+    inline typename array_list<T, Allocator, GrowthPolicy>::iterator array_list<T, Allocator, GrowthPolicy>::emplace(const_iterator pos, Args&&... args)
     {
         if (m_size == m_capacity)
         {
@@ -484,8 +521,33 @@ namespace stdx {
         return this->emplace_inplace(static_cast<size_type>(pos - m_data), std::forward<Args>(args)...);
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline void array_list<T, Allocator, growth_policy>::swap(array_list<T, Allocator, growth_policy>& other)
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    template<typename... Args>
+    inline void array_list<T, Allocator, GrowthPolicy>::resize_impl(size_type count, Args&&... args)
+    {
+        if (m_size < count)
+        {
+            if (count > m_capacity)
+            {
+                realloc(m_growth(m_capacity, count));
+            }
+
+            for (; m_size < count; ++m_size)
+            {
+                construct(m_data + m_size, std::forward<Args>(args)...);
+            }
+        }
+        else
+        {
+            while (m_size > count)
+            {
+                pop_back();
+            }
+        }
+    }
+
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline void array_list<T, Allocator, GrowthPolicy>::swap(array_list<T, Allocator, GrowthPolicy>& other)
     {
         // Only the storage (data/size/capacity) is exchanged; m_alloc and m_growth are intentionally
         // left in place. This is correct because both are stateless here. A stateful growth policy or
@@ -503,8 +565,8 @@ namespace stdx {
         m_capacity = tempCapacity;
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
-    inline void array_list<T, Allocator, growth_policy>::realloc(size_type new_capacity)
+    template<typename T, typename Allocator, typename GrowthPolicy>
+    inline void array_list<T, Allocator, GrowthPolicy>::realloc(size_type new_capacity)
     {
         T* newData = std::allocator_traits<Allocator>::allocate(m_alloc, new_capacity);
 
@@ -521,9 +583,9 @@ namespace stdx {
         m_capacity = new_capacity;
     }
 
-    template<typename T, typename Allocator, typename growth_policy>
+    template<typename T, typename Allocator, typename GrowthPolicy>
     template<typename... Args>
-    inline typename array_list<T, Allocator, growth_policy>::iterator array_list<T, Allocator, growth_policy>::emplace_realloc(size_type index, Args&&... args)
+    inline typename array_list<T, Allocator, GrowthPolicy>::iterator array_list<T, Allocator, GrowthPolicy>::emplace_realloc(size_type index, Args&&... args)
     {
         const size_type NEW_CAPACITY = m_growth(m_capacity, m_size + 1);
         T* newData = std::allocator_traits<Allocator>::allocate(m_alloc, NEW_CAPACITY);

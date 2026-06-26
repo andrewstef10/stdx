@@ -1577,7 +1577,8 @@ TEST(ArrayListMemberTypesTest, ConstPointerFromConstData) {
 
 TEST(ArrayListCapacityTest, MaxSizeIsMaxSizeT) {
     stdx::array_list<int> v;
-    EXPECT_EQ(std::numeric_limits<std::size_t>::max(), v.max_size());
+    std::vector<int> vec;
+    EXPECT_EQ(vec.max_size(), v.max_size());
 }
 
 TEST(ArrayListCapacityTest, MaxSizeIsConstant) {
@@ -1598,4 +1599,350 @@ TEST(ArrayListCapacityTest, MaxSizeGreaterThanCapacity) {
     stdx::array_list<int> v;
     v.reserve(1000);
     EXPECT_GT(v.max_size(), v.capacity());
+}
+
+
+// ===== Resize Tests =====
+
+namespace {
+
+struct DestructorCounter {
+    static int destructions;
+    int value;
+    DestructorCounter() : value(0) {}
+    explicit DestructorCounter(int v) : value(v) {}
+    ~DestructorCounter() { ++destructions; }
+    DestructorCounter(const DestructorCounter&) = default;
+    DestructorCounter& operator=(const DestructorCounter&) = default;
+    DestructorCounter(DestructorCounter&&) noexcept = default;
+    DestructorCounter& operator=(DestructorCounter&&) noexcept = default;
+};
+int DestructorCounter::destructions = 0;
+
+} // namespace
+
+// --- resize(count) ---
+
+TEST(ArrayListResizeTest, ResizeSameSizeIsNoop) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    std::size_t capBefore = v.capacity();
+    v.resize(3);
+    EXPECT_EQ(3u, v.size());
+    EXPECT_EQ(capBefore, v.capacity());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(3, v[2]);
+}
+
+TEST(ArrayListResizeTest, ResizeToZeroFromEmpty) {
+    stdx::array_list<int> v;
+    v.resize(0);
+    EXPECT_EQ(0u, v.size());
+    EXPECT_TRUE(v.empty());
+}
+
+TEST(ArrayListResizeTest, ResizeToZeroFromNonEmpty) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.resize(0);
+    EXPECT_EQ(0u, v.size());
+    EXPECT_TRUE(v.empty());
+}
+
+TEST(ArrayListResizeTest, ResizeLargerFromEmpty) {
+    stdx::array_list<int> v;
+    v.resize(3);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(0, v[0]);
+    EXPECT_EQ(0, v[1]);
+    EXPECT_EQ(0, v[2]);
+}
+
+TEST(ArrayListResizeTest, ResizeLargerPreservesExistingElements) {
+    stdx::array_list<int> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.push_back(30);
+    v.resize(5);
+    ASSERT_EQ(5u, v.size());
+    EXPECT_EQ(10, v[0]);
+    EXPECT_EQ(20, v[1]);
+    EXPECT_EQ(30, v[2]);
+}
+
+TEST(ArrayListResizeTest, ResizeLargerDefaultInitializesNewElements) {
+    stdx::array_list<int> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.resize(5);
+    ASSERT_EQ(5u, v.size());
+    EXPECT_EQ(0, v[2]);
+    EXPECT_EQ(0, v[3]);
+    EXPECT_EQ(0, v[4]);
+}
+
+TEST(ArrayListResizeTest, ResizeLargerCapacityAtLeastCount) {
+    stdx::array_list<int> v;
+    v.resize(10);
+    EXPECT_GE(v.capacity(), 10u);
+}
+
+TEST(ArrayListResizeTest, ResizeLargerWhenCapacityAlreadySufficient) {
+    stdx::array_list<int> v;
+    v.reserve(10);
+    v.push_back(1);
+    v.push_back(2);
+    std::size_t capBefore = v.capacity();
+    v.resize(5);
+    EXPECT_EQ(5u, v.size());
+    EXPECT_EQ(capBefore, v.capacity());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(0, v[2]);
+    EXPECT_EQ(0, v[3]);
+    EXPECT_EQ(0, v[4]);
+}
+
+TEST(ArrayListResizeTest, ResizeLargerToExactCapacityDoesNotReallocate) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);  // size=2, capacity=2
+    v.pop_back();    // size=1, capacity=2
+    const int* dataBefore = v.data();
+    v.resize(2);     // count == capacity: must NOT reallocate
+    EXPECT_EQ(dataBefore, v.data());
+    EXPECT_EQ(2u, v.size());
+}
+
+TEST(ArrayListResizeTest, ResizeSmallerReducesSize) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.push_back(4);
+    v.push_back(5);
+    v.resize(3);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(3, v[2]);
+}
+
+TEST(ArrayListResizeTest, ResizeSmallerPreservesCapacity) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    std::size_t capBefore = v.capacity();
+    v.resize(1);
+    EXPECT_EQ(1u, v.size());
+    EXPECT_EQ(capBefore, v.capacity());
+}
+
+TEST(ArrayListResizeTest, ResizeSmallerDestroysRemovedElements) {
+    DestructorCounter::destructions = 0;
+    {
+        stdx::array_list<DestructorCounter> v;
+        v.reserve(3);
+        v.emplace_back(1);
+        v.emplace_back(2);
+        v.emplace_back(3);
+        DestructorCounter::destructions = 0;
+        v.resize(1);
+        EXPECT_EQ(2, DestructorCounter::destructions);
+        EXPECT_EQ(1u, v.size());
+        EXPECT_EQ(1, v[0].value);
+    }
+}
+
+TEST(ArrayListResizeTest, ResizeLargerWithNonTrivialTypeDefaultInserted) {
+    stdx::array_list<std::string> v;
+    v.push_back("hello");
+    v.resize(3);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ("hello", v[0]);
+    EXPECT_EQ("", v[1]);
+    EXPECT_EQ("", v[2]);
+}
+
+TEST(ArrayListResizeTest, ResizeSmallerWithNonTrivialType) {
+    stdx::array_list<std::string> v;
+    v.push_back("a");
+    v.push_back("b");
+    v.push_back("c");
+    v.resize(1);
+    ASSERT_EQ(1u, v.size());
+    EXPECT_EQ("a", v[0]);
+}
+
+TEST(ArrayListResizeTest, ResizeThenPushBackWorks) {
+    stdx::array_list<int> v;
+    v.resize(3);
+    v.push_back(99);
+    ASSERT_EQ(4u, v.size());
+    EXPECT_EQ(0, v[0]);
+    EXPECT_EQ(0, v[1]);
+    EXPECT_EQ(0, v[2]);
+    EXPECT_EQ(99, v[3]);
+}
+
+TEST(ArrayListResizeTest, ResizeSmallerThenLargerDefaultInitializesNewElements) {
+    stdx::array_list<int> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.push_back(30);
+    v.resize(1);
+    v.resize(3);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(10, v[0]);
+    EXPECT_EQ(0, v[1]);
+    EXPECT_EQ(0, v[2]);
+}
+
+// --- resize(count, value) ---
+
+TEST(ArrayListResizeTest, ResizeWithValueSameSizeIsNoop) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    std::size_t capBefore = v.capacity();
+    v.resize(3, 99);
+    EXPECT_EQ(3u, v.size());
+    EXPECT_EQ(capBefore, v.capacity());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(3, v[2]);
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueToZeroFromNonEmpty) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.resize(0, 99);
+    EXPECT_EQ(0u, v.size());
+    EXPECT_TRUE(v.empty());
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueLargerFromEmpty) {
+    stdx::array_list<int> v;
+    v.resize(3, 42);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(42, v[0]);
+    EXPECT_EQ(42, v[1]);
+    EXPECT_EQ(42, v[2]);
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueLargerPreservesExistingElements) {
+    stdx::array_list<int> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.resize(5, 99);
+    ASSERT_EQ(5u, v.size());
+    EXPECT_EQ(10, v[0]);
+    EXPECT_EQ(20, v[1]);
+    EXPECT_EQ(99, v[2]);
+    EXPECT_EQ(99, v[3]);
+    EXPECT_EQ(99, v[4]);
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueSmallerReducesSize) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.push_back(4);
+    v.resize(2, 99);
+    ASSERT_EQ(2u, v.size());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueSmallerPreservesCapacity) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    std::size_t capBefore = v.capacity();
+    v.resize(1, 99);
+    EXPECT_EQ(1u, v.size());
+    EXPECT_EQ(capBefore, v.capacity());
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueLargerCapacityAtLeastCount) {
+    stdx::array_list<int> v;
+    v.resize(10, 5);
+    EXPECT_GE(v.capacity(), 10u);
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueLargerWhenCapacityAlreadySufficient) {
+    stdx::array_list<int> v;
+    v.reserve(10);
+    v.push_back(1);
+    std::size_t capBefore = v.capacity();
+    v.resize(4, 7);
+    EXPECT_EQ(4u, v.size());
+    EXPECT_EQ(capBefore, v.capacity());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(7, v[1]);
+    EXPECT_EQ(7, v[2]);
+    EXPECT_EQ(7, v[3]);
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueLargerToExactCapacityDoesNotReallocate) {
+    stdx::array_list<int> v;
+    v.push_back(1);
+    v.push_back(2);  // size=2, capacity=2
+    v.pop_back();    // size=1, capacity=2
+    const int* dataBefore = v.data();
+    v.resize(2, 99); // count == capacity: must NOT reallocate
+    EXPECT_EQ(dataBefore, v.data());
+    EXPECT_EQ(2u, v.size());
+    EXPECT_EQ(99, v[1]);
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueSmallerDestroysRemovedElements) {
+    DestructorCounter::destructions = 0;
+    {
+        stdx::array_list<DestructorCounter> v;
+        v.reserve(3);
+        v.emplace_back(1);
+        v.emplace_back(2);
+        v.emplace_back(3);
+        DestructorCounter filler{0};
+        DestructorCounter::destructions = 0;
+        v.resize(1, filler);
+        EXPECT_EQ(2, DestructorCounter::destructions);
+        EXPECT_EQ(1u, v.size());
+        EXPECT_EQ(1, v[0].value);
+    }
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueWithString) {
+    stdx::array_list<std::string> v;
+    v.push_back("hello");
+    v.resize(4, "world");
+    ASSERT_EQ(4u, v.size());
+    EXPECT_EQ("hello", v[0]);
+    EXPECT_EQ("world", v[1]);
+    EXPECT_EQ("world", v[2]);
+    EXPECT_EQ("world", v[3]);
+}
+
+TEST(ArrayListResizeTest, ResizeWithValueSmallerThenLargerUsesValue) {
+    stdx::array_list<int> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.push_back(30);
+    v.resize(1, 0);
+    v.resize(3, 55);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(10, v[0]);
+    EXPECT_EQ(55, v[1]);
+    EXPECT_EQ(55, v[2]);
 }

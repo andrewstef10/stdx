@@ -1537,3 +1537,318 @@ TEST(FixedArrayListNonDefaultConstructibleTest, MoveOnlyPushBack) {
 TEST(FixedArrayListNonDefaultConstructibleTest, MoveOnlyCopyConstructorIsDeleted) {
     static_assert(!std::is_copy_constructible<MoveOnly>::value, "");
 }
+
+
+// ===== Resize Tests =====
+
+namespace {
+
+struct ResizeDestructorCounter {
+    static int destructions;
+    int value;
+    ResizeDestructorCounter() : value(0) {}
+    explicit ResizeDestructorCounter(int v) : value(v) {}
+    ~ResizeDestructorCounter() { ++destructions; }
+    ResizeDestructorCounter(const ResizeDestructorCounter&) = default;
+    ResizeDestructorCounter& operator=(const ResizeDestructorCounter&) = default;
+    ResizeDestructorCounter(ResizeDestructorCounter&&) noexcept = default;
+    ResizeDestructorCounter& operator=(ResizeDestructorCounter&&) noexcept = default;
+};
+int ResizeDestructorCounter::destructions = 0;
+
+} // namespace
+
+// --- resize(count) ---
+
+TEST(FixedArrayListResizeTest, ResizeSameSizeIsNoop) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.resize(3);
+    EXPECT_EQ(3u, v.size());
+    EXPECT_EQ(5u, v.capacity());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(3, v[2]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeToZeroFromEmpty) {
+    stdx::fixed_array_list<int, 5> v;
+    v.resize(0);
+    EXPECT_EQ(0u, v.size());
+    EXPECT_TRUE(v.empty());
+}
+
+TEST(FixedArrayListResizeTest, ResizeToZeroFromNonEmpty) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.resize(0);
+    EXPECT_EQ(0u, v.size());
+    EXPECT_TRUE(v.empty());
+}
+
+TEST(FixedArrayListResizeTest, ResizeLargerFromEmpty) {
+    stdx::fixed_array_list<int, 5> v;
+    v.resize(3);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(0, v[0]);
+    EXPECT_EQ(0, v[1]);
+    EXPECT_EQ(0, v[2]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeLargerPreservesExistingElements) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.resize(4);
+    ASSERT_EQ(4u, v.size());
+    EXPECT_EQ(10, v[0]);
+    EXPECT_EQ(20, v[1]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeLargerDefaultInitializesNewElements) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.resize(5);
+    ASSERT_EQ(5u, v.size());
+    EXPECT_EQ(0, v[2]);
+    EXPECT_EQ(0, v[3]);
+    EXPECT_EQ(0, v[4]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeSmallerReducesSize) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.push_back(4);
+    v.push_back(5);
+    v.resize(2);
+    ASSERT_EQ(2u, v.size());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeSmallerCapacityRemainsN) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.resize(1);
+    EXPECT_EQ(1u, v.size());
+    EXPECT_EQ(5u, v.capacity());
+}
+
+TEST(FixedArrayListResizeTest, ResizeSmallerDestroysRemovedElements) {
+    ResizeDestructorCounter::destructions = 0;
+    {
+        stdx::fixed_array_list<ResizeDestructorCounter, 5> v;
+        v.emplace_back(1);
+        v.emplace_back(2);
+        v.emplace_back(3);
+        ResizeDestructorCounter::destructions = 0;
+        v.resize(1);
+        EXPECT_EQ(2, ResizeDestructorCounter::destructions);
+        EXPECT_EQ(1u, v.size());
+        EXPECT_EQ(1, v[0].value);
+    }
+}
+
+TEST(FixedArrayListResizeTest, ResizeLargerWithNonTrivialTypeDefaultInserted) {
+    stdx::fixed_array_list<std::string, 5> v;
+    v.push_back("hello");
+    v.resize(3);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ("hello", v[0]);
+    EXPECT_EQ("", v[1]);
+    EXPECT_EQ("", v[2]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeSmallerWithNonTrivialType) {
+    stdx::fixed_array_list<std::string, 5> v;
+    v.push_back("a");
+    v.push_back("b");
+    v.push_back("c");
+    v.resize(1);
+    ASSERT_EQ(1u, v.size());
+    EXPECT_EQ("a", v[0]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeThenPushBackWorks) {
+    stdx::fixed_array_list<int, 5> v;
+    v.resize(3);
+    v.push_back(99);
+    ASSERT_EQ(4u, v.size());
+    EXPECT_EQ(0, v[0]);
+    EXPECT_EQ(0, v[1]);
+    EXPECT_EQ(0, v[2]);
+    EXPECT_EQ(99, v[3]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeSmallerThenLargerDefaultInitializesNewElements) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.push_back(30);
+    v.resize(1);
+    v.resize(3);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(10, v[0]);
+    EXPECT_EQ(0, v[1]);
+    EXPECT_EQ(0, v[2]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeToExactCapacitySucceeds) {
+    stdx::fixed_array_list<int, 4> v;
+    v.push_back(1);
+    v.resize(4);
+    EXPECT_EQ(4u, v.size());
+    EXPECT_EQ(4u, v.capacity());
+}
+
+TEST(FixedArrayListResizeTest, ResizeExceedsCapacityThrows) {
+    stdx::fixed_array_list<int, 3> v;
+    EXPECT_THROW(v.resize(4), std::length_error);
+}
+
+TEST(FixedArrayListResizeTest, ResizeExceedsCapacityDoesNotChangeSize) {
+    stdx::fixed_array_list<int, 3> v;
+    v.push_back(1);
+    v.push_back(2);
+    EXPECT_THROW(v.resize(4), std::length_error);
+    EXPECT_EQ(2u, v.size());
+}
+
+// --- resize(count, value) ---
+
+TEST(FixedArrayListResizeTest, ResizeWithValueSameSizeIsNoop) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.resize(3, 99);
+    EXPECT_EQ(3u, v.size());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+    EXPECT_EQ(3, v[2]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueToZeroFromNonEmpty) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.resize(0, 99);
+    EXPECT_EQ(0u, v.size());
+    EXPECT_TRUE(v.empty());
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueLargerFromEmpty) {
+    stdx::fixed_array_list<int, 5> v;
+    v.resize(3, 42);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(42, v[0]);
+    EXPECT_EQ(42, v[1]);
+    EXPECT_EQ(42, v[2]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueLargerPreservesExistingElements) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.resize(5, 99);
+    ASSERT_EQ(5u, v.size());
+    EXPECT_EQ(10, v[0]);
+    EXPECT_EQ(20, v[1]);
+    EXPECT_EQ(99, v[2]);
+    EXPECT_EQ(99, v[3]);
+    EXPECT_EQ(99, v[4]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueSmallerReducesSize) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.push_back(4);
+    v.resize(2, 99);
+    ASSERT_EQ(2u, v.size());
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(2, v[1]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueSmallerCapacityRemainsN) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+    v.resize(1, 99);
+    EXPECT_EQ(1u, v.size());
+    EXPECT_EQ(5u, v.capacity());
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueSmallerDestroysRemovedElements) {
+    ResizeDestructorCounter::destructions = 0;
+    {
+        stdx::fixed_array_list<ResizeDestructorCounter, 5> v;
+        v.emplace_back(1);
+        v.emplace_back(2);
+        v.emplace_back(3);
+        ResizeDestructorCounter filler{0};
+        ResizeDestructorCounter::destructions = 0;
+        v.resize(1, filler);
+        EXPECT_EQ(2, ResizeDestructorCounter::destructions);
+        EXPECT_EQ(1u, v.size());
+        EXPECT_EQ(1, v[0].value);
+    }
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueWithString) {
+    stdx::fixed_array_list<std::string, 5> v;
+    v.push_back("hello");
+    v.resize(4, "world");
+    ASSERT_EQ(4u, v.size());
+    EXPECT_EQ("hello", v[0]);
+    EXPECT_EQ("world", v[1]);
+    EXPECT_EQ("world", v[2]);
+    EXPECT_EQ("world", v[3]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueToExactCapacitySucceeds) {
+    stdx::fixed_array_list<int, 4> v;
+    v.push_back(1);
+    v.resize(4, 7);
+    EXPECT_EQ(4u, v.size());
+    EXPECT_EQ(7, v[1]);
+    EXPECT_EQ(7, v[2]);
+    EXPECT_EQ(7, v[3]);
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueExceedsCapacityThrows) {
+    stdx::fixed_array_list<int, 3> v;
+    EXPECT_THROW(v.resize(4, 99), std::length_error);
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueExceedsCapacityDoesNotChangeSize) {
+    stdx::fixed_array_list<int, 3> v;
+    v.push_back(1);
+    v.push_back(2);
+    EXPECT_THROW(v.resize(4, 99), std::length_error);
+    EXPECT_EQ(2u, v.size());
+}
+
+TEST(FixedArrayListResizeTest, ResizeWithValueSmallerThenLargerUsesValue) {
+    stdx::fixed_array_list<int, 5> v;
+    v.push_back(10);
+    v.push_back(20);
+    v.push_back(30);
+    v.resize(1, 0);
+    v.resize(3, 55);
+    ASSERT_EQ(3u, v.size());
+    EXPECT_EQ(10, v[0]);
+    EXPECT_EQ(55, v[1]);
+    EXPECT_EQ(55, v[2]);
+}

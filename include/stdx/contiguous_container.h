@@ -310,8 +310,6 @@ namespace stdx {
             derived()[i] = std::move(derived()[i - 1]);
         }
     }
-
-
 }
 
 #endif

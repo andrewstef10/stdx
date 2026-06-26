@@ -170,6 +170,29 @@ namespace stdx {
         template<typename... Args>
         iterator emplace(const_iterator pos, Args&&... args);
 
+        /// @brief Resizes the container to contain count elements.
+        /// @details Time:  O(n), where n is the difference between the current size and count
+        ///          Space: O(1)
+        ///          If the current size is equal to count, this function does nothing.
+        ///          If the current size is greater than count, the container is reduced to its first count elements.
+        ///          If the current size is less than count, then additional default-inserted elements are appended.
+        ///          Invalidates all iterators and references if reallocation occurs; if count < size(), invalidates iterators from count onward.
+        /// @exception std::length_error if count > N
+        /// @param count new size of the container
+        void resize(size_type count) { resize_impl(count); }
+
+        /// @brief Resizes the container to contain count elements.
+        /// @details Time:  O(n), where n is the difference between the current size and count
+        ///          Space: O(1)
+        ///          If the current size is equal to count, this function does nothing.
+        ///          If the current size is greater than count, the container is reduced to its first count elements.
+        ///          If the current size is less than count, then additional default-inserted elements are appended.
+        ///          Invalidates all iterators and references if reallocation occurs; if count < size(), invalidates iterators from count onward.
+        /// @exception std::length_error if count > N
+        /// @param count new size of the container
+        /// @param value the value to initialize the new elements with
+        void resize(size_type count, const_reference value) { resize_impl(count, value); }
+
         /// @brief Swaps the contents of this container with `other` element-by-element.
         ///        Iterators remain valid but now refer to the other container's elements.
         /// @details Time:  O(n) — swaps elements one-by-one since each object owns its own stack buffer
@@ -203,6 +226,19 @@ namespace stdx {
         {
             location->~T();
         }
+
+        /// @brief Resizes the container to contain count elements.
+        /// @details Time:  O(n), where n is the difference between the current size and count
+        ///          Space: O(1)
+        ///          If the current size is equal to count, this function does nothing.
+        ///          If the current size is greater than count, the container is reduced to its first count elements.
+        ///          If the current size is less than count, then additional default-inserted elements are appended.
+        ///          Invalidates all iterators and references if reallocation occurs; if count < size(), invalidates iterators from count onward.
+        /// @exception std::length_error if count > N
+        /// @param count new size of the container
+        /// @param value the value to initialize the new elements with; leave blank for default initialization;
+        template<typename... Args>
+        void resize_impl(size_type count, Args&&... args);
     };
 
 
@@ -368,6 +404,31 @@ namespace stdx {
         }
 
         return this->emplace_inplace(static_cast<size_type>(pos - data()), std::forward<Args>(args)...);
+    }
+
+    template<typename T, std::size_t N>
+    template<typename... Args>
+    inline void fixed_array_list<T, N>::resize_impl(size_type count, Args&&... args)
+    {
+        if (m_size < count)
+        {
+            if (count > N)
+            {
+                throw std::length_error("Attempted to resize beyond the size of fixed_array_list");
+            }
+
+            for (; m_size < count; ++m_size)
+            {
+                construct(data() + m_size, std::forward<Args>(args)...);
+            }
+        }
+        else
+        {
+            while (m_size > count)
+            {
+                pop_back();
+            }
+        }
     }
 
     template<typename T, std::size_t N>
