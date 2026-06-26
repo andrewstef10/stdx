@@ -414,7 +414,7 @@ namespace stdx {
         {
             if (count > N)
             {
-                throw std::length_error("Attempted to resize beyond the size of fixed_array_list");
+                throw std::length_error("Attempted to resize beyond the capacity of fixed_array_list");
             }
 
             for (; m_size < count; ++m_size)

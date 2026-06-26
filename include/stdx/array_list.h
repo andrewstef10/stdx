@@ -549,20 +549,25 @@ namespace stdx {
     template<typename T, typename Allocator, typename GrowthPolicy>
     inline void array_list<T, Allocator, GrowthPolicy>::swap(array_list<T, Allocator, GrowthPolicy>& other)
     {
-        // Only the storage (data/size/capacity) is exchanged; m_alloc and m_growth are intentionally
-        // left in place. This is correct because both are stateless here. A stateful growth policy or
-        // a non-always-equal allocator would require swapping (or propagating) them as well.
-        T* tempData = other.m_data;
-        size_type tempSize = other.m_size;
+        // Always swap storage: each pointer/size/capacity pair must travel together.
+        T* tempData            = other.m_data;
+        size_type tempSize     = other.m_size;
         size_type tempCapacity = other.m_capacity;
 
-        other.m_data = m_data;
-        other.m_size = m_size;
+        other.m_data     = m_data;
+        other.m_size     = m_size;
         other.m_capacity = m_capacity;
-        
-        m_data = tempData;
-        m_size = tempSize;
+
+        m_data     = tempData;
+        m_size     = tempSize;
         m_capacity = tempCapacity;
+
+        // Swap allocators when POCS is true so each allocator stays paired with the memory it owns.
+        if (std::allocator_traits<Allocator>::propagate_on_container_swap::value)
+        {
+            using std::swap; // allows compiler to check allocator's own namespace via ADL first, then falls back to std::swap if needed
+            swap(m_alloc, other.m_alloc);
+        }
     }
 
     template<typename T, typename Allocator, typename GrowthPolicy>
