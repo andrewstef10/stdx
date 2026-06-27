@@ -151,7 +151,7 @@ jobs:
     - name: Upload Coverage Report Artifact
       uses: actions/upload-artifact@v6
       with:
-        name: ${{ matrix.tool }}-report
+        name: llvm-cov-report
         path: ${{ github.workspace }}/coverage
 
 

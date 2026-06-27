@@ -15,7 +15,7 @@
                 "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/lib",
                 "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/lib",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_COMPILE_WARNING_AS_ERROR": "OFF",
+                "CMAKE_COMPILE_WARNING_AS_ERROR": "ON",
                 "CMAKE_COLOR_DIAGNOSTICS": "ON"
             }
         },
