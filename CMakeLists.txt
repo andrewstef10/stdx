@@ -170,6 +170,24 @@ if(ENABLE_COVERAGE)
         set(PROFRAW_FILE ${CMAKE_BINARY_DIR}/default.profraw)
         set(PROFDATA_FILE ${CMAKE_BINARY_DIR}/coverage.profdata)
 
+        set(_LLVM_COV_BASE_ARGS
+            $<TARGET_FILE:stdx_test-unit>
+            -instr-profile=${PROFDATA_FILE}
+        )
+        set(_LLVM_COV_SOURCES
+            ${CMAKE_SOURCE_DIR}/src
+            ${CMAKE_SOURCE_DIR}/include
+        )
+        set(_LLVM_COV_SHOW_FLAGS
+            -show-line-counts       # annotate each line with its execution count
+            -show-regions           # highlight individual coverage regions within a line
+            -show-expansions        # expand macros inline to show their internal coverage
+            -show-instantiations    # break out coverage per template instantiation
+            -show-branches=count    # show taken/not-taken counts at each branch point
+            -show-mcdc              # highlight MC/DC condition coverage inline
+            -show-mcdc-summary      # add MC/DC summary column to the file table
+        )
+
         add_custom_target(coverage
             COMMAND ${CMAKE_COMMAND} -E make_directory ${COVERAGE_DIR}
             # Run tests — LLVM_PROFILE_FILE directs raw profile data to a known path
@@ -177,26 +195,33 @@ if(ENABLE_COVERAGE)
                 ${CMAKE_CTEST_COMMAND} --test-dir ${CMAKE_BINARY_DIR} --output-on-failure
             # Merge .profraw -> .profdata (required before llvm-cov can read it)
             COMMAND ${LLVM_PROFDATA_PATH} merge -sparse ${PROFRAW_FILE} -o ${PROFDATA_FILE}
-            # Generate HTML report
+            # Generate HTML report (browsable annotated source)
             COMMAND ${LLVM_COV_PATH} show
-                $<TARGET_FILE:stdx_test-unit>
-                -instr-profile=${PROFDATA_FILE}
-                -format=html
-                -output-dir=${COVERAGE_DIR}
-                -show-line-counts
-                -show-regions
-                -show-mcdc
-                -show-mcdc-summary
-                ${CMAKE_SOURCE_DIR}/src
-                ${CMAKE_SOURCE_DIR}/include
+                ${_LLVM_COV_BASE_ARGS}
+                -format=html                # write HTML instead of text
+                -output-dir=${COVERAGE_DIR} # directory for generated HTML files
+                ${_LLVM_COV_SHOW_FLAGS}
+                ${_LLVM_COV_SOURCES}
+            # Generate text report (single annotated source file for quick inspection)
+            COMMAND ${LLVM_COV_PATH} show
+                ${_LLVM_COV_BASE_ARGS}
+                -format=text
+                -o ${COVERAGE_DIR}/coverage.txt
+                ${_LLVM_COV_SHOW_FLAGS}
+                ${_LLVM_COV_SOURCES}
+            # Generate LCOV report (machine-readable .lcov for upload to Coveralls/Codecov)
+            COMMAND ${LLVM_COV_PATH} export
+                ${_LLVM_COV_BASE_ARGS}
+                -format=lcov
+                ${_LLVM_COV_SOURCES}
+                > ${COVERAGE_DIR}/coverage.lcov
             # Print text summary to the console
             COMMAND ${LLVM_COV_PATH} report
-                $<TARGET_FILE:stdx_test-unit>
-                -instr-profile=${PROFDATA_FILE}
+                ${_LLVM_COV_BASE_ARGS}
                 -show-mcdc-summary
-                ${CMAKE_SOURCE_DIR}/src
-                ${CMAKE_SOURCE_DIR}/include
-            COMMENT "Running tests and generating LLVM coverage report..."
+                --use-color
+                ${_LLVM_COV_SOURCES}
+            COMMENT "Running unit tests and generating LLVM coverage report..."
         )
         add_dependencies(coverage stdx_test-unit)
 
