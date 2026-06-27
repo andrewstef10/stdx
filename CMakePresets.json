@@ -15,7 +15,8 @@
                 "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/lib",
                 "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/lib",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_COMPILE_WARNING_AS_ERROR": "OFF"
+                "CMAKE_COMPILE_WARNING_AS_ERROR": "OFF",
+                "CMAKE_COLOR_DIAGNOSTICS": "ON"
             }
         },
         {
@@ -275,7 +276,8 @@
             },
             "environment": {
                 "CLICOLOR_FORCE": "1",
-                "GTEST_COLOR": "yes"
+                "GTEST_COLOR": "yes",
+                "TERM": "xterm-256color"
             }
         },
 
