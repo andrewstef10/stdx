@@ -82,7 +82,7 @@ jobs:
       run: cmake --preset ${{ matrix.type.preset }}
         
     - name: Build
-      run: cmake --build --preset ${{ matrix.type.preset }}
+      run: cmake --build --preset ${{ matrix.type.preset }} --verbose
 
     - name: Test
       run: ctest --preset ${{ matrix.type.preset }}

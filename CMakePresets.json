@@ -17,6 +17,9 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_COMPILE_WARNING_AS_ERROR": "OFF",
                 "CMAKE_COLOR_DIAGNOSTICS": "ON"
+            },
+            "environment": {
+                "CLICOLOR_FORCE": "1"
             }
         },
         {
