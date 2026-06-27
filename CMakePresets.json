@@ -17,9 +17,6 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_COMPILE_WARNING_AS_ERROR": "OFF",
                 "CMAKE_COLOR_DIAGNOSTICS": "ON"
-            },
-            "environment": {
-                "CLICOLOR_FORCE": "1"
             }
         },
         {
@@ -176,10 +173,7 @@
     "buildPresets": [
         {
             "name": "base-build",
-            "hidden": true,
-            "environment": {
-                "CLICOLOR_FORCE": "1"
-            }
+            "hidden": true
         },
 
         {
@@ -303,10 +297,6 @@
             "output": {
                 "verbosity": "verbose",
                 "outputOnFailure": true
-            },
-            "environment": {
-                "CLICOLOR_FORCE": "1",
-                "GTEST_COLOR": "yes"
             }
         },
 

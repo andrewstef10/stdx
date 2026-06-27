@@ -11,6 +11,8 @@ on:
 
 env:
   BUILD_DIR: ${{ github.workspace }}/build
+  CLICOLOR_FORCE: 1
+  GTEST_COLOR: "yes"
 
 
 jobs:
