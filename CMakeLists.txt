@@ -163,8 +163,9 @@ if(ENABLE_COVERAGE)
         add_dependencies(coverage stdx_test-unit)
 
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
-        find_program(LLVM_PROFDATA_PATH llvm-profdata REQUIRED)
-        find_program(LLVM_COV_PATH llvm-cov REQUIRED)
+        string(REGEX MATCH "^[0-9]+" _CLANG_MAJOR "${CMAKE_CXX_COMPILER_VERSION}")
+        find_program(LLVM_PROFDATA_PATH NAMES llvm-profdata llvm-profdata-${_CLANG_MAJOR} REQUIRED)
+        find_program(LLVM_COV_PATH NAMES llvm-cov llvm-cov-${_CLANG_MAJOR} REQUIRED)
 
         set(PROFRAW_FILE ${CMAKE_BINARY_DIR}/default.profraw)
         set(PROFDATA_FILE ${CMAKE_BINARY_DIR}/coverage.profdata)
