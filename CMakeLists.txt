@@ -55,6 +55,21 @@ message(STATUS "COVERAGE_DIR                    = ${COVERAGE_DIR}")
 # ============================================================
 # Compiler Flags / properties functions for Targets
 # ============================================================
+function(enable_compiler_warnings target)
+    if(MSVC)
+        # Covers cl.exe and clang-cl (Clang targeting the MSVC ABI)
+        target_compile_options(${target} PRIVATE
+            $<$<COMPILE_LANGUAGE:C>:/W4>
+            $<$<COMPILE_LANGUAGE:CXX>:/W4>
+        )
+    else()
+        target_compile_options(${target} PRIVATE
+            $<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-Wall -Wextra -Wpedantic>
+            $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-Wall -Wextra -Wpedantic>
+        )
+    endif()
+endfunction()
+
 function(check_enable_clang_tidy target)
     if(ENABLE_CLANG_TIDY)
         find_program(CLANG_TIDY_EXE NAMES clang-tidy)

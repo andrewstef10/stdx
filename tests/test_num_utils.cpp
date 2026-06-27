@@ -179,7 +179,6 @@ TEST(ClampTests, ValueBelowRange)
 TEST(ClampTests, ValueAboveRange)
 {
     int val = 11;
-    int* valAddress = &val;
     int negVal = 0;
     EXPECT_TRUE(stdx::clamp(val, 1, 10));
     EXPECT_TRUE(stdx::clamp(negVal, -10, -1));

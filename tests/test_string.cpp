@@ -1002,7 +1002,8 @@ TEST(StringAssignmentTest, AssignSelf)
 {
     stdx::string a("hello");
     const char* before = a.c_str();
-    a = a;
+    auto& self = a;
+    a = self;
 
     EXPECT_EQ(5u, a.size());
     EXPECT_EQ(stdx::DEFAULT_STRING_CAPACITY_BYTES, a.capacity());
@@ -1623,10 +1624,14 @@ TEST(StringIteratorTest, ConvertIteratorToConstIterator)
 
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = it;
+    EXPECT_EQ('h', *it);
+    EXPECT_EQ('h', *cit);
 
     const stdx::string cs = "hello";
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cbegin = cs.begin(); // must be const iterator
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cend = cs.end(); // must be const iterator
+    EXPECT_EQ('h', *cbegin);
+    EXPECT_EQ('o', *(cend - 1));
 }
 
 TEST(StringIteratorTest, SingleElementForwardIteration)
@@ -1736,10 +1741,14 @@ TEST(StringIteratorTest, ConvertReverseIteratorToConstReverseIterator)
 
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = rit;
+    EXPECT_EQ('o', *rit);
+    EXPECT_EQ('o', *crit);
 
     const stdx::string cs = "hello";
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crbegin = cs.rbegin(); // must be const iterator
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crend = cs.rend(); // must be const iterator
+    EXPECT_EQ('o', *crbegin);
+    EXPECT_EQ('h', *(crend - 1));
 }
 
 TEST(StringIteratorTest, ReverseIteratorBaseRelationship)

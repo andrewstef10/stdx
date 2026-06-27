@@ -15,7 +15,7 @@
                 "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/lib",
                 "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/lib",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_VERBOSE_MAKEFILE": "ON"
+                "CMAKE_COMPILE_WARNING_AS_ERROR": "OFF"
             }
         },
         {
@@ -270,7 +270,12 @@
             "name": "base-test",
             "hidden": true,
             "output": {
-                "verbosity": "verbose"
+                "verbosity": "verbose",
+                "outputOnFailure": true
+            },
+            "environment": {
+                "CLICOLOR_FORCE": "1",
+                "GTEST_COLOR": "yes"
             }
         },
 

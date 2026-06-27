@@ -34,12 +34,14 @@ TEST(ArrayTest, DefaultConstructor_ClassType_CallsConstructors) {
     test_object::constructed = 0;
     stdx::array<test_object, 5> arr;
     EXPECT_EQ(test_object::constructed, 5);
+    EXPECT_EQ(5, arr.size());
 }
 
 TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash) {
     // We cannot reliably test "garbage values"
     // but we can ensure construction succeeds
     stdx::array<int, 5> arr;
+    EXPECT_EQ(5, arr.size());
     SUCCEED();
 }
 
@@ -357,7 +359,8 @@ TEST(ArrayTest, AssignmentOperator_SelfAssignment) {
     arr[1] = 2;
     arr[2] = 3;
 
-    arr = arr;
+    auto& self = arr;
+    arr = self;
 
     EXPECT_EQ(arr[0], 1);
     EXPECT_EQ(arr[1], 2);
@@ -456,10 +459,13 @@ TEST(ArrayIteratorTest, ConvertIteratorToConstIterator)
 
     stdx::array<int, 3>::iterator it = arr.begin();
     stdx::array<int, 3>::const_iterator cit = it;
+    (void)cit;
 
     const stdx::array<int, 3> carr{1,2,3};
     stdx::array<int, 3>::const_iterator cbegin = carr.begin(); // must be const iterator
     stdx::array<int, 3>::const_iterator cend = carr.end(); // must be const iterator
+    (void)cbegin;
+    (void)cend;
 }
 
 TEST(ArrayIteratorTest, SingleElementForwardIteration)
@@ -569,10 +575,13 @@ TEST(ArrayIteratorTest, ConvertReverseIteratorToConstReverseIterator)
 
     stdx::array<int, 3>::reverse_iterator rit = arr.rbegin();
     stdx::array<int, 3>::const_reverse_iterator crit = rit;
+    (void)crit;
 
     const stdx::array<int, 3> carr{1,2,3};
     stdx::array<int, 3>::const_reverse_iterator crbegin = carr.rbegin(); // must be const iterator
     stdx::array<int, 3>::const_reverse_iterator crend = carr.rend(); // must be const iterator
+    (void)crbegin;
+    (void)crend;
 }
 
 TEST(ArrayIteratorTest, ReverseIteratorBaseRelationship)
