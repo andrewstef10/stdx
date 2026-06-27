@@ -27,8 +27,6 @@ set_target_properties(${UNIT_TEST_TARGET_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
 )
 
-enable_compiler_warnings(${UNIT_TEST_TARGET_NAME})
-
 target_link_libraries(${UNIT_TEST_TARGET_NAME}
     PRIVATE
         ${CMAKE_PROJECT_NAME}
@@ -36,6 +34,7 @@ target_link_libraries(${UNIT_TEST_TARGET_NAME}
         GTest::gtest_main
 )
 
+enable_compiler_warnings(${UNIT_TEST_TARGET_NAME})
 check_enable_sanitizers(${UNIT_TEST_TARGET_NAME})
 check_enable_coverage(${UNIT_TEST_TARGET_NAME})
 

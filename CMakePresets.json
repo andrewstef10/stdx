@@ -36,12 +36,15 @@
         {
             "name": "base-asan",
             "hidden": true,
+            "cacheVariables": {
+                "ENABLE_ASAN": "ON"
+            },
             "environment": {
                 "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=1:strict_init_order=1:check_initialization_order=1:detect_stack_use_after_return=1:detect_container_overflow=1:detect_invalid_pointer_pairs=2:check_malloc_usable_size=1:detect_leaks=1:allocator_may_return_null=0:handle_segv=1:handle_sigbus=1:handle_abort=1:handle_sigill=1:print_stats=1"
             }
         },
         {
-            "name": "base-windows-clang",
+            "name": "base-clang-cl",
             "hidden": true,
             "inherits": "base",
             "generator": "Ninja",
@@ -51,7 +54,7 @@
             }
         },
         {
-            "name": "base-windows-cl",
+            "name": "base-cl",
             "hidden": true,
             "inherits": "base",
             "cacheVariables": {
@@ -87,22 +90,33 @@
 
 
         {
-            "name": "windows-clang-debug",
-            "inherits": ["base-windows-clang", "base-debug"]
+            "name": "clang-cl-debug",
+            "inherits": ["base-clang-cl", "base-debug"]
         },
         {
-            "name": "windows-clang-release",
-            "inherits": ["base-windows-clang", "base-release"]
+            "name": "clang-cl-release",
+            "inherits": ["base-clang-cl", "base-release"]
+        },
+        {
+            "name": "clang-cl-asan",
+            "inherits": ["clang-cl-debug", "base-asan"]
+        },
+        {
+            "name": "clang-cl-coverage",
+            "inherits": "clang-cl-debug",
+            "cacheVariables": {
+                "ENABLE_COVERAGE": "ON"
+            }
         },
 
 
         {
-            "name": "windows-cl-debug",
-            "inherits": "base-windows-cl"
+            "name": "cl-debug",
+            "inherits": "base-cl"
         },
         {
-            "name": "windows-cl-release",
-            "inherits": "base-windows-cl"
+            "name": "cl-release",
+            "inherits": "base-cl"
         },
 
 
@@ -116,10 +130,7 @@
         },
         {
             "name": "clang-asan",
-            "inherits": ["clang-debug", "base-asan"],
-            "cacheVariables": {
-                "ENABLE_ASAN": "ON"
-            }
+            "inherits": ["clang-debug", "base-asan"]
         },
         {
             "name": "clang-coverage",
@@ -140,10 +151,7 @@
         },
         {
             "name": "gcc-asan",
-            "inherits": ["gcc-debug", "base-asan"],
-            "cacheVariables": {
-                "ENABLE_ASAN": "ON"
-            }
+            "inherits": ["gcc-debug", "base-asan"]
         },
         {
             "name": "gcc-coverage",
@@ -163,7 +171,7 @@
         },
         {
             "name": "windows-dev",
-            "inherits": "windows-clang-debug",
+            "inherits": "clang-cl-debug",
             "cacheVariables": {
                 "ENABLE_CLANG_TIDY": "ON"
             }
@@ -185,27 +193,38 @@
 
 
         {
-            "name": "windows-clang-debug",
+            "name": "clang-cl-debug",
             "inherits": "base-build",
-            "configurePreset": "windows-clang-debug"
+            "configurePreset": "clang-cl-debug"
         },
         {
-            "name": "windows-clang-release",
+            "name": "clang-cl-release",
             "inherits": "base-build",
-            "configurePreset": "windows-clang-release"
+            "configurePreset": "clang-cl-release"
+        },
+        {
+            "name": "clang-cl-asan",
+            "inherits": "base-build",
+            "configurePreset": "clang-cl-asan"
+        },
+        {
+            "name": "clang-cl-coverage",
+            "inherits": "base-build",
+            "configurePreset": "clang-cl-coverage",
+            "targets": ["coverage"]
         },
 
 
         {
-            "name": "windows-cl-debug",
+            "name": "cl-debug",
             "inherits": "base-build",
-            "configurePreset": "windows-cl-debug",
+            "configurePreset": "cl-debug",
             "configuration": "Debug"
         },
         {
-            "name": "windows-cl-release",
+            "name": "cl-release",
             "inherits": "base-build",
-            "configurePreset": "windows-cl-release",
+            "configurePreset": "cl-release",
             "configuration": "Release"
         },
 
@@ -227,11 +246,6 @@
         },
         {
             "name": "clang-coverage",
-            "inherits": "base-build",
-            "configurePreset": "clang-coverage"
-        },
-        {
-            "name": "clang-coverage-gen-report",
             "inherits": "base-build",
             "configurePreset": "clang-coverage",
             "targets": ["coverage"]
@@ -255,11 +269,6 @@
         },
         {
             "name": "gcc-coverage",
-            "inherits": "base-build",
-            "configurePreset": "gcc-coverage"
-        },
-        {
-            "name": "gcc-coverage-gen-report",
             "inherits": "base-build",
             "configurePreset": "gcc-coverage",
             "targets": ["coverage"]
@@ -295,7 +304,6 @@
             "name": "base-test",
             "hidden": true,
             "output": {
-                "verbosity": "verbose",
                 "outputOnFailure": true
             }
         },
@@ -310,26 +318,36 @@
 
 
         {
-            "name": "windows-clang-debug",
-            "configurePreset": "windows-clang-debug",
+            "name": "clang-cl-debug",
+            "configurePreset": "clang-cl-debug",
             "inherits": "base-test"
         },
         {
-            "name": "windows-clang-release",
-            "configurePreset": "windows-clang-release",
+            "name": "clang-cl-release",
+            "configurePreset": "clang-cl-release",
+            "inherits": "base-test"
+        },
+        {
+            "name": "clang-cl-asan",
+            "configurePreset": "clang-cl-asan",
+            "inherits": "base-test"
+        },
+        {
+            "name": "clang-cl-coverage",
+            "configurePreset": "clang-cl-coverage",
             "inherits": "base-test"
         },
 
 
         {
-            "name": "windows-cl-debug",
-            "configurePreset": "windows-cl-debug",
+            "name": "cl-debug",
+            "configurePreset": "cl-debug",
             "configuration": "Debug",
             "inherits": "base-test"
         },
         {
-            "name": "windows-cl-release",
-            "configurePreset": "windows-cl-release",
+            "name": "cl-release",
+            "configurePreset": "cl-release",
             "configuration": "Release",
             "inherits": "base-test"
         },
