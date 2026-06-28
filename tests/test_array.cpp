@@ -45,11 +45,11 @@ TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash) {
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
     stdx::array<int, 5> arr;
+    EXPECT_EQ(5, arr.size());
+    SUCCEED();
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
-    EXPECT_EQ(5, arr.size());
-    SUCCEED();
 }
 
 
@@ -163,11 +163,11 @@ TEST(ArrayTest, Size_ReturnsCorrectValue) {
 #endif
     stdx::array<int, 7> arr;
     stdx::array<int, 0> emptyArr;
+    EXPECT_EQ(arr.size(), 7);
+    EXPECT_EQ(emptyArr.size(), 0);
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
-    EXPECT_EQ(arr.size(), 7);
-    EXPECT_EQ(emptyArr.size(), 0);
 }
 
 TEST(ArrayTest, Empty_ReturnsFalseForNonZeroSize) {
@@ -176,10 +176,10 @@ TEST(ArrayTest, Empty_ReturnsFalseForNonZeroSize) {
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
     stdx::array<int, 3> arr;
+    EXPECT_FALSE(arr.empty());
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
-    EXPECT_FALSE(arr.empty());
 }
 
 TEST(ArrayTest, Empty_ReturnsTrueForZeroSize) {
@@ -189,11 +189,11 @@ TEST(ArrayTest, Empty_ReturnsTrueForZeroSize) {
 #endif
     stdx::array<int, 0> arr;
     stdx::array<test_object, 0> arr1;
+    EXPECT_TRUE(arr.empty());
+    EXPECT_TRUE(arr1.empty());
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
-    EXPECT_TRUE(arr.empty());
-    EXPECT_TRUE(arr1.empty());
 }
 
 
@@ -760,12 +760,11 @@ TEST(ArrayConcatTest, LeftEmpty)
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
     stdx::array<int, 0> a;
+    stdx::array<int, 3> b{1, 2, 3};
+    stdx::array<int, 3> result = a + b;
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
-    stdx::array<int, 3> b{1, 2, 3};
-
-    stdx::array<int, 3> result = a + b;
 
     EXPECT_EQ(1, result[0]);
     EXPECT_EQ(2, result[1]);
@@ -774,17 +773,16 @@ TEST(ArrayConcatTest, LeftEmpty)
 
 TEST(ArrayConcatTest, RightEmpty)
 {
-    stdx::array<int, 3> a{1, 2, 3};
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
+    stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 0> b;
+    stdx::array<int, 3> result = a + b;
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
-
-    stdx::array<int, 3> result = a + b;
 
     EXPECT_EQ(1, result[0]);
     EXPECT_EQ(2, result[1]);
