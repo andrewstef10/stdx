@@ -14,6 +14,10 @@ option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
 
+if(ENABLE_COVERAGE AND NOT ENABLE_UNIT_TESTS)
+    message(WARNING "ENABLE_COVERAGE is ON but ENABLE_UNIT_TESTS is OFF — no tests will run and no coverage data will be generated.")
+endif()
+
 # ---- Output Directories ----
 set(COVERAGE_DIR ${CMAKE_SOURCE_DIR}/coverage)
 
@@ -127,6 +131,8 @@ add_subdirectory(src)
 # ============================================================
 # Tests
 # ============================================================
+set(UNIT_TEST_TARGET_NAME "${CMAKE_PROJECT_NAME}_test-unit")
+
 if(ENABLE_UNIT_TESTS)
     enable_testing()
     add_subdirectory(tests)
@@ -160,7 +166,7 @@ if(ENABLE_COVERAGE)
                 --print-summary
             COMMENT "Running tests and generating GCC coverage report..."
         )
-        add_dependencies(coverage stdx_test-unit)
+        add_dependencies(coverage ${UNIT_TEST_TARGET_NAME})
 
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
         string(REGEX MATCH "^[0-9]+" _CLANG_MAJOR "${CMAKE_CXX_COMPILER_VERSION}")
@@ -171,21 +177,24 @@ if(ENABLE_COVERAGE)
         set(PROFDATA_FILE ${CMAKE_BINARY_DIR}/coverage.profdata)
 
         set(_LLVM_COV_BASE_ARGS
-            $<TARGET_FILE:stdx_test-unit>
+            $<TARGET_FILE:${UNIT_TEST_TARGET_NAME}>
             -instr-profile=${PROFDATA_FILE}
         )
         set(_LLVM_COV_SOURCES
             ${CMAKE_SOURCE_DIR}/src
             ${CMAKE_SOURCE_DIR}/include
         )
-        set(_LLVM_COV_SHOW_FLAGS
-            -show-line-counts       # annotate each line with its execution count
-            -show-regions           # highlight individual coverage regions within a line
-            -show-expansions        # expand macros inline to show their internal coverage
-            -show-instantiations    # break out coverage per template instantiation
-            -show-branches=count    # show taken/not-taken counts at each branch point
-            -show-mcdc              # highlight MC/DC condition coverage inline
-            -show-mcdc-summary      # add MC/DC summary column to the file table
+        set(_LLVM_COV_GENERAL_FLAGS
+            -show-instantiation-summary # Show instantiation summary in summary table
+            -show-mcdc-summary          # add MC/DC summary in the summary table
+        )
+        set(_LLVM_COV_VIEWING_FLAGS
+            -show-line-counts           # annotate each line with its execution count
+            -show-regions               # highlight individual coverage regions within a line
+            -show-expansions            # expand macros inline to show their internal coverage
+            -show-instantiations        # break out coverage per template instantiation
+            -show-branches=count        # show taken/not-taken counts at each branch point
+            -show-mcdc                  # highlight MC/DC condition coverage inline
         )
 
         add_custom_target(coverage
@@ -195,35 +204,45 @@ if(ENABLE_COVERAGE)
                 ${CMAKE_CTEST_COMMAND} --test-dir ${CMAKE_BINARY_DIR} --output-on-failure
             # Merge .profraw -> .profdata (required before llvm-cov can read it)
             COMMAND ${LLVM_PROFDATA_PATH} merge -sparse ${PROFRAW_FILE} -o ${PROFDATA_FILE}
-            # Generate HTML report (browsable annotated source)
+            # Generate HTML report (browseable annotated source)
             COMMAND ${LLVM_COV_PATH} show
                 ${_LLVM_COV_BASE_ARGS}
                 -format=html                # write HTML instead of text
                 -output-dir=${COVERAGE_DIR} # directory for generated HTML files
-                ${_LLVM_COV_SHOW_FLAGS}
+                ${_LLVM_COV_GENERAL_FLAGS}
+                ${_LLVM_COV_VIEWING_FLAGS}
                 ${_LLVM_COV_SOURCES}
-            # Generate text report (single annotated source file for quick inspection)
+            # Generate text report (.txt version of the browseable HTML report)
             COMMAND ${LLVM_COV_PATH} show
                 ${_LLVM_COV_BASE_ARGS}
                 -format=text
-                -o ${COVERAGE_DIR}/coverage.txt
-                ${_LLVM_COV_SHOW_FLAGS}
+                -output-dir=${COVERAGE_DIR}
+                ${_LLVM_COV_GENERAL_FLAGS}
+                ${_LLVM_COV_VIEWING_FLAGS}
                 ${_LLVM_COV_SOURCES}
             # Generate LCOV report (machine-readable .lcov for upload to Coveralls/Codecov)
             COMMAND ${LLVM_COV_PATH} export
                 ${_LLVM_COV_BASE_ARGS}
                 -format=lcov
+                ${_LLVM_COV_GENERAL_FLAGS}
                 ${_LLVM_COV_SOURCES}
                 > ${COVERAGE_DIR}/coverage.lcov
+            # Generate JSON report (machine-readable .json)
+            COMMAND ${LLVM_COV_PATH} export
+                ${_LLVM_COV_BASE_ARGS}
+                -format=text
+                ${_LLVM_COV_GENERAL_FLAGS}
+                ${_LLVM_COV_SOURCES}
+                > ${COVERAGE_DIR}/coverage.json
             # Print text summary to the console
             COMMAND ${LLVM_COV_PATH} report
                 ${_LLVM_COV_BASE_ARGS}
-                -show-mcdc-summary
-                --use-color
+                ${_LLVM_COV_GENERAL_FLAGS}
+                -use-color
                 ${_LLVM_COV_SOURCES}
             COMMENT "Running unit tests and generating LLVM coverage report..."
         )
-        add_dependencies(coverage stdx_test-unit)
+        add_dependencies(coverage ${UNIT_TEST_TARGET_NAME})
 
     else()
         message(WARNING "Coverage target requires GCC or Clang/AppleClang. Skipping coverage target.")

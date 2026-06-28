@@ -11,7 +11,6 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 
-set(UNIT_TEST_TARGET_NAME "${CMAKE_PROJECT_NAME}_test-unit")
 add_executable(${UNIT_TEST_TARGET_NAME}
     test_array.cpp
     test_ctype.cpp
