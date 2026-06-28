@@ -25,4 +25,6 @@ install(
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-add_subdirectory(lint)
+if(ENABLE_CLANG_TIDY)
+    add_subdirectory(lint)
+endif()
