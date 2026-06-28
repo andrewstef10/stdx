@@ -80,7 +80,7 @@ function(check_enable_clang_tidy target)
             message(STATUS "Found clang-tidy found at: ${CLANG_TIDY_EXE}")
 
             set_target_properties(${target} PROPERTIES
-                CXX_CLANG_TIDY "${CLANG_TIDY_EXE}"
+                CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--use-color"
             )
         else()
             message(WARNING "clang-tidy enabled but not found! Ensure clang-tidy is installed!")

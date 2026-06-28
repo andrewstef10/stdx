@@ -29,9 +29,7 @@ jobs:
       - name: Run clang-tidy
         run: |
           clang-tidy --version
-          run-clang-tidy \
-            -p build/clang-release \
-            src
+          run-clang-tidy -p build/clang-release src -use-color
   
   build:
     name: Build & Test (${{ matrix.os }} / ${{ matrix.type.preset }}
