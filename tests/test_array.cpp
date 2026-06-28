@@ -40,7 +40,14 @@ TEST(ArrayTest, DefaultConstructor_ClassType_CallsConstructors) {
 TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash) {
     // We cannot reliably test "garbage values"
     // but we can ensure construction succeeds
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 5> arr;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
     EXPECT_EQ(5, arr.size());
     SUCCEED();
 }
@@ -150,23 +157,42 @@ TEST(ArrayTest, MoveAssignment)
 // ===== Size / Empty =====
 
 TEST(ArrayTest, Size_ReturnsCorrectValue) {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 7> arr;
-    EXPECT_EQ(arr.size(), 7);
-
     stdx::array<int, 0> emptyArr;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+    EXPECT_EQ(arr.size(), 7);
     EXPECT_EQ(emptyArr.size(), 0);
 }
 
 TEST(ArrayTest, Empty_ReturnsFalseForNonZeroSize) {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 3> arr;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
     EXPECT_FALSE(arr.empty());
 }
 
 TEST(ArrayTest, Empty_ReturnsTrueForZeroSize) {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 0> arr;
-    EXPECT_TRUE(arr.empty());
-
     stdx::array<test_object, 0> arr1;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+    EXPECT_TRUE(arr.empty());
     EXPECT_TRUE(arr1.empty());
 }
 
@@ -234,7 +260,7 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     try {
         arr.at(3);
     }
-    catch (const std::out_of_range& e) {
+    catch (const std::out_of_range&) {
         SUCCEED();
     }
     catch (...) {
@@ -244,7 +270,7 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     try {
         arr.at(100);
     }
-    catch (const std::out_of_range& e) {
+    catch (const std::out_of_range&) {
         SUCCEED();
     }
     catch (...) {
@@ -254,7 +280,7 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     try {
         carr.at(3);
     }
-    catch (const std::out_of_range& e) {
+    catch (const std::out_of_range&) {
         SUCCEED();
     }
     catch (...) {
@@ -264,7 +290,7 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     try {
         carr.at(100);
     }
-    catch (const std::out_of_range& e) {
+    catch (const std::out_of_range&) {
         SUCCEED();
     }
     catch (...) {
@@ -729,7 +755,14 @@ TEST(ArrayConcatTest, DifferentSizes)
 
 TEST(ArrayConcatTest, LeftEmpty)
 {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 0> a;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
     stdx::array<int, 3> b{1, 2, 3};
 
     stdx::array<int, 3> result = a + b;
@@ -742,7 +775,14 @@ TEST(ArrayConcatTest, LeftEmpty)
 TEST(ArrayConcatTest, RightEmpty)
 {
     stdx::array<int, 3> a{1, 2, 3};
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 0> b;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
     stdx::array<int, 3> result = a + b;
 
