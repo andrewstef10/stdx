@@ -1,4 +1,4 @@
-add_library(${CMAKE_PROJECT_NAME}
+add_library(${PROJECT_NAME}
     ctype.cpp
     math.cpp
     stdxlib.cpp
@@ -6,24 +6,14 @@ add_library(${CMAKE_PROJECT_NAME}
     string.cpp
 )
 
-
-target_include_directories(${CMAKE_PROJECT_NAME}
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/include
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
 )
 
-
-if (MSVC)
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /W4)
-else()
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
-
-check_enable_clang_tidy(${CMAKE_PROJECT_NAME})
-check_enable_sanitizers(${CMAKE_PROJECT_NAME})
-check_enable_coverage(${CMAKE_PROJECT_NAME})
-
+enable_compiler_warnings(${PROJECT_NAME})
+check_enable_clang_tidy(${PROJECT_NAME})
+check_enable_sanitizers(${PROJECT_NAME})
+check_enable_coverage(${PROJECT_NAME})
 
 install(
     TARGETS ${PROJECT_NAME}
@@ -34,3 +24,7 @@ install(
     DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+
+if(ENABLE_CLANG_TIDY)
+    add_subdirectory(lint)
+endif()

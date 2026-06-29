@@ -565,7 +565,7 @@ namespace stdx {
     inline string<N>::string()
     : m_size(0)
     , m_capacity(N)
-    , m_data{'\0'}
+    , m_data{{'\0'}}
     {
     }
 
@@ -573,7 +573,7 @@ namespace stdx {
     inline string<N>::string(const string<N>& other)
     : m_size(0)
     , m_capacity(N)
-    , m_data{'\0'}
+    , m_data{{'\0'}}
     {
         assign(other.c_str(), other.size());
     }
@@ -583,7 +583,7 @@ namespace stdx {
     inline string<N>::string(const string<M>& other)
     : m_size(0)
     , m_capacity(N)
-    , m_data{'\0'}
+    , m_data{{'\0'}}
     {
         assign(other.c_str(), other.size());
     }
@@ -592,7 +592,7 @@ namespace stdx {
     inline string<N>::string(const char* cstr)
     : m_size(0)
     , m_capacity(N)
-    , m_data{'\0'}
+    , m_data{{'\0'}}
     {
         assign(cstr, strlen(cstr));
     }
@@ -601,7 +601,7 @@ namespace stdx {
     inline string<N>::string(char c)
     : m_size(0)
     , m_capacity(N)
-    , m_data{'\0'}
+    , m_data{{'\0'}}
     {
         char buff[] = {c, '\0'};
         assign(buff, 1);

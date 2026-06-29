@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
 project(stdx LANGUAGES CXX)
 include(GNUInstallDirs)
 
@@ -55,6 +55,23 @@ message(STATUS "COVERAGE_DIR                    = ${COVERAGE_DIR}")
 # ============================================================
 # Compiler Flags / properties functions for Targets
 # ============================================================
+function(enable_compiler_warnings target)
+    if(MSVC)
+        # Covers cl.exe and clang-cl (Clang targeting the MSVC ABI)
+        target_compile_options(${target} PRIVATE
+            $<$<COMPILE_LANGUAGE:C>:/W4>
+            $<$<COMPILE_LANGUAGE:CXX>:/W4>
+        )
+        message(STATUS "Compiler warnings `/W4` enabled for target: ${target}")
+    else()
+        target_compile_options(${target} PRIVATE
+            $<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-Wall -Wextra -Wpedantic>
+            $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-Wall -Wextra -Wpedantic>
+        )
+        message(STATUS "Compiler warnings `-Wall -Wextra -Wpedantic` enabled for target: ${target}")
+    endif()
+endfunction()
+
 function(check_enable_clang_tidy target)
     if(ENABLE_CLANG_TIDY)
         find_program(CLANG_TIDY_EXE NAMES clang-tidy)
@@ -63,7 +80,7 @@ function(check_enable_clang_tidy target)
             message(STATUS "Found clang-tidy found at: ${CLANG_TIDY_EXE}")
 
             set_target_properties(${target} PROPERTIES
-                CXX_CLANG_TIDY "${CLANG_TIDY_EXE}"
+                CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--use-color"
             )
         else()
             message(WARNING "clang-tidy enabled but not found! Ensure clang-tidy is installed!")
@@ -75,7 +92,7 @@ function(check_enable_sanitizers target)
     if(ENABLE_ASAN)
         if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             message(STATUS "AddressSanitizer (Asan) enabled for target: ${target}")
-            target_compile_options(${target} PRIVATE -fsanitize=address -fno-omit-frame-pointer -g)
+            target_compile_options(${target} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
             target_link_options(${target} PRIVATE -fsanitize=address)
         else()
             message(WARNING "AddressSanitizer (Asan) only supported with GCC/Clang. ASan not enabled for target: ${target}")
@@ -85,12 +102,17 @@ endfunction()
 
 function(check_enable_coverage target)
     if(ENABLE_COVERAGE)
-        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-            message(STATUS "Coverage enabled for target: ${target}")
-            target_compile_options(${target} PRIVATE --coverage -O0 -g)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            message(STATUS "Coverage (gcov) enabled for target: ${target}")
+            target_compile_options(${target} PRIVATE --coverage)
             target_link_options(${target} PRIVATE --coverage)
+        elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
+            message(STATUS "Coverage (llvm-cov) enabled for target: ${target}")
+            target_compile_options(${target} PRIVATE -fprofile-instr-generate -fcoverage-mapping -fcoverage-mcdc
+            )
+            target_link_options(${target} PRIVATE -fprofile-instr-generate)
         else()
-            message(WARNING "Coverage only supported with GCC/Clang. Coverage not enabled for target: ${target}")
+            message(WARNING "Coverage only supported with GCC/Clang/AppleClang. Coverage not enabled for target: ${target}")
         endif()
     endif()
 endfunction()
@@ -105,6 +127,8 @@ add_subdirectory(src)
 # ============================================================
 # Tests
 # ============================================================
+set(UNIT_TEST_TARGET_NAME "${CMAKE_PROJECT_NAME}_test-unit")
+
 if(ENABLE_UNIT_TESTS)
     enable_testing()
     add_subdirectory(tests)
@@ -117,29 +141,110 @@ endif()
 # Custom Targets
 # ============================================================
 if(ENABLE_COVERAGE)
-    find_program(GCOVR_PATH gcovr)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        find_program(GCOVR_PATH gcovr REQUIRED)
 
-    if(NOT GCOVR_PATH)
-        message(FATAL_ERROR "gcovr enabled but not found! Install it with: sudo apt install gcovr")
+        add_custom_target(coverage
+            COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${CMAKE_BINARY_DIR} --output-on-failure
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${COVERAGE_DIR}
+            COMMAND ${GCOVR_PATH}
+                -r ${CMAKE_SOURCE_DIR}
+                --filter ${CMAKE_SOURCE_DIR}/src/
+                --filter ${CMAKE_SOURCE_DIR}/include/
+                --exclude-throw-branches
+                --exclude-unreachable-branches
+                --html
+                --html-details
+                --html-self-contained
+                --html-title "${CMAKE_PROJECT_NAME} Coverage Report"
+                --html-details=${COVERAGE_DIR}/index.html
+                --txt=${COVERAGE_DIR}/coverage.txt
+                --print-summary
+            COMMENT "Running tests and generating GCC coverage report..."
+            USES_TERMINAL
+        )
+        add_dependencies(coverage ${UNIT_TEST_TARGET_NAME})
+
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
+        string(REGEX MATCH "^[0-9]+" _CLANG_MAJOR "${CMAKE_CXX_COMPILER_VERSION}")
+        find_program(LLVM_PROFDATA_PATH NAMES llvm-profdata llvm-profdata-${_CLANG_MAJOR} REQUIRED)
+        find_program(LLVM_COV_PATH NAMES llvm-cov llvm-cov-${_CLANG_MAJOR} REQUIRED)
+
+        set(PROFRAW_FILE ${CMAKE_BINARY_DIR}/default.profraw)
+        set(PROFDATA_FILE ${CMAKE_BINARY_DIR}/coverage.profdata)
+
+        set(_LLVM_COV_BASE_ARGS
+            $<TARGET_FILE:${UNIT_TEST_TARGET_NAME}>
+            -instr-profile=${PROFDATA_FILE}
+        )
+        set(_LLVM_COV_SOURCES
+            ${CMAKE_SOURCE_DIR}/src
+            ${CMAKE_SOURCE_DIR}/include
+        )
+        set(_LLVM_COV_GENERAL_FLAGS
+            -show-instantiation-summary # Show instantiation summary in summary table
+            -show-mcdc-summary          # add MC/DC summary in the summary table
+        )
+        set(_LLVM_COV_VIEWING_FLAGS
+            -show-line-counts           # annotate each line with its execution count
+            -show-regions               # highlight individual coverage regions within a line
+            -show-expansions            # expand macros inline to show their internal coverage
+            -show-instantiations        # break out coverage per template instantiation
+            -show-branches=count        # show taken/not-taken counts at each branch point
+            -show-mcdc                  # highlight MC/DC condition coverage inline
+        )
+
+        add_custom_target(coverage
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${COVERAGE_DIR}
+            # Run tests — LLVM_PROFILE_FILE directs raw profile data to a known path
+            COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=${PROFRAW_FILE}
+                ${CMAKE_CTEST_COMMAND} --test-dir ${CMAKE_BINARY_DIR} --output-on-failure
+            # Merge .profraw -> .profdata (required before llvm-cov can read it)
+            COMMAND ${LLVM_PROFDATA_PATH} merge -sparse ${PROFRAW_FILE} -o ${PROFDATA_FILE}
+            # Generate HTML report (browseable annotated source)
+            COMMAND ${LLVM_COV_PATH} show
+                ${_LLVM_COV_BASE_ARGS}
+                -format=html                # write HTML instead of text
+                -output-dir=${COVERAGE_DIR} # directory for generated HTML files
+                ${_LLVM_COV_GENERAL_FLAGS}
+                ${_LLVM_COV_VIEWING_FLAGS}
+                ${_LLVM_COV_SOURCES}
+            # Generate text report (.txt version of the browseable HTML report)
+            COMMAND ${LLVM_COV_PATH} show
+                ${_LLVM_COV_BASE_ARGS}
+                -format=text
+                -output-dir=${COVERAGE_DIR}
+                ${_LLVM_COV_GENERAL_FLAGS}
+                ${_LLVM_COV_VIEWING_FLAGS}
+                ${_LLVM_COV_SOURCES}
+            # Generate LCOV report (machine-readable .lcov for upload to Coveralls/Codecov)
+            COMMAND ${LLVM_COV_PATH} export
+                ${_LLVM_COV_BASE_ARGS}
+                -format=lcov
+                ${_LLVM_COV_GENERAL_FLAGS}
+                ${_LLVM_COV_SOURCES}
+                > ${COVERAGE_DIR}/coverage.lcov
+            # Generate JSON report (machine-readable .json)
+            COMMAND ${LLVM_COV_PATH} export
+                ${_LLVM_COV_BASE_ARGS}
+                -format=text
+                ${_LLVM_COV_GENERAL_FLAGS}
+                ${_LLVM_COV_SOURCES}
+                > ${COVERAGE_DIR}/coverage.json
+            # Print text summary to the console
+            COMMAND ${LLVM_COV_PATH} report
+                ${_LLVM_COV_BASE_ARGS}
+                ${_LLVM_COV_GENERAL_FLAGS}
+                -use-color
+                ${_LLVM_COV_SOURCES}
+            COMMENT "Running unit tests and generating LLVM coverage report..."
+            USES_TERMINAL
+        )
+        add_dependencies(coverage ${UNIT_TEST_TARGET_NAME})
+
+    else()
+        message(WARNING "Coverage target requires GCC or Clang/AppleClang. Skipping coverage target.")
     endif()
-
-    add_custom_target(coverage
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${COVERAGE_DIR}
-        COMMAND ${GCOVR_PATH}
-            -r ${CMAKE_SOURCE_DIR}
-            --filter ${CMAKE_SOURCE_DIR}/src/
-            --filter ${CMAKE_SOURCE_DIR}/include/
-            --exclude-throw-branches
-            --exclude-unreachable-branches
-            --html
-            --html-details
-            --html-self-contained
-            --html-title "${CMAKE_PROJECT_NAME} Coverage Report"
-            --html-details=${COVERAGE_DIR}/index.html
-            --txt=${COVERAGE_DIR}/coverage.txt
-            --print-summary
-        COMMENT "Generating coverage report..."
-    )
 endif()
 
 find_package(Doxygen)

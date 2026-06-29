@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <stdx/stopwatch.h>
 
+#include <stdx/math.h>
 #include <thread>
 
 TEST(StopWatchTest, DefaultState)
@@ -132,7 +133,7 @@ TEST(StopWatchTest, MeasuresApproximately100ms)
 
     long long expectedElapsedTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(realEnd - realStart).count();
     long long elapsedTimeMs = sw.get_elapsed_time<std::chrono::milliseconds>().count();
-    EXPECT_NEAR(expectedElapsedTimeMs, elapsedTimeMs, 1); // 1ms tolerance
+    EXPECT_TRUE(stdx::abs(expectedElapsedTimeMs - elapsedTimeMs) <= 1LL); // 1ms tolerance
 }
 
 TEST(StopWatchTest, CopyConstructorAndAssignmentOperator)

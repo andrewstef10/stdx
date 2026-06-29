@@ -6,8 +6,8 @@ namespace stdx {
     double abs(double value)            { return (value < 0.0) ? -value : value; }
     long double abs(long double value)  { return (value < 0.0L) ? -value : value; }
     int abs(int value)                  { return (value < 0) ? -value : value; }
-    long abs(long value)                { return (value < 0) ? -value : value; }
-    long long abs(long long value)      { return (value < 0) ? -value : value; }
+    long abs(long value)                { return (value < 0L) ? -value : value; }
+    long long abs(long long value)      { return (value < 0LL) ? -value : value; }
 
     float pow(float base, int exp)
     {
