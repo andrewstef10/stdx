@@ -73,7 +73,7 @@
             "name": "base-clang",
             "hidden": true,
             "inherits": "base",
-            "generator": "Unix Makefiles",
+            "generator": "Ninja",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++"
@@ -83,7 +83,7 @@
             "name": "base-gcc",
             "hidden": true,
             "inherits": "base",
-            "generator": "Unix Makefiles",
+            "generator": "Ninja",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "gcc",
                 "CMAKE_CXX_COMPILER": "g++"
@@ -373,6 +373,17 @@
             "name": "dev",
             "configurePreset": "dev",
             "inherits": "base-test"
+        }
+    ],
+
+    "workflowPresets": [
+        {
+            "name": "dev",
+            "steps": [
+                { "type": "configure", "name": "dev" },
+                { "type": "build",     "name": "dev" },
+                { "type": "test",      "name": "dev" }
+            ]
         }
     ]
 }
