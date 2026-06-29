@@ -239,6 +239,7 @@ namespace stdx {
     inline bool array<T, N>::equals(const array& other) const
     {
         bool equals = true;
+        int test = 0;
         for (std::size_t i = 0; equals && i < N; ++i)
         {
             equals = elems[i] == other.elems[i];
