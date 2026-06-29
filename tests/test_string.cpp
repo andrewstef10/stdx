@@ -1776,3 +1776,44 @@ TEST(StringIteratorTest, SingleElementReverseIteration)
     EXPECT_EQ(rit, s.rend());
     EXPECT_EQ(crit, s.crend());
 }
+
+
+// Instantiation coverage: force calculate_new_capacity for string<N> sizes that have
+// never had content assigned beyond their stack capacity in any other test.
+
+TEST(StringGrowthTest, GrowsCapacity_Size14)
+{
+    stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES - 10> s; // string<14>
+    s = "aaaaaaaaaaaaaaa";                                     // 15 chars > 14
+    EXPECT_EQ(15u, s.size());
+}
+
+TEST(StringGrowthTest, GrowsCapacity_Size15)
+{
+    stdx::string<15> s;
+    s = "aaaaaaaaaaaaaaaa";  // 16 chars > 15
+    EXPECT_EQ(16u, s.size());
+}
+
+TEST(StringGrowthTest, GrowsCapacity_Size34)
+{
+    stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES + 10> s; // string<34>
+    s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";                 // 35 chars > 34
+    EXPECT_EQ(35u, s.size());
+}
+
+TEST(StringGrowthTest, GrowsCapacity_Size50)
+{
+    stdx::string<50> s;
+    s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";  // 51 chars > 50
+    EXPECT_EQ(51u, s.size());
+}
+
+TEST(StringGrowthTest, GrowsCapacity_Size100)
+{
+    stdx::string<100> s;
+    s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "a";  // 101 chars > 100
+    EXPECT_EQ(101u, s.size());
+}

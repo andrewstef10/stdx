@@ -221,6 +221,13 @@ TEST(ArrayTest, OperatorIndex_ConstAccess) {
     EXPECT_EQ(carr[1], 6);
 }
 
+TEST(ArrayTest, OperatorIndex_ConstAccessOnZeroSize) {
+    // array<T, 0> stores T elems[1] internally (N==0 ? 1 : N), so index 0 is valid
+    const stdx::array<int, 0> arr{};
+    (void)arr[0];
+    SUCCEED();
+}
+
 
 // ===== at() =====
 

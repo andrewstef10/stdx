@@ -161,6 +161,7 @@ if(ENABLE_COVERAGE)
                 --txt=${COVERAGE_DIR}/coverage.txt
                 --print-summary
             COMMENT "Running tests and generating GCC coverage report..."
+            USES_TERMINAL
         )
         add_dependencies(coverage ${UNIT_TEST_TARGET_NAME})
 
@@ -237,6 +238,7 @@ if(ENABLE_COVERAGE)
                 -use-color
                 ${_LLVM_COV_SOURCES}
             COMMENT "Running unit tests and generating LLVM coverage report..."
+            USES_TERMINAL
         )
         add_dependencies(coverage ${UNIT_TEST_TARGET_NAME})
 
