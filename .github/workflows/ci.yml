@@ -10,7 +10,8 @@ on:
 
 
 env:
-  BUILD_DIR: ${{ github.workspace }}/build
+  CLICOLOR_FORCE: 1
+  GTEST_COLOR: "yes"
 
 
 jobs:
@@ -23,14 +24,12 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Configure CMake
-        run: cmake --preset clang-release -DENABLE_UNIT_TESTS=OFF -G Ninja
+        run: cmake --preset clang-release -DENABLE_UNIT_TESTS=OFF -DENABLE_CLANG_TIDY=ON # configure only needed for compile_commands.json
 
       - name: Run clang-tidy
         run: |
           clang-tidy --version
-          run-clang-tidy \
-            -p build/clang-release \
-            src
+          run-clang-tidy -p build/clang-release src -use-color
   
   build:
     name: Build & Test (${{ matrix.os }} / ${{ matrix.type.preset }}
@@ -57,15 +56,15 @@ jobs:
         include:
           # Windows (MSVC)
           - os: windows-latest
-            type: {preset: windows-cl-debug, config: Debug}
+            type: {preset: cl-debug, config: Debug}
           - os: windows-latest
-            type: {preset: windows-cl-release, config: Release}
+            type: {preset: cl-release, config: Release}
 
-          # Windows Clang (clang-cl)
+          # Windows LLVM Clang (clang-cl)
           - os: windows-latest
-            type: {preset: windows-clang-debug, config: Debug}
+            type: {preset: clang-cl-debug, config: Debug}
           - os: windows-latest
-            type: {preset: windows-clang-release, config: Release}
+            type: {preset: clang-cl-release, config: Release}
 
         exclude:
           # macOS doesn't have GCC by default
@@ -82,10 +81,10 @@ jobs:
       run: cmake --preset ${{ matrix.type.preset }}
         
     - name: Build
-      run: cmake --build --preset ${{ matrix.type.preset }}
+      run: cmake --build --preset ${{ matrix.type.preset }} --verbose
 
     - name: Test
-      run: ctest --preset ${{ matrix.type.preset }}
+      run: ctest --preset ${{ matrix.type.preset }} --verbose
 
     - name: Install
       run: cmake --install build/${{ matrix.type.preset }} --config ${{ matrix.type.config }} # --config needed for multi config generators (MSVC)
@@ -106,7 +105,7 @@ jobs:
   asan:
     name: ASan (${{ matrix.compiler }})
     runs-on: ubuntu-latest
-    needs: build # Run ASan build after main build matrix passes. Skips ASan build if main build fails.
+    needs: build
 
     strategy:
       fail-fast: false
@@ -126,70 +125,38 @@ jobs:
       run: cmake --preset ${{ matrix.preset }}
 
     - name: Build
-      run: cmake --build --preset ${{ matrix.preset }}
+      run: cmake --build --preset ${{ matrix.preset }} --verbose
 
     - name: Run Tests with ASan
-      run: ctest --preset ${{ matrix.preset }}
+      run: ctest --preset ${{ matrix.preset }} --verbose
 
 
   coverage:
-    name: Code Coverage
+    name: Code Coverage (llvm-cov)
     runs-on: ubuntu-latest
-    needs: [build, asan] # Run coverage build after main build and ASan build passes. Skips coverage build if either main build or ASan build fails.
-
-    # # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
-    # permissions:
-    #   pages: write
-    #   id-token: write
-
-    # environment:
-    #   name: github-pages
+    needs: [build, asan]
 
     steps:
     - name: Checkout
       uses: actions/checkout@v6
 
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: '3.13'
-
-    - name: Install Dependencies
-      run: pip install gcovr
-
     - name: Configure CMake
-      run: cmake --preset gcc-coverage
+      run: cmake --preset clang-coverage
 
-    - name: Build
-      run: cmake --build --preset gcc-coverage
-
-    - name: Test
-      run: ctest --preset gcc-coverage
-
-    - name: Generate Coverage
-      run: cmake --build --preset gcc-coverage-gen-report
+    - name: Build, Test, and Generate Coverage
+      run: cmake --build --preset clang-coverage --verbose
 
     - name: Upload Coverage Report Artifact
       uses: actions/upload-artifact@v6
       with:
-        name: coverage-report
+        name: llvm-cov-report
         path: ${{ github.workspace }}/coverage
-
-    # - name: Upload Pages Artifact
-    #   if: github.ref == 'refs/heads/main'
-    #   uses: actions/upload-pages-artifact@v3
-    #   with:
-    #     path: ${{ github.workspace }}/coverage
-
-    # - name: Deploy to GitHub Pages
-    #   if: github.ref == 'refs/heads/main'
-    #   uses: actions/deploy-pages@v4
 
 
   doxygen:
     name: Doxygen Documentation
     runs-on: ubuntu-latest
-    needs: [build, asan] # Run coverage build after main build and ASan build passes. Skips coverage build if either main build or ASan build fails.
+    needs: [build, asan]
 
     steps:
     - name: Checkout
@@ -208,13 +175,3 @@ jobs:
       with:
         name: doxygen-documentation
         path: docs/html
-
-    # - name: Upload Pages Artifact
-    #   if: github.ref == 'refs/heads/main'
-    #   uses: actions/upload-pages-artifact@v3
-    #   with:
-    #     path: docs/html
-
-    # - name: Deploy to GitHub Pages
-    #   if: github.ref == 'refs/heads/main'
-    #   uses: actions/deploy-pages@v4

@@ -1002,7 +1002,8 @@ TEST(StringAssignmentTest, AssignSelf)
 {
     stdx::string a("hello");
     const char* before = a.c_str();
-    a = a;
+    auto& self = a;
+    a = self;
 
     EXPECT_EQ(5u, a.size());
     EXPECT_EQ(stdx::DEFAULT_STRING_CAPACITY_BYTES, a.capacity());
@@ -1623,10 +1624,14 @@ TEST(StringIteratorTest, ConvertIteratorToConstIterator)
 
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = it;
+    EXPECT_EQ('h', *it);
+    EXPECT_EQ('h', *cit);
 
     const stdx::string cs = "hello";
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cbegin = cs.begin(); // must be const iterator
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cend = cs.end(); // must be const iterator
+    EXPECT_EQ('h', *cbegin);
+    EXPECT_EQ('o', *(cend - 1));
 }
 
 TEST(StringIteratorTest, SingleElementForwardIteration)
@@ -1736,10 +1741,14 @@ TEST(StringIteratorTest, ConvertReverseIteratorToConstReverseIterator)
 
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = rit;
+    EXPECT_EQ('o', *rit);
+    EXPECT_EQ('o', *crit);
 
     const stdx::string cs = "hello";
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crbegin = cs.rbegin(); // must be const iterator
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crend = cs.rend(); // must be const iterator
+    EXPECT_EQ('o', *crbegin);
+    EXPECT_EQ('h', *(crend - 1));
 }
 
 TEST(StringIteratorTest, ReverseIteratorBaseRelationship)
@@ -1766,4 +1775,45 @@ TEST(StringIteratorTest, SingleElementReverseIteration)
     ++crit;
     EXPECT_EQ(rit, s.rend());
     EXPECT_EQ(crit, s.crend());
+}
+
+
+// Instantiation coverage: force calculate_new_capacity for string<N> sizes that have
+// never had content assigned beyond their stack capacity in any other test.
+
+TEST(StringGrowthTest, GrowsCapacity_Size14)
+{
+    stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES - 10> s; // string<14>
+    s = "aaaaaaaaaaaaaaa";                                     // 15 chars > 14
+    EXPECT_EQ(15u, s.size());
+}
+
+TEST(StringGrowthTest, GrowsCapacity_Size15)
+{
+    stdx::string<15> s;
+    s = "aaaaaaaaaaaaaaaa";  // 16 chars > 15
+    EXPECT_EQ(16u, s.size());
+}
+
+TEST(StringGrowthTest, GrowsCapacity_Size34)
+{
+    stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES + 10> s; // string<34>
+    s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";                 // 35 chars > 34
+    EXPECT_EQ(35u, s.size());
+}
+
+TEST(StringGrowthTest, GrowsCapacity_Size50)
+{
+    stdx::string<50> s;
+    s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";  // 51 chars > 50
+    EXPECT_EQ(51u, s.size());
+}
+
+TEST(StringGrowthTest, GrowsCapacity_Size100)
+{
+    stdx::string<100> s;
+    s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "a";  // 101 chars > 100
+    EXPECT_EQ(101u, s.size());
 }

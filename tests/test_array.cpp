@@ -34,13 +34,22 @@ TEST(ArrayTest, DefaultConstructor_ClassType_CallsConstructors) {
     test_object::constructed = 0;
     stdx::array<test_object, 5> arr;
     EXPECT_EQ(test_object::constructed, 5);
+    EXPECT_EQ(5, arr.size());
 }
 
 TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash) {
     // We cannot reliably test "garbage values"
     // but we can ensure construction succeeds
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 5> arr;
+    EXPECT_EQ(5, arr.size());
     SUCCEED();
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 
@@ -148,24 +157,43 @@ TEST(ArrayTest, MoveAssignment)
 // ===== Size / Empty =====
 
 TEST(ArrayTest, Size_ReturnsCorrectValue) {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 7> arr;
-    EXPECT_EQ(arr.size(), 7);
-
     stdx::array<int, 0> emptyArr;
+    EXPECT_EQ(arr.size(), 7);
     EXPECT_EQ(emptyArr.size(), 0);
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 TEST(ArrayTest, Empty_ReturnsFalseForNonZeroSize) {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 3> arr;
     EXPECT_FALSE(arr.empty());
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 TEST(ArrayTest, Empty_ReturnsTrueForZeroSize) {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 0> arr;
-    EXPECT_TRUE(arr.empty());
-
     stdx::array<test_object, 0> arr1;
+    EXPECT_TRUE(arr.empty());
     EXPECT_TRUE(arr1.empty());
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 
@@ -191,6 +219,13 @@ TEST(ArrayTest, OperatorIndex_ConstAccess) {
 
     EXPECT_EQ(carr[0], 5);
     EXPECT_EQ(carr[1], 6);
+}
+
+TEST(ArrayTest, OperatorIndex_ConstAccessOnZeroSize) {
+    // array<T, 0> stores T elems[1] internally (N==0 ? 1 : N), so index 0 is valid
+    const stdx::array<int, 0> arr{};
+    (void)arr[0];
+    SUCCEED();
 }
 
 
@@ -232,7 +267,7 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     try {
         arr.at(3);
     }
-    catch (const std::out_of_range& e) {
+    catch (const std::out_of_range&) {
         SUCCEED();
     }
     catch (...) {
@@ -242,7 +277,7 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     try {
         arr.at(100);
     }
-    catch (const std::out_of_range& e) {
+    catch (const std::out_of_range&) {
         SUCCEED();
     }
     catch (...) {
@@ -252,7 +287,7 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     try {
         carr.at(3);
     }
-    catch (const std::out_of_range& e) {
+    catch (const std::out_of_range&) {
         SUCCEED();
     }
     catch (...) {
@@ -262,7 +297,7 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     try {
         carr.at(100);
     }
-    catch (const std::out_of_range& e) {
+    catch (const std::out_of_range&) {
         SUCCEED();
     }
     catch (...) {
@@ -357,7 +392,8 @@ TEST(ArrayTest, AssignmentOperator_SelfAssignment) {
     arr[1] = 2;
     arr[2] = 3;
 
-    arr = arr;
+    auto& self = arr;
+    arr = self;
 
     EXPECT_EQ(arr[0], 1);
     EXPECT_EQ(arr[1], 2);
@@ -456,10 +492,13 @@ TEST(ArrayIteratorTest, ConvertIteratorToConstIterator)
 
     stdx::array<int, 3>::iterator it = arr.begin();
     stdx::array<int, 3>::const_iterator cit = it;
+    (void)cit;
 
     const stdx::array<int, 3> carr{1,2,3};
     stdx::array<int, 3>::const_iterator cbegin = carr.begin(); // must be const iterator
     stdx::array<int, 3>::const_iterator cend = carr.end(); // must be const iterator
+    (void)cbegin;
+    (void)cend;
 }
 
 TEST(ArrayIteratorTest, SingleElementForwardIteration)
@@ -569,10 +608,13 @@ TEST(ArrayIteratorTest, ConvertReverseIteratorToConstReverseIterator)
 
     stdx::array<int, 3>::reverse_iterator rit = arr.rbegin();
     stdx::array<int, 3>::const_reverse_iterator crit = rit;
+    (void)crit;
 
     const stdx::array<int, 3> carr{1,2,3};
     stdx::array<int, 3>::const_reverse_iterator crbegin = carr.rbegin(); // must be const iterator
     stdx::array<int, 3>::const_reverse_iterator crend = carr.rend(); // must be const iterator
+    (void)crbegin;
+    (void)crend;
 }
 
 TEST(ArrayIteratorTest, ReverseIteratorBaseRelationship)
@@ -720,10 +762,16 @@ TEST(ArrayConcatTest, DifferentSizes)
 
 TEST(ArrayConcatTest, LeftEmpty)
 {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 0> a;
     stdx::array<int, 3> b{1, 2, 3};
-
     stdx::array<int, 3> result = a + b;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
     EXPECT_EQ(1, result[0]);
     EXPECT_EQ(2, result[1]);
@@ -732,10 +780,16 @@ TEST(ArrayConcatTest, LeftEmpty)
 
 TEST(ArrayConcatTest, RightEmpty)
 {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 0> b;
-
     stdx::array<int, 3> result = a + b;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
     EXPECT_EQ(1, result[0]);
     EXPECT_EQ(2, result[1]);

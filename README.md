@@ -22,17 +22,17 @@
 ## Prerequisites
 
 ### Minimum
-- **CMake ≥ 3.20** – required to configure the project.
+- **CMake ≥ 3.24** – required to configure the project.
 - **C++ compiler** with **C++11 or later** support:
-  - Windows: Visual Studio 2022 (or newer) **or** LLVM Clang.
+  - Windows: MSVC cl **or** LLVM Clang/clang-cl.
   - Linux: GCC **or** LLVM Clang.
-  - macOS: Xcode **or** LLVM Clang.
+  - macOS: LLVM Clang.
 - **Git** – needed to clone the repository.
 
 ### Nice to have
 - VSCode IDE with the CMake Tools extension. This allows the use of CMake through a GUI instead of relying on the command line to build and test.
-- Static analysis tools such as clang‑tidy. The `dev` and `windows-dev` CMake presets both use clang-tidy and integrate it into the build process. This is very convenient when developing!
-- Ninja build system is a very fast generator and is used by the the windows-dev CMake configure preset.
+- Static analysis tools such as clang‑tidy. The `dev` CMake preset uses clang-tidy and integrates it into the build process.
+- Ninja build system. This is a very fast generator and is used by most CMake presets
 
 ---
 
@@ -89,6 +89,7 @@ cmake --install build/default --config Debug --prefix "/your/custom/path"
 ---
 
 ## Developing
+When developing, it is recommended to use the `dev` CMake preset. This will use an LLVM Clang compiler and build debug. The `dev` preset also integrates clang-tidy and llvm-cov into the build/test process.
 When developing, it is recommended to use the `dev` CMake preset (or `windows-dev` if developing on windows). This will use an LLVM clang compiler building for debug. These configurations also integrate clang-tidy into the build process.
 
 ## C++ Standard Compatibility

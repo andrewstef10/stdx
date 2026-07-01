@@ -11,7 +11,6 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 
-set(UNIT_TEST_TARGET_NAME "${CMAKE_PROJECT_NAME}-unittest")
 add_executable(${UNIT_TEST_TARGET_NAME}
     test_array.cpp
     test_array_list.cpp
@@ -25,6 +24,7 @@ add_executable(${UNIT_TEST_TARGET_NAME}
     test_stopwatch.cpp
     test_string.cpp
 )
+
 set_target_properties(${UNIT_TEST_TARGET_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
 )
@@ -36,6 +36,7 @@ target_link_libraries(${UNIT_TEST_TARGET_NAME}
         GTest::gtest_main
 )
 
+enable_compiler_warnings(${UNIT_TEST_TARGET_NAME})
 check_enable_sanitizers(${UNIT_TEST_TARGET_NAME})
 check_enable_coverage(${UNIT_TEST_TARGET_NAME})
 

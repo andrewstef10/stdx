@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <utility>
 
 #include <stdx/iterator.h>
 
@@ -45,25 +46,25 @@ namespace stdx {
         /// @brief Returns a reference to the element at specified location pos, without bounds checking.
         /// @param index Position of the element to return.
         /// @return Reference to the requested element.
-        T& operator[](std::size_t index) { return data_[index]; }
-        const T& operator[](std::size_t index) const { return data_[index]; }
+        T& operator[](std::size_t index) { return elems[index]; }
+        const T& operator[](std::size_t index) const { return elems[index]; }
 
         /// @brief Returns a pointer to the underlying array serving as element storage.
         /// The pointer is such that range [data(), data() + size()) is always a valid range.
         /// If *this is empty, data() is not dereferenceable.
         /// @return Pointer to the underlying element storage. For non-empty containers, the returned pointer compares equal to the address of the first element.
-        T* data() { return data_; }
-        const T* data() const { return data_; }
+        T* data() { return elems; }
+        const T* data() const { return elems; }
 
         /// @brief Returns a reference to the last element in the container.
         /// @return Reference to the last element.
-        T& back() { return data_[N - 1]; }
-        const T& back() const { return data_[N - 1]; }
+        T& back() { return elems[N - 1]; }
+        const T& back() const { return elems[N - 1]; }
 
         /// @brief Returns a reference to the first element in the container.
         /// @return Reference to the first element.
-        T& front() { return data_[0]; }
-        const T& front() const { return data_[0]; }
+        T& front() { return elems[0]; }
+        const T& front() const { return elems[0]; }
 
 
         // ==== Iterators ====
@@ -71,30 +72,30 @@ namespace stdx {
         /// @brief Returns a contiguous iterator to the first element of *this.
         /// If *this is empty, the returned iterator will be equal to end().
         /// @return contiguous iterator to the first element.
-        iterator begin() { return iterator(data_); }
-        const_iterator begin() const { return const_iterator(data_); }
-        const_iterator cbegin() const { return const_iterator(data_); }
+        iterator begin() { return iterator(elems); }
+        const_iterator begin() const { return const_iterator(elems); }
+        const_iterator cbegin() const { return const_iterator(elems); }
 
         /// @brief Returns a contiguous iterator past the last element of *this.
         /// This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
         /// @return contiguous iterator past the last element.
-        iterator end() { return iterator(data_ + N); }
-        const_iterator end() const { return const_iterator(data_ + N); }
-        const_iterator cend() const { return const_iterator(data_ + N); }
+        iterator end() { return iterator(elems + N); }
+        const_iterator end() const { return const_iterator(elems + N); }
+        const_iterator cend() const { return const_iterator(elems + N); }
 
         /// @brief Returns a reverse contiguous iterator to the first element of the reversed *this. It corresponds to the last element of the non-reversed *this.
         /// If *this is empty, the returned iterator will be equal to end().
         /// @return Reverse contiguous iterator to the first element.
-        reverse_iterator rbegin() { return reverse_iterator(data_ + N); }
-        const_reverse_iterator rbegin() const { return const_reverse_iterator(data_ + N); }
-        const_reverse_iterator crbegin() const { return const_reverse_iterator(data_ + N); }
+        reverse_iterator rbegin() { return reverse_iterator(elems + N); }
+        const_reverse_iterator rbegin() const { return const_reverse_iterator(elems + N); }
+        const_reverse_iterator crbegin() const { return const_reverse_iterator(elems + N); }
 
         /// @brief Returns a reverse contiguous iterator past the last element of the reversed *this. It corresponds to the element preceding the first element of the non-reversed *this.
         /// This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
         /// @return Reverse contiguous iterator to the element following the last element.
-        reverse_iterator rend() { return reverse_iterator(data_); }
-        const_reverse_iterator rend() const { return const_reverse_iterator(data_); }
-        const_reverse_iterator crend() const { return const_reverse_iterator(data_); }
+        reverse_iterator rend() { return reverse_iterator(elems); }
+        const_reverse_iterator rend() const { return const_reverse_iterator(elems); }
+        const_reverse_iterator crend() const { return const_reverse_iterator(elems); }
 
 
         // ===== Capacity =====
@@ -117,7 +118,7 @@ namespace stdx {
         /// @brief Exchanges the contents of the container with those of other.
         /// Does not cause iterators and references to associate with the other container.
         /// @param other container to exchange the contents with
-        void swap(array& other);
+        void swap(array& other) noexcept(noexcept(std::swap(std::declval<T&>(), std::declval<T&>())));
 
 
         // ==== Comparison ====
@@ -179,7 +180,7 @@ namespace stdx {
 
 
         /// @brief Underlying array of type T
-        T data_[N == 0 ? 1 : N];
+        T elems[N == 0 ? 1 : N];
     };
 
 
@@ -203,7 +204,7 @@ namespace stdx {
         {
             throw std::out_of_range("Index outside the bounds of the array");
         }
-        return data_[pos];
+        return elems[pos];
     }
 
     template<typename T, std::size_t N>
@@ -213,7 +214,7 @@ namespace stdx {
         {
             throw std::out_of_range("Index outside the bounds of the array");
         }
-        return data_[pos];
+        return elems[pos];
     }
 
     template<typename T, std::size_t N>
@@ -221,18 +222,16 @@ namespace stdx {
     {
         for (std::size_t i = 0; i < N; ++i)
         {
-            data_[i] = value;
+            elems[i] = value;
         }
     }
 
     template<typename T, std::size_t N>
-    inline void array<T, N>::swap(array<T, N>& other)
+    inline void array<T, N>::swap(array<T, N>& other) noexcept(noexcept(std::swap(std::declval<T&>(), std::declval<T&>())))
     {
         for (std::size_t i = 0; i < N; ++i)
         {
-            T temp = other.data_[i];
-            other.data_[i] = data_[i];
-            data_[i] = temp;
+            std::swap(elems[i], other.elems[i]);
         }
     }
 
@@ -242,7 +241,7 @@ namespace stdx {
         bool equals = true;
         for (std::size_t i = 0; equals && i < N; ++i)
         {
-            equals = data_[i] == other.data_[i];
+            equals = elems[i] == other.elems[i];
         }
         return equals;
     }
@@ -253,9 +252,9 @@ namespace stdx {
         bool lessThan = false;
         for (std::size_t i = 0; i < N; ++i)
         {
-            if (!(data_[i] == other.data_[i]))
+            if (!(elems[i] == other.elems[i]))
             {
-                lessThan = data_[i] < other.data_[i];
+                lessThan = elems[i] < other.elems[i];
                 break;
             }
         }
