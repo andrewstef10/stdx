@@ -5,6 +5,7 @@
 #include <iterator>
 #include <type_traits>
 
+#include <stdx/equatable.h>
 #include <stdx/comparable.h>
 
 namespace stdx {

@@ -15,6 +15,7 @@
   - [4. Run the test suite](#4-run-the-test-suite)
   - [5. Install the project](#5-install-the-project)
 - [Developing](#developing)
+- [C++ Standard Compatibility](#c-standard-compatibility)
 
 ---
 
@@ -22,7 +23,7 @@
 
 ### Minimum
 - **CMake ≥ 3.24** – required to configure the project.
-- **C++ compiler**:
+- **C++ compiler** with **C++11 or later** support:
   - Windows: MSVC cl **or** LLVM Clang/clang-cl.
   - Linux: GCC **or** LLVM Clang.
   - macOS: LLVM Clang.
@@ -89,3 +90,8 @@ cmake --install build/default --config Debug --prefix "/your/custom/path"
 
 ## Developing
 When developing, it is recommended to use the `dev` CMake preset. This will use an LLVM Clang compiler and build debug. The `dev` preset also integrates clang-tidy and llvm-cov into the build/test process.
+When developing, it is recommended to use the `dev` CMake preset (or `windows-dev` if developing on windows). This will use an LLVM clang compiler building for debug. These configurations also integrate clang-tidy into the build process.
+
+## C++ Standard Compatibility
+
+All library code must be written to be compatible with **C++11 and later**. Do not use language or library features introduced after C++11 unless they are conditionally guarded by a feature-detection macro. The project builds with CMAKE_CXX_STANDARD 20 to allow use of C++20 features in the *build system and tests*, but the *library implementation* in include/stdx/ and src/ must remain C++11-compatible.
