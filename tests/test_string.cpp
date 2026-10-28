@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include <stdx/string.h>
 
+namespace StdxTest {
+
 // memchar tests
 TEST(MemchrTest, FindCharacter) {
     const char* str = "Hello, World!";
@@ -1716,3 +1718,5 @@ TEST(StringGrowthTest, GrowsCapacity_Size100) {
         "a"; // 101 chars > 100
     EXPECT_EQ(101u, s.size());
 }
+
+} // namespace StdxTest
