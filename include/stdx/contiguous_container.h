@@ -25,72 +25,158 @@ class contiguous_container : public stdx::container<Derived, T> {
     // ===== Element Access =====
     // ==========================
 
-    /// @brief Returns a reference to the first element. Behavior is undefined if the container is empty.
-    /// @details Time:  O(1)
+    /// @brief Returns a reference to the first element in the container.
+    /// @details Behavior is undefined if the container is empty.
+    ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Reference to the first element.
     T& front() { return derived().data()[0]; }
+
+    /// @brief Returns a constant reference to the first element in the container.
+    /// @details Behavior is undefined if the container is empty.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Reference to the first element.
     const T& front() const { return derived().data()[0]; }
 
-    /// @brief Returns a reference to the last element. Behavior is undefined if the container is empty.
-    /// @details Time:  O(1)
+    /// @brief Returns a reference to the last element in the container.
+    /// @details Behavior is undefined if the container is empty.
+    ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Reference to the last element.
     T& back() { return derived().data()[derived().size() - 1]; }
+
+    /// @brief Returns a constant reference to the last element in the container.
+    /// @details Behavior is undefined if the container is empty.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant reference to the last element.
     const T& back() const { return derived().data()[derived().size() - 1]; }
 
-    /// @brief Returns a reference to the element at position `index` with bounds checking.
-    /// @details Time:  O(1)
+    /// @brief Returns a reference to the element at specified location `index`, with bounds checking.
+    /// @details If index is not within the range of the container, an exception of type std::out_of_range is thrown.
+    ///          Time:  O(1)
     ///          Space: O(1)
     /// @param index Position of the element to return.
     /// @return Reference to the requested element.
-    /// @exception std::out_of_range If index >= size().
-    T& at(std::size_t index) { return internal::contiguous_container::at(derived(), index); }
+    /// @exception std::out_of_range if `index` is out of range (index >= size()).
+    T& at(std::size_t index) { return const_cast<T&>(static_cast<const contiguous_container*>(this)->at(index)); }
+
+    /// @brief Returns a constant reference to the element at specified location `index`, with bounds checking.
+    /// @details If index is not within the range of the container, an exception of type std::out_of_range is thrown.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @param index Position of the element to return.
+    /// @return Constant reference to the requested element.
+    /// @exception std::out_of_range if `index` is out of range (index >= size()).
     const T& at(std::size_t index) const { return internal::contiguous_container::at(derived(), index); }
 
-    /// @brief Returns a reference to the element at position `index` without bounds checking.
+    /// @brief Returns a reference to the element at specified location `index`, without bounds checking.
     /// @details Time:  O(1)
     ///          Space: O(1)
     /// @param index Position of the element to return.
     /// @return Reference to the requested element.
     T& operator[](std::size_t index) { return derived().data()[index]; }
+
+    /// @brief Returns a constant reference to the element at specified location `index`, without bounds checking.
+    /// @details Time:  O(1)
+    ///          Space: O(1)
+    /// @param index Position of the element to return.
+    /// @return Constant reference to the requested element.
     const T& operator[](std::size_t index) const { return derived().data()[index]; }
 
     // ===================
     // ==== Iterators ====
     // ===================
 
-    /// @brief Returns an iterator to the first element. If the container is empty, the iterator equals end().
-    /// @details Time:  O(1)
+    /// @brief Returns an iterator to the first element of the container.
+    /// @details If the container is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
     ///          Space: O(1)
-    /// @return Iterator to the first element.
+    /// @return Contiguous iterator to the first element.
     iterator begin() { return iterator(derived().data()); }
+
+    /// @brief Returns a constant iterator to the first element of the container.
+    /// @details If the container is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant contiguous iterator to the first element.
     const_iterator begin() const { return const_iterator(derived().data()); }
+
+    /// @brief Returns a constant iterator to the first element of the container.
+    /// @details If the container is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant contiguous iterator to the first element.
     const_iterator cbegin() const { return const_iterator(derived().data()); }
 
-    /// @brief Returns a past-the-end sentinel iterator. The iterator is not dereferenceable.
-    /// @details Time:  O(1)
+    /// @brief Returns an iterator past the last element of the container.
+    /// @details This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
     ///          Space: O(1)
-    /// @return Iterator past the last element.
+    /// @return Contiguous iterator past the last element.
     iterator end() { return iterator(derived().data() + derived().size()); }
+
+    /// @brief Returns a const iterator past the last element of the container.
+    /// @details This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant contiguous iterator past the last element.
     const_iterator end() const { return const_iterator(derived().data() + derived().size()); }
+
+    /// @brief Returns a const iterator past the last element of the container.
+    /// @details This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant contiguous iterator past the last element.
     const_iterator cend() const { return const_iterator(derived().data() + derived().size()); }
 
-    /// @brief Returns a reverse iterator to the last element (first element of the reversed range). Equals rend() if
-    /// empty.
-    /// @details Time:  O(1)
+    /// @brief Returns a reverse iterator to the first element of the reversed container.
+    /// @details It corresponds to the last element of the non-reversed container.
+    ///          If the container is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
     ///          Space: O(1)
-    /// @return Reverse iterator to the last element.
+    /// @return Reverse contiguous iterator to the first element.
     reverse_iterator rbegin() { return reverse_iterator(derived().data() + derived().size()); }
+
+    /// @brief Returns a constant reverse iterator to the first element of the reversed container.
+    /// @details It corresponds to the last element of the non-reversed container.
+    ///          If the container is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant reverse contiguous iterator to the first element.
     const_reverse_iterator rbegin() const { return const_reverse_iterator(derived().data() + derived().size()); }
+
+    /// @brief Returns a constant reverse iterator to the first element of the reversed container.
+    /// @details It corresponds to the last element of the non-reversed container.
+    ///          If the container is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant reverse contiguous iterator to the first element.
     const_reverse_iterator crbegin() const { return const_reverse_iterator(derived().data() + derived().size()); }
 
-    /// @brief Returns a reverse past-the-end sentinel iterator. The iterator is not dereferenceable.
-    /// @details Time:  O(1)
+    /// @brief Returns a reverse iterator past the last element of the reversed container.
+    /// @details It corresponds to the element preceding the first element of the non-reversed container.
+    ///          This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
     ///          Space: O(1)
-    /// @return Reverse iterator past the first element (in reverse order).
+    /// @return Reverse contiguous iterator to the element following the last element.
     reverse_iterator rend() { return reverse_iterator(derived().data()); }
+
+    /// @brief Returns a constant reverse iterator past the last element of the reversed container.
+    /// @details It corresponds to the element preceding the first element of the non-reversed container.
+    ///          This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant reverse contiguous iterator to the element following the last element.
     const_reverse_iterator rend() const { return const_reverse_iterator(derived().data()); }
+
+    /// @brief Returns a constant reverse iterator past the last element of the reversed container.
+    /// @details It corresponds to the element preceding the first element of the non-reversed container.
+    ///          This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant reverse contiguous iterator to the element following the last element.
     const_reverse_iterator crend() const { return const_reverse_iterator(derived().data()); }
 
     // ====================
@@ -98,7 +184,7 @@ class contiguous_container : public stdx::container<Derived, T> {
     // ====================
 
     /// @brief Compares two containers element-by-element using operator==, stopping at the first mismatch.
-    /// @details Time:  O(n) — compares up to min(size(), other.size()) elements
+    /// @details Time:  O(n)
     ///          Space: O(1)
     ///          Requires T to be equality-comparable (operator== defined).
     /// @param other Container to compare against.
@@ -106,7 +192,7 @@ class contiguous_container : public stdx::container<Derived, T> {
     bool equals(const Derived& other) const { return internal::contiguous_container::equals(derived(), other); }
 
     /// @brief Performs a lexicographic less-than comparison using operator<.
-    /// @details Time:  O(n) — compares up to min(size(), other.size()) elements
+    /// @details Time:  O(n)
     ///          Space: O(1)
     ///          Requires T to be less-than-comparable (operator< defined).
     /// @param other Container to compare against.
@@ -155,7 +241,7 @@ contiguous_container<Derived, T>::erase(const_iterator first, const_iterator las
 
     // Close the gap by moving the tail elements down onto it
     namespace icc = internal::contiguous_container;
-    const std::size_t NEW_SIZE = icc::shift_left(icc::make_view(derived().data(), derived().size()), FIRST, LAST);
+    const std::size_t NEW_SIZE = icc::shift_left(derived(), FIRST, LAST);
 
     // Destroy the moved-from tail elements
     while (derived().size() > NEW_SIZE) {

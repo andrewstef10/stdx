@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <stdexcept>
 
+#include <stdx/iterator.h>
+
 namespace stdx {
 
 /// @brief Compile time constant indicating that size should be determined dynamically at runtime.
@@ -45,6 +47,14 @@ class span : private internal::size_storage<N> {
     using size_storage = internal::size_storage<N>;
 
   public:
+    using value_type = T;
+    using size_type = std::size_t;
+
+    using iterator = T*;
+    using const_iterator = const T*;
+    using reverse_iterator = stdx::reverse_iterator<iterator>;
+    using const_reverse_iterator = stdx::reverse_iterator<const_iterator>;
+
     /// @brief Default Constructor. Constructs an empty span (data() == nullptr, size() == 0)
     /// @details This constructor is only enabled when template parameter N == DYNAMIC_SIZE or N == 0.
     ///          Default construction of a view where N > 0 is not allowed (size() must be 0).
@@ -96,32 +106,35 @@ class span : private internal::size_storage<N> {
     // ===== Element Access =====
     // ==========================
 
-    /// @brief Returns a reference to the first element. Behavior is undefined if the span is empty.
-    /// @details Time:  O(1)
+    /// @brief Returns a reference to the first element in the span.
+    /// @details Behavior is undefined if the span is empty.
+    ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Reference to the first element.
     constexpr T& front() const { return m_data[0]; }
 
-    /// @brief Returns a reference to the last element. Behavior is undefined if the span is empty.
-    /// @details Time:  O(1)
+    /// @brief Returns a reference to the last element in the span.
+    /// @details Behavior is undefined if the span is empty.
+    ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Reference to the last element.
     constexpr T& back() const { return m_data[size() - 1]; }
 
-    /// @brief Returns a reference to the element at position `index` without bounds checking.
+    /// @brief Returns a reference to the element at specified location `index`, with bounds checking.
+    /// @details If index is not within the range of the span, an exception of type std::out_of_range is thrown.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @param index Position of the element to return.
+    /// @return Reference to the requested element.
+    /// @exception std::out_of_range if `index` is out of range (index >= size()).
+    constexpr T& at(std::size_t index) const;
+
+    /// @brief Returns a reference to the element at specified location `index`, without bounds checking.
     /// @details Time:  O(1)
     ///          Space: O(1)
     /// @param index Position of the element to return.
     /// @return Reference to the requested element.
     constexpr T& operator[](std::size_t index) const { return m_data[index]; }
-
-    /// @brief Returns a reference to the element at position `index` with bounds checking.
-    /// @details Time:  O(1)
-    ///          Space: O(1)
-    /// @param index Position of the element to return.
-    /// @return Reference to the requested element.
-    /// @exception std::out_of_range If index >= size().
-    constexpr T& at(std::size_t index) const;
 
     /// @brief Returns a pointer to the underlying element storage. The range [data(), data() + size()) is always valid.
     /// @details Time:  O(1)
@@ -130,14 +143,108 @@ class span : private internal::size_storage<N> {
     /// @return Pointer to the first element.
     constexpr T* data() const noexcept { return m_data; }
 
+    // ===================
+    // ==== Iterators ====
+    // ===================
+
+    /// @brief Returns an iterator to the first element of the span.
+    /// @details If the span is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Contiguous iterator to the first element.
+    constexpr iterator begin() { return iterator(m_data); }
+
+    /// @brief Returns a constant iterator to the first element of the span.
+    /// @details If the span is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant contiguous iterator to the first element.
+    constexpr const_iterator begin() const { return const_iterator(m_data); }
+
+    /// @brief Returns a constant iterator to the first element of the span.
+    /// @details If the span is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant contiguous iterator to the first element.
+    constexpr const_iterator cbegin() const { return const_iterator(m_data); }
+
+    /// @brief Returns an iterator past the last element of the span.
+    /// @details This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Contiguous iterator past the last element.
+    constexpr iterator end() { return iterator(m_data + size()); }
+
+    /// @brief Returns a const iterator past the last element of the span.
+    /// @details This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant contiguous iterator past the last element.
+    constexpr const_iterator end() const { return const_iterator(m_data + size()); }
+
+    /// @brief Returns a const iterator past the last element of the span.
+    /// @details This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant contiguous iterator past the last element.
+    constexpr const_iterator cend() const { return const_iterator(m_data + size()); }
+
+    /// @brief Returns a reverse iterator to the first element of the reversed span.
+    /// @details It corresponds to the last element of the non-reversed span.
+    ///          If the span is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Reverse contiguous iterator to the first element.
+    constexpr reverse_iterator rbegin() { return reverse_iterator(m_data + size()); }
+
+    /// @brief Returns a constant reverse iterator to the first element of the reversed span.
+    /// @details It corresponds to the last element of the non-reversed span.
+    ///          If the span is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant reverse contiguous iterator to the first element.
+    constexpr const_reverse_iterator rbegin() const { return const_reverse_iterator(m_data + size()); }
+
+    /// @brief Returns a constant reverse iterator to the first element of the reversed span.
+    /// @details It corresponds to the last element of the non-reversed span.
+    ///          If the span is empty, the returned iterator will be equal to end().
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant reverse contiguous iterator to the first element.
+    constexpr const_reverse_iterator crbegin() const { return const_reverse_iterator(m_data + size()); }
+
+    /// @brief Returns a reverse iterator past the last element of the reversed span.
+    /// @details It corresponds to the element preceding the first element of the non-reversed span.
+    ///          This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Reverse contiguous iterator to the element following the last element.
+    constexpr reverse_iterator rend() { return reverse_iterator(m_data); }
+
+    /// @brief Returns a constant reverse iterator past the last element of the reversed span.
+    /// @details It corresponds to the element preceding the first element of the non-reversed span.
+    ///          This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant reverse contiguous iterator to the element following the last element.
+    constexpr const_reverse_iterator rend() const { return const_reverse_iterator(m_data); }
+
+    /// @brief Returns a constant reverse iterator past the last element of the reversed span.
+    /// @details It corresponds to the element preceding the first element of the non-reversed span.
+    ///          This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
+    ///          Time:  O(1)
+    ///          Space: O(1)
+    /// @return Constant reverse contiguous iterator to the element following the last element.
+    constexpr const_reverse_iterator crend() const { return const_reverse_iterator(m_data); }
+
     // ====================
     // ======= Size =======
     // ====================
 
-    /// @brief Returns the number of elements in the container.
+    /// @brief Returns the number of elements in the span.
     /// @details Time:  O(1)
     ///          Space: O(1)
-    /// @return The number of elements in the container.
+    /// @return The number of elements in the span.
     constexpr std::size_t size() const noexcept { return size_storage::size(); }
 
     /// @brief Returns the size of the sequence in bytes.

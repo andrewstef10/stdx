@@ -62,7 +62,7 @@ class comparable {
 
   protected:
     // ==== comparable should not be constructed directly ====
-    comparable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
+    constexpr comparable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 } // namespace stdx
 

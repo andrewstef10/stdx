@@ -36,8 +36,6 @@ class fixed_array_list : public stdx::contiguous_container<fixed_array_list<T, N
     using reverse_iterator = typename contiguous_container<fixed_array_list, T>::reverse_iterator;
     using const_reverse_iterator = typename contiguous_container<fixed_array_list, T>::const_reverse_iterator;
 
-    // ==== Constructors / Destructor ====
-
     /// @brief Default constructor. Constructs an empty container; no elements are live but the internal buffer is
     /// ready.
     /// @details Time:  O(1)
@@ -98,7 +96,9 @@ class fixed_array_list : public stdx::contiguous_container<fixed_array_list<T, N
     fixed_array_list& operator=(fixed_array_list&& other) noexcept(std::is_nothrow_move_assignable<T>::value &&
                                                                    std::is_nothrow_move_constructible<T>::value);
 
+    // ==========================
     // ===== Element Access =====
+    // ==========================
 
     /// @brief Returns a pointer to the underlying element storage. The range [data(), data() + size()) is always valid.
     /// @details Time:  O(1)
@@ -108,7 +108,9 @@ class fixed_array_list : public stdx::contiguous_container<fixed_array_list<T, N
     T* data() { return reinterpret_cast<T*>(m_data); }
     const T* data() const { return reinterpret_cast<const T*>(m_data); }
 
-    // ==== Capacity ====
+    // ====================
+    // ===== Capacity =====
+    // ====================
 
     /// @brief Returns the number of elements in the container.
     /// @details Time:  O(1)
@@ -129,7 +131,9 @@ class fixed_array_list : public stdx::contiguous_container<fixed_array_list<T, N
     /// @return N — the compile-time fixed capacity.
     size_type constexpr capacity() const noexcept { return static_cast<size_type>(N); }
 
+    // ===================
     // ==== Modifiers ====
+    // ===================
 
     /// @brief Appends a copy of `val` to the end of the container.
     /// @details Time:  O(1)
@@ -256,7 +260,7 @@ class fixed_array_list : public stdx::contiguous_container<fixed_array_list<T, N
     void resize_impl(size_type count, Args&&... args);
 };
 
-// ===== Inline fixed_array_list Implementation =====
+/// region - fixed_array_list Inline Implementation ///
 
 // m_data is raw storage: elements are placement-new'd into it on demand, so zero-initializing the bytes here
 // would be pure overhead. NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
@@ -271,7 +275,7 @@ inline fixed_array_list<T, N>::fixed_array_list(const fixed_array_list& other)
     // Copy construct the elements in other
     stdx::allocator<T> alloc;
     namespace icc = internal::contiguous_container;
-    icc::construct_copy(alloc, data(), icc::make_view(other.data(), other.m_size));
+    icc::construct_copy(alloc, data(), other.begin(), other.m_size);
 }
 
 // m_data is raw storage: construct_move below placement-news the live elements.
@@ -283,7 +287,7 @@ inline fixed_array_list<T, N>::fixed_array_list(fixed_array_list&& other) noexce
     // Move construct (steal) the elements in other
     stdx::allocator<T> alloc;
     namespace icc = internal::contiguous_container;
-    icc::construct_move(alloc, data(), alloc, icc::make_view(other.data(), other.m_size));
+    icc::construct_move(alloc, data(), alloc, other);
     other.m_size = 0;
 }
 
@@ -305,7 +309,7 @@ inline fixed_array_list<T, N>::fixed_array_list(InputIterator first, InputIterat
     // Copy construct the all elements in other
     namespace icc = internal::contiguous_container;
     stdx::allocator<T> alloc;
-    icc::construct_copy(alloc, data(), icc::make_view(first, SIZE));
+    icc::construct_copy(alloc, data(), first, SIZE);
     m_size = SIZE;
 }
 
@@ -321,7 +325,7 @@ inline fixed_array_list<T, N>::fixed_array_list(std::initializer_list<T> init)
     // Copy construct the all elements in other
     namespace icc = internal::contiguous_container;
     stdx::allocator<T> alloc;
-    icc::construct_copy(alloc, data(), icc::make_view(init.begin(), init.size()));
+    icc::construct_copy(alloc, data(), init.begin(), init.size());
     m_size = init.size();
 }
 
@@ -339,7 +343,7 @@ inline fixed_array_list<T, N>& fixed_array_list<T, N>::operator=(const fixed_arr
     // Assign elements from other
     stdx::allocator<T> alloc;
     namespace icc = internal::contiguous_container;
-    icc::assign_copy(alloc, icc::make_view(data(), m_size), icc::make_view(other.data(), other.m_size));
+    icc::assign_copy(alloc, *this, other.begin(), other.m_size);
 
     m_size = other.m_size;
     return *this;
@@ -356,7 +360,7 @@ fixed_array_list<T, N>::operator=(fixed_array_list&& other) noexcept(std::is_not
     // Assign elements from other. Other keeps its (now empty) buffer
     stdx::allocator<T> alloc;
     namespace icc = internal::contiguous_container;
-    icc::assign_move(alloc, icc::make_view(data(), m_size), alloc, icc::make_view(other.data(), other.m_size));
+    icc::assign_move(alloc, *this, alloc, other);
 
     m_size = other.m_size;
     other.m_size = 0;
@@ -390,8 +394,10 @@ inline typename fixed_array_list<T, N>::iterator fixed_array_list<T, N>::emplace
     // Stateless allocator: allocator_traits routes construct through placement new, identical to construct().
     stdx::allocator<T> alloc;
     namespace icc = internal::contiguous_container;
-    return icc::emplace_at(alloc, icc::make_view(data(), m_size++), static_cast<size_type>(pos - data()),
-                           std::forward<Args>(args)...);
+    T* emplacedElement =
+        icc::emplace_at(alloc, *this, static_cast<size_type>(pos - data()), std::forward<Args>(args)...);
+    ++m_size;
+    return emplacedElement;
 }
 
 template <typename T, std::size_t N>
@@ -403,7 +409,7 @@ inline void fixed_array_list<T, N>::resize_impl(size_type count, Args&&... args)
 
     stdx::allocator<T> alloc;
     namespace icc = internal::contiguous_container;
-    icc::resize(alloc, icc::make_view(data(), m_size), count, std::forward<Args>(args)...);
+    icc::resize(alloc, *this, count, std::forward<Args>(args)...);
     m_size = count;
 }
 
@@ -424,6 +430,8 @@ inline void fixed_array_list<T, N>::clear() {
         pop_back();
     }
 }
+/// endregion - fixed_array_list Inline Implementation ///
+
 } // namespace stdx
 
 #endif

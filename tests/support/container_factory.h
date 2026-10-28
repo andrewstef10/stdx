@@ -5,6 +5,7 @@
 #include <initializer_list>
 
 #include <stdx/array.h>
+#include <stdx/span.h>
 
 namespace StdxTest {
 
@@ -72,6 +73,61 @@ struct ContainerFactory<stdx::array<T, N>> {
             container[i++] = value;
         }
         return container;
+    }
+};
+
+/// @brief stdx::span is non-owning, so it has no constructor from an initializer_list or iterator pair -- it must
+/// view storage that outlives the returned span. Each function below rewrites a function-local static buffer on
+/// every call and returns a span over it, so the buffer always reflects the most recent call's values. This is safe
+/// as long as a test never keeps two spans from the same factory function alive at once, which none of the shared
+/// suites do.
+template <typename T, std::size_t N>
+struct ContainerFactory<stdx::span<T, N>> {
+    static_assert(N == TestValues<T>::SIZE, "N must match the size of provided test values for type T");
+
+    /// @brief Builds a span viewing a buffer holding `values`, in order.
+    static stdx::span<T, N> Make(std::initializer_list<T> values) {
+        static T storage[N];
+        std::size_t i = 0;
+        for (const T& value : values) {
+            storage[i++] = value;
+        }
+        return stdx::span<T, N>(storage);
+    }
+
+    /// @brief Builds a span viewing a buffer holding values defined in TestValues<T>
+    static stdx::span<T, N> MakeFromTestValues() {
+        static T storage[N];
+        std::size_t i = 0;
+        for (const T& value : TestValues<T>::VALUES) {
+            storage[i++] = value;
+        }
+        return stdx::span<T, N>(storage);
+    }
+};
+
+/// @brief Dynamic-extent specialization: count is a runtime value, so Make is not limited to TestValues<T>::SIZE
+/// elements the way the fixed-extent specialization above is.
+template <typename T>
+struct ContainerFactory<stdx::span<T>> {
+    /// @brief Builds a span viewing a buffer holding `values`, in order.
+    static stdx::span<T> Make(std::initializer_list<T> values) {
+        static T storage[TestValues<T>::SIZE];
+        std::size_t i = 0;
+        for (const T& value : values) {
+            storage[i++] = value;
+        }
+        return stdx::span<T>(storage, i);
+    }
+
+    /// @brief Builds a span viewing a buffer holding values defined in TestValues<T>
+    static stdx::span<T> MakeFromTestValues() {
+        static T storage[TestValues<T>::SIZE];
+        std::size_t i = 0;
+        for (const T& value : TestValues<T>::VALUES) {
+            storage[i++] = value;
+        }
+        return stdx::span<T>(storage, TestValues<T>::SIZE);
     }
 };
 

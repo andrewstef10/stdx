@@ -43,7 +43,7 @@ class equatable {
 
   protected:
     // ==== equatable should not be constructed directly ====
-    equatable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
+    constexpr equatable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 } // namespace stdx
 

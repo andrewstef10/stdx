@@ -116,7 +116,9 @@ class array_list : public stdx::contiguous_container<array_list<T, Allocator, Gr
     /// @return The associated growth policy.
     growth_type get_growth_policy() const noexcept { return m_growth; }
 
+    // ==========================
     // ===== Element Access =====
+    // ==========================
 
     /// @brief Returns a pointer to the underlying element storage. The range [data(), data() + size()) is always valid.
     /// @details Time:  O(1)
@@ -126,7 +128,9 @@ class array_list : public stdx::contiguous_container<array_list<T, Allocator, Gr
     T* data() { return m_data; }
     const T* data() const { return m_data; }
 
+    // ====================
     // ===== Capacity =====
+    // ====================
 
     /// @brief Returns the number of elements in the container.
     /// @details Time:  O(1)
@@ -157,7 +161,9 @@ class array_list : public stdx::contiguous_container<array_list<T, Allocator, Gr
     ///          Invalidates all iterators and references if reallocation occurs.
     void shrink_to_fit();
 
+    // ===================
     // ==== Modifiers ====
+    // ===================
 
     /// @brief Appends a copy of `val` to the end of the container. Reallocates if size() == capacity().
     /// @details Time:  O(1) amortized — O(n) on reallocation
@@ -204,6 +210,13 @@ class array_list : public stdx::contiguous_container<array_list<T, Allocator, Gr
     /// @param value Value to move-construct into the new element.
     /// @return Iterator to the inserted element.
     iterator insert(const_iterator pos, T&& value) { return emplace(pos, std::move(value)); }
+
+    iterator insert(const_iterator pos, std::size_t count, const T& value);
+
+    template <class InputIt>
+    iterator insert(const_iterator pos, InputIt first, InputIt last);
+
+    iterator insert(const_iterator pos, std::initializer_list<T> ilist);
 
     /// @brief Constructs an element in-place before `pos`, forwarding `args` to T's constructor.
     /// @details Time:  O(n) — shifts elements after pos to make room
@@ -323,8 +336,7 @@ class array_list : public stdx::contiguous_container<array_list<T, Allocator, Gr
     void resize_impl(std::size_t count, Args&&... args);
 };
 
-// ===== Inline array_list Implementation =====
-
+/// region - array_list Inline Implementation ///
 template <typename T, typename Allocator, typename GrowthPolicy>
 inline array_list<T, Allocator, GrowthPolicy>::array_list()
     : contiguous_container<array_list, T>(), m_size(0), m_data(nullptr), m_capacity(0), m_alloc(), m_growth() {}
@@ -345,7 +357,7 @@ inline array_list<T, Allocator, GrowthPolicy>::array_list(const array_list<T, Al
 
     // Copy construct the all elements in other
     namespace icc = internal::contiguous_container;
-    icc::construct_copy(m_alloc, m_data, icc::make_view(other.data(), other.m_size));
+    icc::construct_copy(m_alloc, m_data, other.begin(), other.size());
     m_size = other.m_size;
 }
 
@@ -377,7 +389,7 @@ inline array_list<T, Allocator, GrowthPolicy>::array_list(InputIterator first, I
 
     // Copy construct the all elements in other
     namespace icc = internal::contiguous_container;
-    icc::construct_copy(m_alloc, m_data, icc::make_view(first, SIZE));
+    icc::construct_copy(m_alloc, m_data, first, SIZE);
     m_size = SIZE;
 }
 
@@ -391,7 +403,7 @@ inline array_list<T, Allocator, GrowthPolicy>::array_list(std::initializer_list<
 
     // Copy construct the all elements in other
     namespace icc = internal::contiguous_container;
-    icc::construct_copy(m_alloc, m_data, icc::make_view(init.begin(), init.size()));
+    icc::construct_copy(m_alloc, m_data, init.begin(), init.size());
     m_size = init.size();
 }
 
@@ -424,7 +436,7 @@ array_list<T, Allocator, GrowthPolicy>::operator=(const array_list<T, Allocator,
 
     // Assign elements from other
     namespace icc = internal::contiguous_container;
-    icc::assign_copy(m_alloc, icc::make_view(m_data, m_size), icc::make_view(other.data(), other.m_size));
+    icc::assign_copy(m_alloc, *this, other.begin(), other.m_size);
 
     m_size = other.m_size;
     return *this;
@@ -464,8 +476,7 @@ array_list<T, Allocator, GrowthPolicy>::operator=(array_list<T, Allocator, Growt
         // Assign elements from other. Other keeps its (now empty) buffer: only its own
         // allocator may deallocate it, which happens in other's destructor.
         namespace icc = internal::contiguous_container;
-        icc::assign_move(m_alloc, icc::make_view(m_data, m_size), other.m_alloc,
-                         icc::make_view(other.m_data, other.m_size));
+        icc::assign_move(m_alloc, *this, other.m_alloc, other);
     }
 
     m_size = other.m_size;
@@ -483,7 +494,7 @@ inline void array_list<T, Allocator, GrowthPolicy>::assign(std::size_t count, co
     }
 
     namespace icc = internal::contiguous_container;
-    icc::assign_copy(m_alloc, icc::make_view(m_data, m_size), count, value);
+    icc::assign_copy(m_alloc, *this, count, value);
 
     m_size = count;
 }
@@ -498,7 +509,7 @@ inline void array_list<T, Allocator, GrowthPolicy>::assign(InputIt first, InputI
     }
 
     namespace icc = internal::contiguous_container;
-    icc::assign_copy(m_alloc, icc::make_view(m_data, m_size), first, COUNT);
+    icc::assign_copy(m_alloc, *this, first, COUNT);
 
     m_size = COUNT;
 }
@@ -543,7 +554,9 @@ array_list<T, Allocator, GrowthPolicy>::emplace(const_iterator pos, Args&&... ar
     }
 
     namespace icc = internal::contiguous_container;
-    return icc::emplace_at(m_alloc, icc::make_view(m_data, m_size++), INDEX, std::forward<Args>(args)...);
+    T* emplacedElement = icc::emplace_at(m_alloc, *this, INDEX, std::forward<Args>(args)...);
+    ++m_size;
+    return emplacedElement;
 }
 
 template <typename T, typename Allocator, typename GrowthPolicy>
@@ -554,7 +567,7 @@ inline void array_list<T, Allocator, GrowthPolicy>::resize_impl(std::size_t coun
     }
 
     namespace icc = internal::contiguous_container;
-    icc::resize(m_alloc, icc::make_view(m_data, m_size), count, std::forward<Args>(args)...);
+    icc::resize(m_alloc, *this, count, std::forward<Args>(args)...);
     m_size = count;
 }
 
@@ -639,6 +652,8 @@ inline void array_list<T, Allocator, GrowthPolicy>::clear() {
         pop_back();
     }
 }
+/// endregion - array_list Inline Implementation ///
+
 } // namespace stdx
 
 #endif
