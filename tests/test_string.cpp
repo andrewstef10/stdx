@@ -3,38 +3,44 @@
 #include <stdx/string.h>
 
 // memchar tests
-TEST(MemchrTest, FindCharacter) {
+TEST(MemchrTest, FindCharacter)
+{
     const char* str = "Hello, World!";
     const void* result = stdx::memchr(str, 'W', 13);
     EXPECT_NE(result, nullptr);
     EXPECT_EQ(*(static_cast<const char*>(result)), 'W');
 }
 
-TEST(MemchrTest, FindsExistingByte) {
+TEST(MemchrTest, FindsExistingByte)
+{
     const char buffer[] = "hello world";
     const void* result = stdx::memchr(buffer, 'w', sizeof(buffer));
     EXPECT_EQ(static_cast<const void*>(buffer + 6), result);
 }
 
-TEST(MemchrTest, FindsLastByte) {
+TEST(MemchrTest, FindsLastByte)
+{
     const char buffer[] = "hello";
     const void* result = stdx::memchr(buffer, 'o', sizeof(buffer));
     EXPECT_EQ(static_cast<const void*>(buffer + 4), result);
 }
 
-TEST(MemchrTest, FindsFirstOccurrenceOnly) {
+TEST(MemchrTest, FindsFirstOccurrenceOnly)
+{
     const char buffer[] = "banana";
     const void* result = stdx::memchr(buffer, 'a', sizeof(buffer));
     EXPECT_EQ(static_cast<const void*>(buffer + 1), result); // first 'a'
 }
 
-TEST(MemchrTest, ReturnsNullWhenNotFound) {
+TEST(MemchrTest, ReturnsNullWhenNotFound)
+{
     const char buffer[] = "abcdef";
     const void* result = stdx::memchr(buffer, 'z', sizeof(buffer));
     EXPECT_EQ(nullptr, result);
 }
 
-TEST(MemchrTest, RespectsLengthLimit) {
+TEST(MemchrTest, RespectsLengthLimit)
+{
     const char buffer[] = "hello world";
 
     // Search only first 5 bytes: "hello"
@@ -42,86 +48,99 @@ TEST(MemchrTest, RespectsLengthLimit) {
     EXPECT_EQ(nullptr, result); // 'w' is outside search range
 }
 
-TEST(MemchrTest, WorksWithBinaryData) {
+TEST(MemchrTest, WorksWithBinaryData)
+{
     unsigned char buffer[] = {0x00, 0x10, 0xFF, 0x20, 0xFF};
     const void* result = stdx::memchr(buffer, 0xFF, sizeof(buffer));
     EXPECT_EQ(static_cast<const void*>(buffer + 2), result);
 }
 
-TEST(MemchrTest, FindsNullByte) {
+TEST(MemchrTest, FindsNullByte)
+{
     const char buffer[] = {'a', 'b', '\0', 'c', 'd'};
     const void* result = stdx::memchr(buffer, '\0', sizeof(buffer));
     EXPECT_EQ(static_cast<const void*>(buffer + 2), result);
 }
 
-TEST(MemchrTest, ZeroLengthReturnsNull) {
+TEST(MemchrTest, ZeroLengthReturnsNull)
+{
     const char buffer[] = "test";
     const void* result = stdx::memchr(buffer, 't', 0);
     EXPECT_EQ(nullptr, result);
 }
 
-TEST(MemchrTest, NullPointerWithZeroLength) {
+TEST(MemchrTest, NullPointerWithZeroLength)
+{
     const void* result = stdx::memchr(nullptr, 'a', 0);
     EXPECT_EQ(nullptr, result);
 }
 
 // memcmp tests
-TEST(MemcmpTest, EqualBuffers) {
+TEST(MemcmpTest, EqualBuffers)
+{
     const char a[] = "hello";
     const char b[] = "hello";
     int result = stdx::memcmp(a, b, 5);
     EXPECT_EQ(0, result);
 }
 
-TEST(MemcmpTest, ReferenceEquals) {
+TEST(MemcmpTest, ReferenceEquals)
+{
     const char a[] = "hello";
     int result = stdx::memcmp(a, a, 5);
     EXPECT_EQ(0, result);
 }
 
-TEST(MemcmpTest, FirstLessThanSecond) {
+TEST(MemcmpTest, FirstLessThanSecond)
+{
     const char a[] = "abc";
     const char b[] = "abd";
     int result = stdx::memcmp(a, b, 3);
     EXPECT_LT(result, 0); // 'c' < 'd'
 }
 
-TEST(MemcmpTest, FirstGreaterThanSecond) {
+TEST(MemcmpTest, FirstGreaterThanSecond)
+{
     const char a[] = "abe";
     const char b[] = "abd";
     int result = stdx::memcmp(a, b, 3);
     EXPECT_GT(result, 0); // 'e' > 'd'
 }
 
-TEST(MemcmpTest, PartialCompareEqual) {
+TEST(MemcmpTest, PartialCompareEqual)
+{
     const char a[] = "hello123";
     const char b[] = "hello999";
     int result = stdx::memcmp(a, b, 5); // only compare "hello"
     EXPECT_EQ(0, result);
 }
 
-TEST(MemcmpTest, RespectsLengthLimit) {
+TEST(MemcmpTest, RespectsLengthLimit)
+{
     const char a[] = "abcXXX";
     const char b[] = "abcYYY";
     int result = stdx::memcmp(a, b, 3); // compare only "abc"
     EXPECT_EQ(0, result);
 }
 
-TEST(MemcmpTest, BinaryDataComparison) {
+TEST(MemcmpTest, BinaryDataComparison)
+{
     unsigned char a[] = {0x01, 0x02, 0xFF};
     unsigned char b[] = {0x01, 0x02, 0x10};
     int result = stdx::memcmp(a, b, 3);
     EXPECT_GT(result, 0); // 0xFF > 0x10
 }
 
-TEST(MemcmpTest, FindsDifferenceAtCorrectIndex) {
+TEST(MemcmpTest, FindsDifferenceAtCorrectIndex)
+{
     unsigned char a[] = {0x10, 0x20, 0x30, 0x40};
     unsigned char b[] = {0x10, 0x20, 0x31, 0x40};
     int result = stdx::memcmp(a, b, 4);
     EXPECT_LT(result, 0); // 0x30 < 0x31
 }
 
-TEST(MemcmpTest, ZeroLengthReturnsEqual) {
+TEST(MemcmpTest, ZeroLengthReturnsEqual)
+{
     const char a[] = "abc";
     const char b[] = "xyz";
     int result = stdx::memcmp(a, b, 0);
@@ -131,13 +150,15 @@ TEST(MemcmpTest, ZeroLengthReturnsEqual) {
     EXPECT_EQ(0, result);
 }
 
-TEST(MemcmpTest, NullptrWithZeroLength) {
+TEST(MemcmpTest, NullptrWithZeroLength)
+{
     int result = stdx::memcmp(nullptr, nullptr, 0);
     EXPECT_EQ(0, result);
 }
 
 // memcpy tests
-TEST(MemcpyTest, BasicCopy) {
+TEST(MemcpyTest, BasicCopy)
+{
     char src[] = "hello";
     char dst[6] = {};
     void* ret = stdx::memcpy(dst, src, 6);
@@ -145,7 +166,8 @@ TEST(MemcpyTest, BasicCopy) {
     EXPECT_STREQ("hello", dst);
 }
 
-TEST(MemcpyTest, PartialCopy) {
+TEST(MemcpyTest, PartialCopy)
+{
     char src[] = "hello";
     char dst[6] = {};
     stdx::memcpy(dst, src, 3);
@@ -154,7 +176,8 @@ TEST(MemcpyTest, PartialCopy) {
     EXPECT_EQ('l', dst[2]);
 }
 
-TEST(MemcpyTest, BinaryDataCopy) {
+TEST(MemcpyTest, BinaryDataCopy)
+{
     unsigned char src[] = {0x01, 0xFF, 0x10, 0x20};
     unsigned char dst[4] = {};
     stdx::memcpy(dst, src, 4);
@@ -164,14 +187,16 @@ TEST(MemcpyTest, BinaryDataCopy) {
     EXPECT_EQ(0x20, dst[3]);
 }
 
-TEST(MemcpyTest, ZeroLengthCopy) {
+TEST(MemcpyTest, ZeroLengthCopy)
+{
     char src[] = "hello";
     char dst[] = "world";
     stdx::memcpy(dst, src, 0);
     EXPECT_STREQ("world", dst); // unchanged
 }
 
-TEST(MemcpyTest, LargeCopy) {
+TEST(MemcpyTest, LargeCopy)
+{
     const std::size_t size = 1024;
     unsigned char src[size];
     unsigned char dst[size];
@@ -185,20 +210,23 @@ TEST(MemcpyTest, LargeCopy) {
         EXPECT_EQ(src[i], dst[i]);
 }
 
-TEST(MemcpyTest, ReturnsDestinationPointer) {
+TEST(MemcpyTest, ReturnsDestinationPointer)
+{
     char src[] = "abc";
     char dst[4];
     void* ret = stdx::memcpy(dst, src, 4);
     EXPECT_EQ(dst, ret);
 }
 
-TEST(MemcpyTest, NullptrWithZeroLength) {
+TEST(MemcpyTest, NullptrWithZeroLength)
+{
     void* ret = stdx::memcpy(nullptr, nullptr, 0);
     EXPECT_EQ(nullptr, ret);
 }
 
 // memset tests
-TEST(MemsetTest, BasicSet) {
+TEST(MemsetTest, BasicSet)
+{
     char buffer[10];
     void* ret = stdx::memset(buffer, 'A', 10);
 
@@ -207,7 +235,8 @@ TEST(MemsetTest, BasicSet) {
         EXPECT_EQ('A', buffer[i]);
 }
 
-TEST(MemsetTest, PartialSet) {
+TEST(MemsetTest, PartialSet)
+{
     char buffer[10] = {};
     stdx::memset(buffer, 'B', 5);
 
@@ -217,7 +246,8 @@ TEST(MemsetTest, PartialSet) {
         EXPECT_EQ(0, buffer[i]);
 }
 
-TEST(MemsetTest, BinaryValueSet) {
+TEST(MemsetTest, BinaryValueSet)
+{
     unsigned char buffer[4];
     stdx::memset(buffer, 0xFF, 4);
 
@@ -225,7 +255,8 @@ TEST(MemsetTest, BinaryValueSet) {
         EXPECT_EQ(0xFF, buffer[i]);
 }
 
-TEST(MemsetTest, ZeroValueSet) {
+TEST(MemsetTest, ZeroValueSet)
+{
     char buffer[8];
     stdx::memset(buffer, 0, 8);
 
@@ -233,7 +264,8 @@ TEST(MemsetTest, ZeroValueSet) {
         EXPECT_EQ(0, buffer[i]);
 }
 
-TEST(MemsetTest, ZeroLengthDoesNothing) {
+TEST(MemsetTest, ZeroLengthDoesNothing)
+{
     char buffer[5] = {'a', 'b', 'c', 'd', 'e'};
     stdx::memset(buffer, 'X', 0);
     EXPECT_EQ('a', buffer[0]);
@@ -243,7 +275,8 @@ TEST(MemsetTest, ZeroLengthDoesNothing) {
     EXPECT_EQ('e', buffer[4]);
 }
 
-TEST(MemsetTest, LargeBufferSet) {
+TEST(MemsetTest, LargeBufferSet)
+{
     const std::size_t size = 1024;
     unsigned char buffer[size];
     stdx::memset(buffer, 0xAB, size);
@@ -252,19 +285,22 @@ TEST(MemsetTest, LargeBufferSet) {
         EXPECT_EQ(0xAB, buffer[i]);
 }
 
-TEST(MemsetTest, ReturnsPointer) {
+TEST(MemsetTest, ReturnsPointer)
+{
     char buffer[4];
     void* ret = stdx::memset(buffer, 1, 4);
     EXPECT_EQ(buffer, ret);
 }
 
-TEST(MemsetTest, NullptrWithZeroLength) {
+TEST(MemsetTest, NullptrWithZeroLength)
+{
     void* ret = stdx::memset(nullptr, 0, 0);
     EXPECT_EQ(nullptr, ret);
 }
 
 // strcat tests
-TEST(StrCatTest, AppendToEmptyString) {
+TEST(StrCatTest, AppendToEmptyString)
+{
     char dest[32] = "";
     const char src[] = "hello";
     char* result = stdx::strcat(dest, src);
@@ -272,28 +308,32 @@ TEST(StrCatTest, AppendToEmptyString) {
     EXPECT_STREQ("hello", dest);
 }
 
-TEST(StrCatTest, AppendNonEmptyStrings) {
+TEST(StrCatTest, AppendNonEmptyStrings)
+{
     char dest[32] = "hello";
     const char src[] = " world";
     stdx::strcat(dest, src);
     EXPECT_STREQ("hello world", dest);
 }
 
-TEST(StrCatTest, AppendSingleCharacter) {
+TEST(StrCatTest, AppendSingleCharacter)
+{
     char dest[8] = "a";
     const char src[] = "b";
     stdx::strcat(dest, src);
     EXPECT_STREQ("ab", dest);
 }
 
-TEST(StrCatTest, AppendEmptySource) {
+TEST(StrCatTest, AppendEmptySource)
+{
     char dest[16] = "hello";
     const char src[] = "";
     stdx::strcat(dest, src);
     EXPECT_STREQ("hello", dest);
 }
 
-TEST(StrCatTest, AppendToLongerString) {
+TEST(StrCatTest, AppendToLongerString)
+{
     char dest[64] = "The quick ";
     const char src[] = "brown fox";
     stdx::strcat(dest, src);
@@ -301,7 +341,8 @@ TEST(StrCatTest, AppendToLongerString) {
 }
 
 // strchar tests
-TEST(StrChrTest, FindsCharacterAtBeginning) {
+TEST(StrChrTest, FindsCharacterAtBeginning)
+{
     const char str[] = "hello";
     const char* result = stdx::strchr(str, 'h');
     ASSERT_NE(nullptr, result);
@@ -309,7 +350,8 @@ TEST(StrChrTest, FindsCharacterAtBeginning) {
     EXPECT_EQ(str, result);
 }
 
-TEST(StrChrTest, FindsCharacterInMiddle) {
+TEST(StrChrTest, FindsCharacterInMiddle)
+{
     const char str[] = "hello";
     const char* result = stdx::strchr(str, 'l');
     ASSERT_NE(nullptr, result);
@@ -317,7 +359,8 @@ TEST(StrChrTest, FindsCharacterInMiddle) {
     EXPECT_EQ(&str[2], result);
 }
 
-TEST(StrChrTest, FindsCharacterAtEnd) {
+TEST(StrChrTest, FindsCharacterAtEnd)
+{
     const char str[] = "hello";
     const char* result = stdx::strchr(str, 'o');
     ASSERT_NE(nullptr, result);
@@ -325,20 +368,23 @@ TEST(StrChrTest, FindsCharacterAtEnd) {
     EXPECT_EQ(&str[4], result);
 }
 
-TEST(StrChrTest, ReturnsFirstOccurrence) {
+TEST(StrChrTest, ReturnsFirstOccurrence)
+{
     const char str[] = "banana";
     const char* result = stdx::strchr(str, 'a');
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(&str[1], result);
 }
 
-TEST(StrChrTest, CharacterNotFoundReturnsNullptr) {
+TEST(StrChrTest, CharacterNotFoundReturnsNullptr)
+{
     const char str[] = "hello";
     const char* result = stdx::strchr(str, 'z');
     EXPECT_EQ(nullptr, result);
 }
 
-TEST(StrChrTest, FindsNullTerminator) {
+TEST(StrChrTest, FindsNullTerminator)
+{
     const char str[] = "hello";
     const char* result = stdx::strchr(str, '\0');
     ASSERT_NE(nullptr, result);
@@ -346,13 +392,15 @@ TEST(StrChrTest, FindsNullTerminator) {
     EXPECT_EQ(str + 5, result);
 }
 
-TEST(StrChrTest, EmptyString) {
+TEST(StrChrTest, EmptyString)
+{
     const char str[] = "";
     const char* result = stdx::strchr(str, 'a');
     EXPECT_EQ(nullptr, result);
 }
 
-TEST(StrChrTest, EmptyStringFindNullTerminator) {
+TEST(StrChrTest, EmptyStringFindNullTerminator)
+{
     const char str[] = "";
     const char* result = stdx::strchr(str, '\0');
     ASSERT_NE(nullptr, result);
@@ -360,7 +408,8 @@ TEST(StrChrTest, EmptyStringFindNullTerminator) {
 }
 
 // strcmp tests
-TEST(StrcmpTest, comparison) {
+TEST(StrcmpTest, comparison)
+{
     EXPECT_EQ(0, stdx::strcmp("", ""));
     EXPECT_LT(stdx::strcmp("a", "b"), 0);
     EXPECT_GT(stdx::strcmp("b", "a"), 0);
@@ -369,70 +418,80 @@ TEST(StrcmpTest, comparison) {
     EXPECT_GT(stdx::strcmp("abcd", "abc"), 0);
 }
 
-TEST(StrcmpTest, BothEmpty) {
+TEST(StrcmpTest, BothEmpty)
+{
     const char* a = "";
     const char* b = "";
     int result = stdx::strcmp(a, b);
     EXPECT_EQ(0, result);
 }
 
-TEST(StrcmpTest, EqualStrings) {
+TEST(StrcmpTest, EqualStrings)
+{
     const char* a = "hello";
     const char* b = "hello";
     int result = stdx::strcmp(a, b);
     EXPECT_EQ(0, result);
 }
 
-TEST(StrcmpTest, FirstLessThanSecond) {
+TEST(StrcmpTest, FirstLessThanSecond)
+{
     const char* a = "abc";
     const char* b = "abd";
     int result = stdx::strcmp(a, b);
     EXPECT_LT(result, 0);
 }
 
-TEST(StrcmpTest, FirstGreaterThanSecond) {
+TEST(StrcmpTest, FirstGreaterThanSecond)
+{
     const char* a = "abe";
     const char* b = "abd";
     int result = stdx::strcmp(a, b);
     EXPECT_GT(result, 0);
 }
 
-TEST(StrcmpTest, PrefixShorterIsLess) {
+TEST(StrcmpTest, PrefixShorterIsLess)
+{
     const char* a = "abc";
     const char* b = "abcd";
     int result = stdx::strcmp(a, b);
     EXPECT_LT(result, 0);
 }
 
-TEST(StrcmpTest, PrefixLongerIsGreater) {
+TEST(StrcmpTest, PrefixLongerIsGreater)
+{
     const char* a = "abcd";
     const char* b = "abc";
     int result = stdx::strcmp(a, b);
     EXPECT_GT(result, 0);
 }
 
-TEST(StrcmpTest, CaseSensitivity) {
+TEST(StrcmpTest, CaseSensitivity)
+{
     const char* a = "abc";
     const char* b = "Abc";
     int result = stdx::strcmp(a, b);
     EXPECT_GT(result, 0); // 'a' > 'A' in ASCII
 }
 
-TEST(StrcmpTest, SpecialCharacters) {
+TEST(StrcmpTest, SpecialCharacters)
+{
     const char* a = "a\nb";
     const char* b = "a\tb";
     int result = stdx::strcmp(a, b);
     EXPECT_GT(result, 0); // '\n' (10) > '\t' (9)
 }
 
-TEST(StrcmpTest, EmbeddedNullTerminates) {
+TEST(StrcmpTest, EmbeddedNullTerminates)
+{
     const char a[] = {'a', 'b', '\0', 'c'};
     const char b[] = {'a', 'b', '\0', 'd'};
     int result = stdx::strcmp(a, b);
     EXPECT_EQ(0, result); // must stop at first '\0'
 }
 
-TEST(StrcmpTest, NullptrBoth) {
+TEST(StrcmpTest, NullptrBoth)
+{
     const char* a = nullptr;
     const char* b = nullptr;
     int result = stdx::strcmp(a, b);
@@ -440,7 +499,8 @@ TEST(StrcmpTest, NullptrBoth) {
 }
 
 // strcpy tests
-TEST(StrcpyTest, BasicCopy) {
+TEST(StrcpyTest, BasicCopy)
+{
     char src[] = "hello";
     char dst[6] = {};
     char* ret = stdx::strcpy(dst, src);
@@ -448,14 +508,16 @@ TEST(StrcpyTest, BasicCopy) {
     EXPECT_STREQ("hello", dst);
 }
 
-TEST(StrcpyTest, EmptyStringCopy) {
+TEST(StrcpyTest, EmptyStringCopy)
+{
     char src[] = "";
     char dst[1] = {'X'};
     stdx::strcpy(dst, src);
     EXPECT_EQ('\0', dst[0]);
 }
 
-TEST(StrcpyTest, SingleCharacterCopy) {
+TEST(StrcpyTest, SingleCharacterCopy)
+{
     char src[] = "A";
     char dst[2];
     stdx::strcpy(dst, src);
@@ -463,7 +525,8 @@ TEST(StrcpyTest, SingleCharacterCopy) {
     EXPECT_EQ('\0', dst[1]);
 }
 
-TEST(StrcpyTest, IncludesNullTerminator) {
+TEST(StrcpyTest, IncludesNullTerminator)
+{
     char src[] = "abc";
     char dst[4];
     stdx::strcpy(dst, src);
@@ -473,7 +536,8 @@ TEST(StrcpyTest, IncludesNullTerminator) {
     EXPECT_EQ('\0', dst[3]); // must copy terminator
 }
 
-TEST(StrcpyTest, ReferenceEqual) {
+TEST(StrcpyTest, ReferenceEqual)
+{
     char src[] = "abc";
     stdx::strcpy(src, src);
     EXPECT_EQ('a', src[0]);
@@ -482,7 +546,8 @@ TEST(StrcpyTest, ReferenceEqual) {
     EXPECT_EQ('\0', src[3]); // must copy terminator
 }
 
-TEST(StrcpyTest, BinarySafeCopy) {
+TEST(StrcpyTest, BinarySafeCopy)
+{
     const char src[] = {'a', 'b', '\0', 'c', 'd', '\0'};
     char dst[6];
     stdx::strcpy(dst, src);
@@ -491,7 +556,8 @@ TEST(StrcpyTest, BinarySafeCopy) {
     EXPECT_EQ('\0', dst[2]); // stop at first null
 }
 
-TEST(StrcpyTest, LargeStringCopy) {
+TEST(StrcpyTest, LargeStringCopy)
+{
     const std::size_t size = 1024;
     char src[size];
     char dst[size];
@@ -504,7 +570,8 @@ TEST(StrcpyTest, LargeStringCopy) {
     EXPECT_STREQ(src, dst);
 }
 
-TEST(StrcpyTest, ReturnsDestinationPointer) {
+TEST(StrcpyTest, ReturnsDestinationPointer)
+{
     char src[] = "abc";
     char dst[4];
     char* ret = stdx::strcpy(dst, src);
@@ -512,43 +579,50 @@ TEST(StrcpyTest, ReturnsDestinationPointer) {
 }
 
 // strlen tests
-TEST(StrlenTest, EmptyString) {
+TEST(StrlenTest, EmptyString)
+{
     const char* s = "";
     std::size_t result = stdx::strlen(s);
     EXPECT_EQ(0u, result);
 }
 
-TEST(StrlenTest, SingleCharacter) {
+TEST(StrlenTest, SingleCharacter)
+{
     const char* s = "a";
     std::size_t result = stdx::strlen(s);
     EXPECT_EQ(1u, result);
 }
 
-TEST(StrlenTest, NormalString) {
+TEST(StrlenTest, NormalString)
+{
     const char* s = "hello";
     std::size_t result = stdx::strlen(s);
     EXPECT_EQ(5u, result);
 }
 
-TEST(StrlenTest, StringWithSpaces) {
+TEST(StrlenTest, StringWithSpaces)
+{
     const char* s = "hello world";
     std::size_t result = stdx::strlen(s);
     EXPECT_EQ(11u, result);
 }
 
-TEST(StrlenTest, StringWithSpecialCharacters) {
+TEST(StrlenTest, StringWithSpecialCharacters)
+{
     const char* s = "a\tb\nc";
     std::size_t result = stdx::strlen(s);
     EXPECT_EQ(5u, result); // '\t' and '\n' count as characters
 }
 
-TEST(StrlenTest, StopsAtNullTerminator) {
+TEST(StrlenTest, StopsAtNullTerminator)
+{
     const char s[] = {'a', 'b', '\0', 'c', 'd'};
     std::size_t result = stdx::strlen(s);
     EXPECT_EQ(2u, result); // must stop at first '\0'
 }
 
-TEST(StrlenTest, LongString) {
+TEST(StrlenTest, LongString)
+{
     const char* s = "abcdefghijklmnopqrstuvwxyz";
     std::size_t result = stdx::strlen(s);
     EXPECT_EQ(26u, result);
@@ -558,7 +632,8 @@ TEST(StrlenTest, LongString) {
 // contains
 // -------------------------
 
-TEST(ContainsTest, FindsExistingChar) {
+TEST(ContainsTest, FindsExistingChar)
+{
     const char* str = "hello";
     EXPECT_TRUE(stdx::contains(str, 'e'));
     EXPECT_TRUE(stdx::contains(str, 'h'));
@@ -566,13 +641,15 @@ TEST(ContainsTest, FindsExistingChar) {
     EXPECT_TRUE(stdx::contains(str, 'o'));
 }
 
-TEST(ContainsTest, ReturnsFalseIfMissing) {
+TEST(ContainsTest, ReturnsFalseIfMissing)
+{
     const char* str = "hello";
     EXPECT_FALSE(stdx::contains(str, 'z'));
     EXPECT_FALSE(stdx::contains(str, '\0'));
 }
 
-TEST(ContainsTest, EmptyString) {
+TEST(ContainsTest, EmptyString)
+{
     const char* str = "";
     EXPECT_FALSE(stdx::contains(str, 'a'));
     EXPECT_FALSE(stdx::contains(str, '\0'));
@@ -582,7 +659,8 @@ TEST(ContainsTest, EmptyString) {
 // contains_any
 // -------------------------
 
-TEST(ContainsAnyTest, FindsAnyMatch) {
+TEST(ContainsAnyTest, FindsAnyMatch)
+{
     const char* str = "hello";
     EXPECT_TRUE(stdx::contains_any(str, "xyzle"));
     EXPECT_TRUE(stdx::contains_any(str, "h"));
@@ -591,14 +669,16 @@ TEST(ContainsAnyTest, FindsAnyMatch) {
     EXPECT_TRUE(stdx::contains_any(str, "lh"));
 }
 
-TEST(ContainsAnyTest, NoMatch) {
+TEST(ContainsAnyTest, NoMatch)
+{
     const char* str = "hello";
     EXPECT_FALSE(stdx::contains_any(str, "xyz"));
     EXPECT_FALSE(stdx::contains_any(str, ""));
     EXPECT_FALSE(stdx::contains_any(str, "\0"));
 }
 
-TEST(ContainsAnyTest, EmptyStr) {
+TEST(ContainsAnyTest, EmptyStr)
+{
     const char* str = "";
     EXPECT_FALSE(stdx::contains_any(str, "abc"));
     EXPECT_FALSE(stdx::contains_any(str, ""));
@@ -609,7 +689,8 @@ TEST(ContainsAnyTest, EmptyStr) {
 // trim_front
 // -------------------------
 
-TEST(TrimFrontConstTest, TrimsSpaces) {
+TEST(TrimFrontConstTest, TrimsSpaces)
+{
     const char* cstr = "   hello";
     char buffer[] = "   hello";
 
@@ -631,7 +712,8 @@ TEST(TrimFrontConstTest, TrimsSpaces) {
     EXPECT_STREQ(buffer, "   hello");
 }
 
-TEST(TrimFrontConstTest, NoTrimNeeded) {
+TEST(TrimFrontConstTest, NoTrimNeeded)
+{
     const char* cstr = "hello";
     char buffer[] = "hello";
     const char* cresult = stdx::trim_front(cstr, " ");
@@ -643,7 +725,8 @@ TEST(TrimFrontConstTest, NoTrimNeeded) {
     EXPECT_EQ(result, buffer);
 }
 
-TEST(TrimFrontConstTest, TrimEmptyString) {
+TEST(TrimFrontConstTest, TrimEmptyString)
+{
     const char* cstr = " hello";
     char buffer[] = " hello";
     const char* cresult = stdx::trim_front(cstr, "");
@@ -655,7 +738,8 @@ TEST(TrimFrontConstTest, TrimEmptyString) {
     EXPECT_EQ(result, buffer);
 }
 
-TEST(TrimFrontConstTest, TrimsMultipleChars) {
+TEST(TrimFrontConstTest, TrimsMultipleChars)
+{
     const char* cstr = "!!!hello";
     char buffer[] = "!!!hello";
     const char* cresult = stdx::trim_front(cstr, "!");
@@ -665,7 +749,8 @@ TEST(TrimFrontConstTest, TrimsMultipleChars) {
     EXPECT_STREQ(result, "hello");
 }
 
-TEST(TrimFrontConstTest, AllTrimmed) {
+TEST(TrimFrontConstTest, AllTrimmed)
+{
     const char* cstr = "aaaa";
     char buffer[] = "aaaa";
     const char* cresult = stdx::trim_front(cstr, "a");
@@ -677,7 +762,8 @@ TEST(TrimFrontConstTest, AllTrimmed) {
     EXPECT_STREQ(result, buffer + 4);
 }
 
-TEST(TrimFrontConstTest, EmptyString) {
+TEST(TrimFrontConstTest, EmptyString)
+{
     const char* cstr = "";
     char buffer[] = "";
 
@@ -692,7 +778,8 @@ TEST(TrimFrontConstTest, EmptyString) {
 // trim_back
 // -------------------------
 
-TEST(TrimBackTest, TrimsSpaces) {
+TEST(TrimBackTest, TrimsSpaces)
+{
     char buffer[] = "hello   ";
     std::size_t len = std::strlen(buffer);
 
@@ -702,7 +789,8 @@ TEST(TrimBackTest, TrimsSpaces) {
     EXPECT_EQ(result, buffer);
 }
 
-TEST(TrimBackTest, NoTrimNeeded) {
+TEST(TrimBackTest, NoTrimNeeded)
+{
     char buffer[] = "hello";
     std::size_t len = std::strlen(buffer);
 
@@ -716,7 +804,8 @@ TEST(TrimBackTest, NoTrimNeeded) {
     EXPECT_EQ(result2, buffer);
 }
 
-TEST(TrimBackTest, TrimsExclamation) {
+TEST(TrimBackTest, TrimsExclamation)
+{
     char buffer[] = "hello!!!";
     std::size_t len = std::strlen(buffer);
 
@@ -726,7 +815,8 @@ TEST(TrimBackTest, TrimsExclamation) {
     EXPECT_EQ(result, buffer);
 }
 
-TEST(TrimBackTest, AllTrimmed) {
+TEST(TrimBackTest, AllTrimmed)
+{
     char buffer[] = "aaaa";
     std::size_t len = std::strlen(buffer);
 
@@ -737,7 +827,8 @@ TEST(TrimBackTest, AllTrimmed) {
     EXPECT_EQ(result, buffer);
 }
 
-TEST(TrimBackTest, TrimAllButFirst) {
+TEST(TrimBackTest, TrimAllButFirst)
+{
     char buffer[] = "baaa";
     std::size_t len = std::strlen(buffer);
 
@@ -749,7 +840,8 @@ TEST(TrimBackTest, TrimAllButFirst) {
     EXPECT_EQ(result, buffer);
 }
 
-TEST(TrimBackTest, TrimsEmptyString) {
+TEST(TrimBackTest, TrimsEmptyString)
+{
     char buffer[] = "";
     std::size_t len = std::strlen(buffer);
 
@@ -763,7 +855,8 @@ TEST(TrimBackTest, TrimsEmptyString) {
 // trim (front + back)
 // -------------------------
 
-TEST(TrimTest, TrimsBothSides) {
+TEST(TrimTest, TrimsBothSides)
+{
     char buffer[] = "   hello   ";
     std::size_t len = std::strlen(buffer);
 
@@ -773,7 +866,8 @@ TEST(TrimTest, TrimsBothSides) {
     EXPECT_EQ(result, buffer + 3);
 }
 
-TEST(TrimTest, OnlyFront) {
+TEST(TrimTest, OnlyFront)
+{
     char buffer[] = "   hello";
     std::size_t len = std::strlen(buffer);
 
@@ -783,7 +877,8 @@ TEST(TrimTest, OnlyFront) {
     EXPECT_EQ(result, buffer + 3);
 }
 
-TEST(TrimTest, OnlyBack) {
+TEST(TrimTest, OnlyBack)
+{
     char buffer[] = "hello   ";
     std::size_t len = std::strlen(buffer);
 
@@ -793,7 +888,8 @@ TEST(TrimTest, OnlyBack) {
     EXPECT_EQ(result, buffer);
 }
 
-TEST(TrimTest, AllTrimmed) {
+TEST(TrimTest, AllTrimmed)
+{
     char buffer[] = "aaaa";
     std::size_t len = std::strlen(buffer);
 
@@ -803,7 +899,8 @@ TEST(TrimTest, AllTrimmed) {
 }
 
 // String class constructors
-TEST(StringConstructorTest, DefaultConstructorCreatesEmptyString) {
+TEST(StringConstructorTest, DefaultConstructorCreatesEmptyString)
+{
     stdx::string s;
     EXPECT_EQ(0u, s.size());
     EXPECT_STREQ("", s.c_str());
@@ -821,7 +918,8 @@ TEST(StringConstructorTest, DefaultConstructorCreatesEmptyString) {
     EXPECT_STREQ("", zeroCapacityStr.c_str());
 }
 
-TEST(StringConstructorTest, DefaultConstructorCapacity) {
+TEST(StringConstructorTest, DefaultConstructorCapacity)
+{
     stdx::string s;
     EXPECT_EQ(stdx::DEFAULT_STRING_CAPACITY_BYTES, s.capacity());
 
@@ -835,25 +933,29 @@ TEST(StringConstructorTest, DefaultConstructorCapacity) {
     EXPECT_EQ(0, zeroCapacityStr.capacity());
 }
 
-TEST(StringConstructorTest, CStringConstructorCopiesString) {
+TEST(StringConstructorTest, CStringConstructorCopiesString)
+{
     stdx::string s("hello");
     EXPECT_EQ(5u, s.size());
     EXPECT_STREQ("hello", s.c_str());
 }
 
-TEST(StringConstructorTest, CStringConstructorWithEmptyString) {
+TEST(StringConstructorTest, CStringConstructorWithEmptyString)
+{
     stdx::string s("");
     EXPECT_EQ(0u, s.size());
     EXPECT_STREQ("", s.c_str());
 }
 
-TEST(StringConstructorTest, CStringConstructorCreatesDeepCopy) {
+TEST(StringConstructorTest, CStringConstructorCreatesDeepCopy)
+{
     const char* cstr = "hello";
     stdx::string str(cstr);
     EXPECT_NE(cstr, str.c_str()); // Addresses must differ (deep copy)
 }
 
-TEST(StringConstructorTest, CStringConstructorCapacity) {
+TEST(StringConstructorTest, CStringConstructorCapacity)
+{
     stdx::string s("hello");
     EXPECT_EQ(stdx::DEFAULT_STRING_CAPACITY_BYTES, s.capacity());
 
@@ -867,7 +969,8 @@ TEST(StringConstructorTest, CStringConstructorCapacity) {
     EXPECT_EQ(0, zeroCapacityStr.capacity());
 }
 
-TEST(StringConstructorTest, CStringConstructorGrows) {
+TEST(StringConstructorTest, CStringConstructorGrows)
+{
     const char* cstr = "abcdefghijklmnopqrstuvwxyz"; // 26 chars > than default 24 characters;
 
     stdx::string s(cstr);
@@ -881,19 +984,22 @@ TEST(StringConstructorTest, CStringConstructorGrows) {
     EXPECT_STREQ(cstr, smallStr.c_str());
 }
 
-TEST(StringConstructorTest, CharConstructorCopiesChar) {
+TEST(StringConstructorTest, CharConstructorCopiesChar)
+{
     stdx::string s('a');
     EXPECT_EQ(1u, s.size());
     EXPECT_STREQ("a", s.c_str());
 }
 
-TEST(StringConstructorTest, CharConstructorCreatesDeepCopy) {
+TEST(StringConstructorTest, CharConstructorCreatesDeepCopy)
+{
     const char c = 'a';
     stdx::string str(c);
     EXPECT_NE(&c, str.c_str()); // Addresses must differ (deep copy)
 }
 
-TEST(StringConstructorTest, CharConstructorCapacity) {
+TEST(StringConstructorTest, CharConstructorCapacity)
+{
     stdx::string s('a');
     EXPECT_EQ(stdx::DEFAULT_STRING_CAPACITY_BYTES, s.capacity());
 
@@ -904,14 +1010,16 @@ TEST(StringConstructorTest, CharConstructorCapacity) {
     EXPECT_EQ(stdx::DEFAULT_STRING_CAPACITY_BYTES + 10, largeStr.capacity());
 }
 
-TEST(StringConstructorTest, CharConstructorGrows) {
+TEST(StringConstructorTest, CharConstructorGrows)
+{
     stdx::string<0> s('!');
     EXPECT_EQ(1u, s.size());
     EXPECT_EQ(1u, s.capacity()); // 0 capacity edge case. Should grow to 1.
     EXPECT_STREQ("!", s.c_str());
 }
 
-TEST(StringConstructorTest, CopyConstructorCopiesContent) {
+TEST(StringConstructorTest, CopyConstructorCopiesContent)
+{
     stdx::string original("hello");
     stdx::string copy(original);
     EXPECT_EQ(original.size(), copy.size());
@@ -925,13 +1033,15 @@ TEST(StringConstructorTest, CopyConstructorCopiesContent) {
     EXPECT_EQ(100u, largeCopy.capacity());
 }
 
-TEST(StringConstructorTest, CopyConstructorCreatesDeepCopy) {
+TEST(StringConstructorTest, CopyConstructorCreatesDeepCopy)
+{
     stdx::string original("hello");
     stdx::string copy(original);
     EXPECT_NE(original.c_str(), copy.c_str()); // Addresses must differ (deep copy)
 }
 
-TEST(StringConstructorTest, CopyConstructorDifferentCapacities) {
+TEST(StringConstructorTest, CopyConstructorDifferentCapacities)
+{
     stdx::string<10> original("hello");
     stdx::string<15> copy(original);
     EXPECT_EQ(original.size(), copy.size());
@@ -940,7 +1050,8 @@ TEST(StringConstructorTest, CopyConstructorDifferentCapacities) {
     EXPECT_EQ(15u, copy.capacity());
 }
 
-TEST(StringConstructorTest, CopyConstructorDifferentCapacitiesGrows) {
+TEST(StringConstructorTest, CopyConstructorDifferentCapacitiesGrows)
+{
     stdx::string<10> original("hello");
     stdx::string<4> copy(original);
     EXPECT_EQ(original.size(), copy.size());
@@ -950,7 +1061,8 @@ TEST(StringConstructorTest, CopyConstructorDifferentCapacitiesGrows) {
 }
 
 // String class assignment operators
-TEST(StringAssignmentTest, AssignFromAnotherString) {
+TEST(StringAssignmentTest, AssignFromAnotherString)
+{
     stdx::string a("hello");
     stdx::string b("world");
     a = b;
@@ -962,7 +1074,8 @@ TEST(StringAssignmentTest, AssignFromAnotherString) {
     EXPECT_NE(&a, &b);
 }
 
-TEST(StringAssignmentTest, AssignSelf) {
+TEST(StringAssignmentTest, AssignSelf)
+{
     stdx::string a("hello");
     const char* before = a.c_str();
     auto& self = a;
@@ -974,7 +1087,8 @@ TEST(StringAssignmentTest, AssignSelf) {
     EXPECT_EQ(before, a.c_str()); // no reallocation required
 }
 
-TEST(StringAssignmentTest, AssignFromEmptyString) {
+TEST(StringAssignmentTest, AssignFromEmptyString)
+{
     stdx::string a("hello");
     stdx::string empty;
     a = empty;
@@ -986,7 +1100,8 @@ TEST(StringAssignmentTest, AssignFromEmptyString) {
     EXPECT_NE(&a, &empty);
 }
 
-TEST(StringAssignmentTest, AssignFromAnotherStringGrowsCapacity) {
+TEST(StringAssignmentTest, AssignFromAnotherStringGrowsCapacity)
+{
     stdx::string a("hello");
     stdx::string b("abcdefghijklmnopqrstuvwxyz");
     a = b;
@@ -1008,7 +1123,8 @@ TEST(StringAssignmentTest, AssignFromAnotherStringGrowsCapacity) {
     EXPECT_NE(&c, &d);
 }
 
-TEST(StringAssignmentTest, AssignFromDifferentCapacity) {
+TEST(StringAssignmentTest, AssignFromDifferentCapacity)
+{
     stdx::string a("hello");
     stdx::string<50> b("abcdefghijklmnopqrstuvwxyz");
     a = b;
@@ -1020,7 +1136,8 @@ TEST(StringAssignmentTest, AssignFromDifferentCapacity) {
     EXPECT_NE(static_cast<void*>(&a), static_cast<void*>(&b));
 }
 
-TEST(StringAssignmentTest, AssignFromCString) {
+TEST(StringAssignmentTest, AssignFromCString)
+{
     stdx::string s("hello");
     const char* cstr = "world";
     s = cstr;
@@ -1031,7 +1148,8 @@ TEST(StringAssignmentTest, AssignFromCString) {
     EXPECT_NE(s.c_str(), cstr); // deep copy
 }
 
-TEST(StringAssignmentTest, AssignFromEmptyCString) {
+TEST(StringAssignmentTest, AssignFromEmptyCString)
+{
     stdx::string s("hello");
     s = "";
 
@@ -1040,7 +1158,8 @@ TEST(StringAssignmentTest, AssignFromEmptyCString) {
     EXPECT_STREQ("", s.c_str());
 }
 
-TEST(StringAssignmentTest, AssignSameCStringContent) {
+TEST(StringAssignmentTest, AssignSameCStringContent)
+{
     stdx::string s("hello");
     const char* before = s.c_str();
     s = before;
@@ -1051,7 +1170,8 @@ TEST(StringAssignmentTest, AssignSameCStringContent) {
     EXPECT_EQ(s.c_str(), before); // buffer should be reused
 }
 
-TEST(StringAssignmentTest, AssignSameCStringOverlappingMemory) {
+TEST(StringAssignmentTest, AssignSameCStringOverlappingMemory)
+{
     stdx::string s("hello");
     const char* before = s.c_str();
     s = before + 1;
@@ -1062,7 +1182,8 @@ TEST(StringAssignmentTest, AssignSameCStringOverlappingMemory) {
     EXPECT_EQ(s.c_str(), before); // buffer should be reused
 }
 
-TEST(StringAssignmentTest, AssignFromCStringGrowsCapacity) {
+TEST(StringAssignmentTest, AssignFromCStringGrowsCapacity)
+{
     stdx::string a("hello");
     const char* b = "abcdefghijklmnopqrstuvwxyz";
     a = b;
@@ -1082,7 +1203,8 @@ TEST(StringAssignmentTest, AssignFromCStringGrowsCapacity) {
     EXPECT_NE(c.c_str(), d); // deep copy
 }
 
-TEST(StringAssignmentTest, AssignFromCStringDoesNotShrinksCapacity) {
+TEST(StringAssignmentTest, AssignFromCStringDoesNotShrinksCapacity)
+{
     stdx::string a("abcdefghijklmnopqrstuvwxyz");
     EXPECT_EQ(stdx::DEFAULT_STRING_CAPACITY_BYTES * 2, a.capacity());
 
@@ -1095,7 +1217,8 @@ TEST(StringAssignmentTest, AssignFromCStringDoesNotShrinksCapacity) {
     EXPECT_NE(a.c_str(), b); // deep copy
 }
 
-TEST(StringAssignmentTest, AssignFromChar) {
+TEST(StringAssignmentTest, AssignFromChar)
+{
     stdx::string s("hello");
     s = '!';
 
@@ -1104,7 +1227,8 @@ TEST(StringAssignmentTest, AssignFromChar) {
     EXPECT_STREQ("!", s.c_str());
 }
 
-TEST(StringAssignmentTest, AssignFromCharGrowsCapacity) {
+TEST(StringAssignmentTest, AssignFromCharGrowsCapacity)
+{
     const char c = '!';
     stdx::string<0> s("");
     s = c;
@@ -1114,7 +1238,8 @@ TEST(StringAssignmentTest, AssignFromCharGrowsCapacity) {
     EXPECT_NE(&c, s.c_str());
 }
 
-TEST(StringAssignmentTest, AssignFromCharDoesNotShrinksCapacity) {
+TEST(StringAssignmentTest, AssignFromCharDoesNotShrinksCapacity)
+{
     const char c = '!';
     stdx::string<1> s("hello");
     EXPECT_EQ(8u, s.capacity());
@@ -1128,55 +1253,63 @@ TEST(StringAssignmentTest, AssignFromCharDoesNotShrinksCapacity) {
 }
 
 // String class equality operators
-TEST(StringEqualityTest, EqualStringsSameContent) {
+TEST(StringEqualityTest, EqualStringsSameContent)
+{
     stdx::string a("hello");
     stdx::string b("hello");
     EXPECT_TRUE(a == b);
     EXPECT_FALSE(a != b);
 }
 
-TEST(StringEqualityTest, NotEqualDifferentContent) {
+TEST(StringEqualityTest, NotEqualDifferentContent)
+{
     stdx::string a("hello");
     stdx::string b("world");
     EXPECT_FALSE(a == b);
     EXPECT_TRUE(a != b);
 }
 
-TEST(StringEqualityTest, NotEqualDifferentLength) {
+TEST(StringEqualityTest, NotEqualDifferentLength)
+{
     stdx::string a("hello");
     stdx::string b("hello!");
     EXPECT_FALSE(a == b);
     EXPECT_TRUE(a != b);
 }
 
-TEST(StringEqualityTest, EqualEmptyStrings) {
+TEST(StringEqualityTest, EqualEmptyStrings)
+{
     stdx::string a;
     stdx::string b;
     EXPECT_TRUE(a == b);
     EXPECT_FALSE(a != b);
 }
 
-TEST(StringEqualityTest, EmptyAndNonEmptyNotEqual) {
+TEST(StringEqualityTest, EmptyAndNonEmptyNotEqual)
+{
     stdx::string a;
     stdx::string b("hello");
     EXPECT_FALSE(a == b);
     EXPECT_TRUE(a != b);
 }
 
-TEST(StringEqualityTest, SelfEquality) {
+TEST(StringEqualityTest, SelfEquality)
+{
     stdx::string a("hello");
     EXPECT_TRUE(a == a);
     EXPECT_FALSE(a != a);
 }
 
-TEST(StringEqualityTest, CaseSensitive) {
+TEST(StringEqualityTest, CaseSensitive)
+{
     stdx::string a("hello");
     stdx::string b("Hello");
     EXPECT_FALSE(a == b);
     EXPECT_TRUE(a != b);
 }
 
-TEST(StringEqualityTest, DifferentCapacities) {
+TEST(StringEqualityTest, DifferentCapacities)
+{
     stdx::string a("hello");
     stdx::string<5> b("hello");
     EXPECT_TRUE(a == b);
@@ -1193,7 +1326,8 @@ TEST(StringEqualityTest, DifferentCapacities) {
     EXPECT_TRUE(b != a);
 }
 
-TEST(StringEqualityTest, EqualCStringsSameContent) {
+TEST(StringEqualityTest, EqualCStringsSameContent)
+{
     stdx::string a("hello");
     const char* b = "hello";
     EXPECT_TRUE(a == b);
@@ -1205,7 +1339,8 @@ TEST(StringEqualityTest, EqualCStringsSameContent) {
     EXPECT_FALSE("hello" != a);
 }
 
-TEST(StringEqualityTest, CStringNotEqualDifferentContent) {
+TEST(StringEqualityTest, CStringNotEqualDifferentContent)
+{
     stdx::string a("hello");
     const char* b = "world";
     EXPECT_FALSE(a == b);
@@ -1214,7 +1349,8 @@ TEST(StringEqualityTest, CStringNotEqualDifferentContent) {
     EXPECT_TRUE(b != a);
 }
 
-TEST(StringEqualityTest, CStringNotEqualDifferentLength) {
+TEST(StringEqualityTest, CStringNotEqualDifferentLength)
+{
     stdx::string a("hello");
     const char* b = "hello!";
     EXPECT_FALSE(a == b);
@@ -1223,7 +1359,8 @@ TEST(StringEqualityTest, CStringNotEqualDifferentLength) {
     EXPECT_TRUE(b != a);
 }
 
-TEST(StringEqualityTest, EqualEmptyCStrings) {
+TEST(StringEqualityTest, EqualEmptyCStrings)
+{
     stdx::string a;
     const char* b = "";
     EXPECT_TRUE(a == b);
@@ -1232,7 +1369,8 @@ TEST(StringEqualityTest, EqualEmptyCStrings) {
     EXPECT_FALSE(b != a);
 }
 
-TEST(StringEqualityTest, EmptyAndNonEmptyCStringNotEqual) {
+TEST(StringEqualityTest, EmptyAndNonEmptyCStringNotEqual)
+{
     stdx::string a;
     const char* b = "hello";
     EXPECT_FALSE(a == b);
@@ -1241,7 +1379,8 @@ TEST(StringEqualityTest, EmptyAndNonEmptyCStringNotEqual) {
     EXPECT_TRUE(b != a);
 }
 
-TEST(StringEqualityTest, EqualCharSameContent) {
+TEST(StringEqualityTest, EqualCharSameContent)
+{
     stdx::string a('!');
     char b = '!';
     EXPECT_TRUE(a == b);
@@ -1253,7 +1392,8 @@ TEST(StringEqualityTest, EqualCharSameContent) {
     EXPECT_FALSE('!' != a);
 }
 
-TEST(StringEqualityTest, CharNotEqualDifferentContent) {
+TEST(StringEqualityTest, CharNotEqualDifferentContent)
+{
     stdx::string a('a');
     char b = 'b';
     EXPECT_FALSE(a == b);
@@ -1262,7 +1402,8 @@ TEST(StringEqualityTest, CharNotEqualDifferentContent) {
     EXPECT_TRUE(b != a);
 }
 
-TEST(StringEqualityTest, EmptyStringAndCharNotEqual) {
+TEST(StringEqualityTest, EmptyStringAndCharNotEqual)
+{
     stdx::string a;
     char b = 'b';
     EXPECT_FALSE(a == b);
@@ -1272,7 +1413,8 @@ TEST(StringEqualityTest, EmptyStringAndCharNotEqual) {
 }
 
 // String class isEmpty
-TEST(StringEmptyTest, IsEmpty) {
+TEST(StringEmptyTest, IsEmpty)
+{
     stdx::string emptyStr;
     EXPECT_TRUE(emptyStr.empty());
 
@@ -1287,7 +1429,8 @@ TEST(StringEmptyTest, IsEmpty) {
 }
 
 // String class addition assignment operators
-TEST(StringAppendAssignTest, AppendAnotherString) {
+TEST(StringAppendAssignTest, AppendAnotherString)
+{
     stdx::string a("hello");
     stdx::string b(" world");
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>& result = (a += b);
@@ -1297,7 +1440,8 @@ TEST(StringAppendAssignTest, AppendAnotherString) {
     EXPECT_STREQ("hello world", a.c_str());
 }
 
-TEST(StringAppendAssignTest, AppendEmptyString) {
+TEST(StringAppendAssignTest, AppendEmptyString)
+{
     stdx::string a("hello");
     stdx::string empty;
     a += empty;
@@ -1306,7 +1450,8 @@ TEST(StringAppendAssignTest, AppendEmptyString) {
     EXPECT_STREQ("hello", a.c_str());
 }
 
-TEST(StringAppendAssignTest, AppendToEmptyString) {
+TEST(StringAppendAssignTest, AppendToEmptyString)
+{
     stdx::string a;
     stdx::string b("hello");
     a += b;
@@ -1315,7 +1460,8 @@ TEST(StringAppendAssignTest, AppendToEmptyString) {
     EXPECT_STREQ("hello", a.c_str());
 }
 
-TEST(StringAppendAssignTest, AppendSelf) {
+TEST(StringAppendAssignTest, AppendSelf)
+{
     stdx::string a("abc");
     a += a;
 
@@ -1323,7 +1469,8 @@ TEST(StringAppendAssignTest, AppendSelf) {
     EXPECT_STREQ("abcabc", a.c_str());
 }
 
-TEST(StringAppendAssignTest, AppendDifferentCapacityString) {
+TEST(StringAppendAssignTest, AppendDifferentCapacityString)
+{
     stdx::string a;
     stdx::string<10> b("hello");
     a += b;
@@ -1332,7 +1479,8 @@ TEST(StringAppendAssignTest, AppendDifferentCapacityString) {
     EXPECT_STREQ("hello", a.c_str());
 }
 
-TEST(StringAppendAssignTest, AppendStringGrowsCapacity) {
+TEST(StringAppendAssignTest, AppendStringGrowsCapacity)
+{
     stdx::string<0> a;
     stdx::string<10> b("hello");
     a += b;
@@ -1342,7 +1490,8 @@ TEST(StringAppendAssignTest, AppendStringGrowsCapacity) {
     EXPECT_STREQ("hello", a.c_str());
 }
 
-TEST(StringAppendAssignTest, AppendCString) {
+TEST(StringAppendAssignTest, AppendCString)
+{
     stdx::string s("hello");
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>& result = (s += " world");
 
@@ -1351,7 +1500,8 @@ TEST(StringAppendAssignTest, AppendCString) {
     EXPECT_STREQ("hello world", s.c_str());
 }
 
-TEST(StringAppendAssignTest, AppendEmptyCString) {
+TEST(StringAppendAssignTest, AppendEmptyCString)
+{
     stdx::string s("hello");
     s += "";
     EXPECT_EQ(5u, s.size());
@@ -1364,7 +1514,8 @@ TEST(StringAppendAssignTest, AppendEmptyCString) {
     EXPECT_STREQ("", s2.c_str());
 }
 
-TEST(StringAppendAssignTest, AppendCStringToEmptyString) {
+TEST(StringAppendAssignTest, AppendCStringToEmptyString)
+{
     stdx::string s;
     s += "hello";
 
@@ -1372,7 +1523,8 @@ TEST(StringAppendAssignTest, AppendCStringToEmptyString) {
     EXPECT_STREQ("hello", s.c_str());
 }
 
-TEST(StringAppendAssignTest, AppendCStringGrowsCapacity) {
+TEST(StringAppendAssignTest, AppendCStringGrowsCapacity)
+{
     stdx::string<0> a;
     const char* b = "hello";
     a += b;
@@ -1383,7 +1535,8 @@ TEST(StringAppendAssignTest, AppendCStringGrowsCapacity) {
 }
 
 // String class clear
-TEST(StringClearTest, ClearNonEmptyString) {
+TEST(StringClearTest, ClearNonEmptyString)
+{
     stdx::string s("hello");
     s.clear();
 
@@ -1391,7 +1544,8 @@ TEST(StringClearTest, ClearNonEmptyString) {
     EXPECT_STREQ("", s.c_str());
 }
 
-TEST(StringClearTest, ClearEmptyString) {
+TEST(StringClearTest, ClearEmptyString)
+{
     stdx::string s;
     s.clear();
 
@@ -1399,7 +1553,8 @@ TEST(StringClearTest, ClearEmptyString) {
     EXPECT_STREQ("", s.c_str());
 }
 
-TEST(StringClearTest, ClearThenAppendString) {
+TEST(StringClearTest, ClearThenAppendString)
+{
     stdx::string s("hello");
 
     s.clear();
@@ -1409,7 +1564,8 @@ TEST(StringClearTest, ClearThenAppendString) {
     EXPECT_STREQ("world", s.c_str());
 }
 
-TEST(StringClearTest, ClearThenAppendChar) {
+TEST(StringClearTest, ClearThenAppendChar)
+{
     stdx::string s("hello");
     s.clear();
     s += 'a';
@@ -1418,7 +1574,8 @@ TEST(StringClearTest, ClearThenAppendChar) {
     EXPECT_STREQ("a", s.c_str());
 }
 
-TEST(StringClearTest, ClearThenAssignCString) {
+TEST(StringClearTest, ClearThenAssignCString)
+{
     stdx::string s("hello");
     s.clear();
     s = "test";
@@ -1428,7 +1585,8 @@ TEST(StringClearTest, ClearThenAssignCString) {
 }
 
 // String class operator[]
-TEST(StringIndexTests, AccessElements) {
+TEST(StringIndexTests, AccessElements)
+{
     stdx::string s("hello");
     EXPECT_EQ('h', s[0]);
     EXPECT_EQ('e', s[1]);
@@ -1436,13 +1594,15 @@ TEST(StringIndexTests, AccessElements) {
     EXPECT_EQ('o', s[s.size() - 1]);
 }
 
-TEST(StringIndexTests, AccessNullTerminator) {
+TEST(StringIndexTests, AccessNullTerminator)
+{
     stdx::string s("hello");
     EXPECT_EQ('\0', s[5]);
     EXPECT_EQ('\0', s[s.size()]);
 }
 
-TEST(StringIndexTests, ModifyCharacter) {
+TEST(StringIndexTests, ModifyCharacter)
+{
     stdx::string s("hello");
     s[0] = 'H';
     EXPECT_EQ('H', s[0]);
@@ -1452,7 +1612,8 @@ TEST(StringIndexTests, ModifyCharacter) {
     EXPECT_EQ('Z', s[4]);
 }
 
-TEST(StringIndexTests, ConstObjectAccess) {
+TEST(StringIndexTests, ConstObjectAccess)
+{
     const stdx::string s("hello");
     EXPECT_EQ('e', s[1]);
     EXPECT_EQ('l', s[3]);
@@ -1462,7 +1623,8 @@ TEST(StringIndexTests, ConstObjectAccess) {
 
 // ===== begin() / end() =====
 
-TEST(StringIteratorTest, BeginPointsToFirstElement) {
+TEST(StringIteratorTest, BeginPointsToFirstElement)
+{
     stdx::string s = "hello";
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = s.cbegin();
@@ -1470,7 +1632,8 @@ TEST(StringIteratorTest, BeginPointsToFirstElement) {
     EXPECT_EQ(*cit, 'h');
 }
 
-TEST(StringIteratorTest, EndPointsPastLastElement) {
+TEST(StringIteratorTest, EndPointsPastLastElement)
+{
     stdx::string s = "hello";
     const stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator begin = s.begin();
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator end = s.end();
@@ -1485,17 +1648,20 @@ TEST(StringIteratorTest, EndPointsPastLastElement) {
     EXPECT_EQ(*--cend, 'o');
 }
 
-TEST(StringIteratorTest, IterateForwardFromBeginToEnd) {
+TEST(StringIteratorTest, IterateForwardFromBeginToEnd)
+{
     stdx::string s = "hello";
 
     const char expected[] = {'h', 'e', 'l', 'l', 'o'};
     int i = 0;
     int j = 0;
 
-    for (stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin(); it != s.end(); ++it) {
+    for (stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin(); it != s.end(); ++it)
+    {
         EXPECT_EQ(*it, expected[i++]);
     }
-    for (stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = s.cbegin(); cit != s.cend(); ++cit) {
+    for (stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = s.cbegin(); cit != s.cend(); ++cit)
+    {
         EXPECT_EQ(*cit, expected[j++]);
     }
 
@@ -1503,39 +1669,45 @@ TEST(StringIteratorTest, IterateForwardFromBeginToEnd) {
     EXPECT_EQ(5, j);
 }
 
-TEST(StringIteratorTest, IterateForwardRangeBasedForLoop) {
+TEST(StringIteratorTest, IterateForwardRangeBasedForLoop)
+{
     stdx::string s = "hello";
 
     const char expected[] = {'h', 'e', 'l', 'l', 'o'};
     int i = 0;
 
-    for (auto& x : s) {
+    for (auto& x : s)
+    {
         EXPECT_EQ(x, expected[i++]);
     }
 
     EXPECT_EQ(5, i);
 }
 
-TEST(StringIteratorTest, ConstIterationMatchesNonConst) {
+TEST(StringIteratorTest, ConstIterationMatchesNonConst)
+{
     stdx::string s = "hello";
 
     int i = 0;
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_iterator cit = s.cbegin();
-    for (; it != s.end() && cit != s.cend(); ++it, ++cit) {
+    for (; it != s.end() && cit != s.cend(); ++it, ++cit)
+    {
         EXPECT_EQ(*it, *cit);
         ++i;
     }
     EXPECT_EQ(5, i);
 }
 
-TEST(StringIteratorTest, BeginEqualsEndForEmptyString) {
+TEST(StringIteratorTest, BeginEqualsEndForEmptyString)
+{
     stdx::string s = "";
     EXPECT_EQ(s.begin(), s.end());
     EXPECT_EQ(s.cbegin(), s.cend());
 }
 
-TEST(StringIteratorTest, ConvertIteratorToConstIterator) {
+TEST(StringIteratorTest, ConvertIteratorToConstIterator)
+{
     stdx::string s = "hello";
 
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
@@ -1550,7 +1722,8 @@ TEST(StringIteratorTest, ConvertIteratorToConstIterator) {
     EXPECT_EQ('o', *(cend - 1));
 }
 
-TEST(StringIteratorTest, SingleElementForwardIteration) {
+TEST(StringIteratorTest, SingleElementForwardIteration)
+{
     stdx::string s = "h";
 
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::iterator it = s.begin();
@@ -1564,7 +1737,8 @@ TEST(StringIteratorTest, SingleElementForwardIteration) {
     EXPECT_EQ(cit, s.cend());
 }
 
-TEST(StringIteratorTest, SizeZeroString) {
+TEST(StringIteratorTest, SizeZeroString)
+{
     stdx::string s = "";
     const stdx::string consts = s;
 
@@ -1579,7 +1753,8 @@ TEST(StringIteratorTest, SizeZeroString) {
 
 // ===== rbegin() / rend() =====
 
-TEST(StringIteratorTest, RBeginPointsToLastElement) {
+TEST(StringIteratorTest, RBeginPointsToLastElement)
+{
     stdx::string s = "hello";
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = s.crbegin();
@@ -1587,7 +1762,8 @@ TEST(StringIteratorTest, RBeginPointsToLastElement) {
     EXPECT_EQ(*crit, 'o');
 }
 
-TEST(StringIteratorTest, REndPointsBeforeFirstElement) {
+TEST(StringIteratorTest, REndPointsBeforeFirstElement)
+{
     stdx::string s = "hello";
 
     const stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rbegin = s.rbegin();
@@ -1603,18 +1779,21 @@ TEST(StringIteratorTest, REndPointsBeforeFirstElement) {
     EXPECT_EQ(*--crend, 'h');
 }
 
-TEST(StringIteratorTest, IterateReverseFromRBeginToREnd) {
+TEST(StringIteratorTest, IterateReverseFromRBeginToREnd)
+{
     stdx::string s = "hello";
 
     const char expected[] = {'o', 'l', 'l', 'e', 'h'};
     int i = 0;
     int j = 0;
 
-    for (stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin(); rit != s.rend(); ++rit) {
+    for (stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin(); rit != s.rend(); ++rit)
+    {
         EXPECT_EQ(*rit, expected[i++]);
     }
     for (stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = s.crbegin();
-         crit != s.crend(); ++crit) {
+         crit != s.crend(); ++crit)
+    {
         EXPECT_EQ(*crit, expected[j++]);
     }
 
@@ -1622,26 +1801,30 @@ TEST(StringIteratorTest, IterateReverseFromRBeginToREnd) {
     EXPECT_EQ(5, j);
 }
 
-TEST(StringIteratorTest, ConstReverseIterationMatchesNonConst) {
+TEST(StringIteratorTest, ConstReverseIterationMatchesNonConst)
+{
     stdx::string s = "hello";
 
     int i = 0;
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::const_reverse_iterator crit = s.crbegin();
-    for (; rit != s.rend() && crit != s.crend(); ++rit, ++crit) {
+    for (; rit != s.rend() && crit != s.crend(); ++rit, ++crit)
+    {
         EXPECT_EQ(*rit, *crit);
         ++i;
     }
     EXPECT_EQ(5, i);
 }
 
-TEST(StringIteratorTest, RBeginEqualsREndForEmptyString) {
+TEST(StringIteratorTest, RBeginEqualsREndForEmptyString)
+{
     stdx::string s = "";
     EXPECT_EQ(s.rbegin(), s.rend());
     EXPECT_EQ(s.crbegin(), s.crend());
 }
 
-TEST(StringIteratorTest, ConvertReverseIteratorToConstReverseIterator) {
+TEST(StringIteratorTest, ConvertReverseIteratorToConstReverseIterator)
+{
     stdx::string s = "hello";
 
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
@@ -1658,7 +1841,8 @@ TEST(StringIteratorTest, ConvertReverseIteratorToConstReverseIterator) {
     EXPECT_EQ('h', *(crend - 1));
 }
 
-TEST(StringIteratorTest, ReverseIteratorBaseRelationship) {
+TEST(StringIteratorTest, ReverseIteratorBaseRelationship)
+{
     stdx::string s = "hello";
 
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
@@ -1668,7 +1852,8 @@ TEST(StringIteratorTest, ReverseIteratorBaseRelationship) {
     EXPECT_EQ(base, s.end());
 }
 
-TEST(StringIteratorTest, SingleElementReverseIteration) {
+TEST(StringIteratorTest, SingleElementReverseIteration)
+{
     stdx::string s = "h";
 
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES>::reverse_iterator rit = s.rbegin();
@@ -1685,31 +1870,36 @@ TEST(StringIteratorTest, SingleElementReverseIteration) {
 // Instantiation coverage: force calculate_new_capacity for string<N> sizes that have
 // never had content assigned beyond their stack capacity in any other test.
 
-TEST(StringGrowthTest, GrowsCapacity_Size14) {
+TEST(StringGrowthTest, GrowsCapacity_Size14)
+{
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES - 10> s; // string<14>
     s = "aaaaaaaaaaaaaaa";                                    // 15 chars > 14
     EXPECT_EQ(15u, s.size());
 }
 
-TEST(StringGrowthTest, GrowsCapacity_Size15) {
+TEST(StringGrowthTest, GrowsCapacity_Size15)
+{
     stdx::string<15> s;
     s = "aaaaaaaaaaaaaaaa"; // 16 chars > 15
     EXPECT_EQ(16u, s.size());
 }
 
-TEST(StringGrowthTest, GrowsCapacity_Size34) {
+TEST(StringGrowthTest, GrowsCapacity_Size34)
+{
     stdx::string<stdx::DEFAULT_STRING_CAPACITY_BYTES + 10> s; // string<34>
     s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";                // 35 chars > 34
     EXPECT_EQ(35u, s.size());
 }
 
-TEST(StringGrowthTest, GrowsCapacity_Size50) {
+TEST(StringGrowthTest, GrowsCapacity_Size50)
+{
     stdx::string<50> s;
     s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; // 51 chars > 50
     EXPECT_EQ(51u, s.size());
 }
 
-TEST(StringGrowthTest, GrowsCapacity_Size100) {
+TEST(StringGrowthTest, GrowsCapacity_Size100)
+{
     stdx::string<100> s;
     s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"

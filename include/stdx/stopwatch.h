@@ -5,7 +5,8 @@
 
 namespace stdx {
 
-class stopwatch {
+class stopwatch
+{
   public:
     /**
      * @brief Default constructor.
@@ -82,7 +83,10 @@ class stopwatch {
      *
      * @return True if the stopwatch is running, false otherwise.
      */
-    bool running() const { return m_running; }
+    bool running() const
+    {
+        return m_running;
+    }
 
   private:
     /**
@@ -90,7 +94,10 @@ class stopwatch {
      *
      * @return time_point with the current steady time using chrono
      */
-    static std::chrono::steady_clock::time_point now() { return std::chrono::steady_clock::now(); }
+    static std::chrono::steady_clock::time_point now()
+    {
+        return std::chrono::steady_clock::now();
+    }
 
     std::chrono::steady_clock::time_point m_startTime;
     std::chrono::steady_clock::time_point m_stopTime;
@@ -98,7 +105,8 @@ class stopwatch {
 };
 
 template <typename Duration>
-inline Duration stopwatch::get_elapsed_time() const {
+inline Duration stopwatch::get_elapsed_time() const
+{
     std::chrono::steady_clock::time_point latestTime = m_running ? now() : m_stopTime;
     return std::chrono::duration_cast<Duration>(latestTime - m_startTime);
 }

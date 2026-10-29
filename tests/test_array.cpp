@@ -3,16 +3,28 @@
 
 // ===== Helper Type =====
 
-struct test_object {
+struct test_object
+{
     static int constructed;
     static int destructed;
     int value;
 
-    test_object() : value(42) { ++constructed; }
+    test_object()
+        : value(42)
+    {
+        ++constructed;
+    }
 
-    test_object(int val) : value(val) { ++constructed; }
+    test_object(int val)
+        : value(val)
+    {
+        ++constructed;
+    }
 
-    ~test_object() { ++destructed; }
+    ~test_object()
+    {
+        ++destructed;
+    }
 };
 
 int test_object::constructed = 0;
@@ -20,14 +32,16 @@ int test_object::destructed = 0;
 
 // ===== Default Constructor =====
 
-TEST(ArrayTest, DefaultConstructor_ClassType_CallsConstructors) {
+TEST(ArrayTest, DefaultConstructor_ClassType_CallsConstructors)
+{
     test_object::constructed = 0;
     stdx::array<test_object, 5> arr;
     EXPECT_EQ(test_object::constructed, 5);
     EXPECT_EQ(5, arr.size());
 }
 
-TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash) {
+TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash)
+{
     // We cannot reliably test "garbage values"
     // but we can ensure construction succeeds
 #if defined(__GNUC__) && !defined(__clang__)
@@ -44,7 +58,8 @@ TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash) {
 
 // ===== Destructor =====
 
-TEST(ArrayTest, Destructor_DestructsAllElements) {
+TEST(ArrayTest, Destructor_DestructsAllElements)
+{
     test_object::constructed = 0;
     test_object::destructed = 0;
     stdx::array<test_object, 5>* arr = new stdx::array<test_object, 5>();
@@ -60,21 +75,25 @@ TEST(ArrayTest, Destructor_DestructsAllElements) {
 
 // ===== Aggregate initialization constructor =====
 
-TEST(ArrayTest, AggregateInitialization_Zeros) {
+TEST(ArrayTest, AggregateInitialization_Zeros)
+{
     stdx::array<int, 1000> arr{};
-    for (std::size_t i = 0; i < 1000; ++i) {
+    for (std::size_t i = 0; i < 1000; ++i)
+    {
         EXPECT_EQ(0, arr[i]);
     }
 
     test_object::constructed = 0;
     stdx::array<test_object, 1000> arr2{};
     EXPECT_EQ(1000, test_object::constructed);
-    for (std::size_t i = 0; i < 1000; ++i) {
+    for (std::size_t i = 0; i < 1000; ++i)
+    {
         EXPECT_EQ(42, arr2[i].value);
     }
 }
 
-TEST(ArrayTest, AggregateInitialization_Partial) {
+TEST(ArrayTest, AggregateInitialization_Partial)
+{
     stdx::array<int, 3> arr1{1};
     EXPECT_EQ(1, arr1[0]);
     EXPECT_EQ(0, arr1[1]);
@@ -99,7 +118,8 @@ TEST(ArrayTest, AggregateInitialization_Partial) {
     EXPECT_EQ(42, arr4[2].value);
 }
 
-TEST(ArrayTest, AggregateInitialization_Full) {
+TEST(ArrayTest, AggregateInitialization_Full)
+{
     stdx::array<int, 3> arr{1, 2, 3};
     EXPECT_EQ(1, arr[0]);
     EXPECT_EQ(2, arr[1]);
@@ -108,26 +128,30 @@ TEST(ArrayTest, AggregateInitialization_Full) {
 
 // ==== Other Implicitly defined functions ====
 
-TEST(ArrayTest, CopyConstructor) {
+TEST(ArrayTest, CopyConstructor)
+{
     stdx::array<int, 5> a{11};
     stdx::array<int, 5> b(a);
     EXPECT_EQ(b[0], 11);
 }
 
-TEST(ArrayTest, CopyAssignment) {
+TEST(ArrayTest, CopyAssignment)
+{
     stdx::array<int, 5> a{11};
     stdx::array<int, 5> b;
     b = a;
     EXPECT_EQ(b[0], 11);
 }
 
-TEST(ArrayTest, MoveConstructor) {
+TEST(ArrayTest, MoveConstructor)
+{
     stdx::array<int, 5> a{11};
     stdx::array<int, 5> b(std::move(a));
     EXPECT_EQ(b[0], 11);
 }
 
-TEST(ArrayTest, MoveAssignment) {
+TEST(ArrayTest, MoveAssignment)
+{
     stdx::array<int, 5> a{11};
     stdx::array<int, 5> b;
     b = std::move(a);
@@ -136,7 +160,8 @@ TEST(ArrayTest, MoveAssignment) {
 
 // ===== Size / Empty =====
 
-TEST(ArrayTest, Size_ReturnsCorrectValue) {
+TEST(ArrayTest, Size_ReturnsCorrectValue)
+{
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -150,7 +175,8 @@ TEST(ArrayTest, Size_ReturnsCorrectValue) {
 #endif
 }
 
-TEST(ArrayTest, Empty_ReturnsFalseForNonZeroSize) {
+TEST(ArrayTest, Empty_ReturnsFalseForNonZeroSize)
+{
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -162,7 +188,8 @@ TEST(ArrayTest, Empty_ReturnsFalseForNonZeroSize) {
 #endif
 }
 
-TEST(ArrayTest, Empty_ReturnsTrueForZeroSize) {
+TEST(ArrayTest, Empty_ReturnsTrueForZeroSize)
+{
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -178,7 +205,8 @@ TEST(ArrayTest, Empty_ReturnsTrueForZeroSize) {
 
 // ===== operator[] =====
 
-TEST(ArrayTest, OperatorIndex_ReadWrite) {
+TEST(ArrayTest, OperatorIndex_ReadWrite)
+{
     stdx::array<int, 3> arr;
     arr[0] = 10;
     arr[1] = 20;
@@ -189,7 +217,8 @@ TEST(ArrayTest, OperatorIndex_ReadWrite) {
     EXPECT_EQ(arr[2], 30);
 }
 
-TEST(ArrayTest, OperatorIndex_ConstAccess) {
+TEST(ArrayTest, OperatorIndex_ConstAccess)
+{
     stdx::array<int, 2> arr;
     arr[0] = 5;
     arr[1] = 6;
@@ -200,7 +229,8 @@ TEST(ArrayTest, OperatorIndex_ConstAccess) {
     EXPECT_EQ(carr[1], 6);
 }
 
-TEST(ArrayTest, OperatorIndex_ConstAccessOnZeroSize) {
+TEST(ArrayTest, OperatorIndex_ConstAccessOnZeroSize)
+{
     // array<T, 0> stores T elems[1] internally (N==0 ? 1 : N), so index 0 is valid
     const stdx::array<int, 0> arr{};
     (void)arr[0];
@@ -209,7 +239,8 @@ TEST(ArrayTest, OperatorIndex_ConstAccessOnZeroSize) {
 
 // ===== at() =====
 
-TEST(ArrayTest, At_ValidAccess) {
+TEST(ArrayTest, At_ValidAccess)
+{
     stdx::array<int, 3> arr;
     arr[0] = 1;
     arr[1] = 2;
@@ -220,7 +251,8 @@ TEST(ArrayTest, At_ValidAccess) {
     EXPECT_EQ(arr.at(2), 3);
 }
 
-TEST(ArrayTest, At_ConstAccess) {
+TEST(ArrayTest, At_ConstAccess)
+{
     stdx::array<int, 3> arr;
     arr[0] = 10;
     arr[1] = 20;
@@ -233,7 +265,8 @@ TEST(ArrayTest, At_ConstAccess) {
     EXPECT_EQ(carr.at(2), 30);
 }
 
-TEST(ArrayTest, At_OutOfRange_Throws) {
+TEST(ArrayTest, At_OutOfRange_Throws)
+{
     stdx::array<int, 3> arr;
     const stdx::array<int, 3>& carr = arr;
 
@@ -242,42 +275,63 @@ TEST(ArrayTest, At_OutOfRange_Throws) {
     EXPECT_THROW(carr.at(3), std::out_of_range);
     EXPECT_THROW(carr.at(100), std::out_of_range);
 
-    try {
+    try
+    {
         arr.at(3);
-    } catch (const std::out_of_range&) {
+    }
+    catch (const std::out_of_range&)
+    {
         SUCCEED();
-    } catch (...) {
+    }
+    catch (...)
+    {
         FAIL();
     }
 
-    try {
+    try
+    {
         arr.at(100);
-    } catch (const std::out_of_range&) {
+    }
+    catch (const std::out_of_range&)
+    {
         SUCCEED();
-    } catch (...) {
+    }
+    catch (...)
+    {
         FAIL();
     }
 
-    try {
+    try
+    {
         carr.at(3);
-    } catch (const std::out_of_range&) {
+    }
+    catch (const std::out_of_range&)
+    {
         SUCCEED();
-    } catch (...) {
+    }
+    catch (...)
+    {
         FAIL();
     }
 
-    try {
+    try
+    {
         carr.at(100);
-    } catch (const std::out_of_range&) {
+    }
+    catch (const std::out_of_range&)
+    {
         SUCCEED();
-    } catch (...) {
+    }
+    catch (...)
+    {
         FAIL();
     }
 }
 
 // ===== data() =====
 
-TEST(ArrayTest, Data_ReturnsPointerToFirstElement) {
+TEST(ArrayTest, Data_ReturnsPointerToFirstElement)
+{
     stdx::array<int, 3> arr;
 
     arr[0] = 10;
@@ -291,7 +345,8 @@ TEST(ArrayTest, Data_ReturnsPointerToFirstElement) {
     EXPECT_EQ(ptr[2], 30);
 }
 
-TEST(ArrayTest, Data_ConstVersion) {
+TEST(ArrayTest, Data_ConstVersion)
+{
     stdx::array<int, 2> arr;
     arr[0] = 7;
     arr[1] = 8;
@@ -306,7 +361,8 @@ TEST(ArrayTest, Data_ConstVersion) {
 
 // ===== back() =====
 
-TEST(ArrayTest, FrontBack) {
+TEST(ArrayTest, FrontBack)
+{
     stdx::array<int, 3> arr{1, 2, 3};
     const stdx::array<int, 3> constArr{1, 2, 3};
 
@@ -318,7 +374,8 @@ TEST(ArrayTest, FrontBack) {
 
 // ===== Copy Constructor =====
 
-TEST(ArrayTest, CopyConstructor_CopiesElements) {
+TEST(ArrayTest, CopyConstructor_CopiesElements)
+{
     stdx::array<int, 3> arr;
     arr[0] = 1;
     arr[1] = 2;
@@ -337,7 +394,8 @@ TEST(ArrayTest, CopyConstructor_CopiesElements) {
 
 // ===== Assignment Operator =====
 
-TEST(ArrayTest, AssignmentOperator_CopiesElements) {
+TEST(ArrayTest, AssignmentOperator_CopiesElements)
+{
     stdx::array<int, 3> arr1;
     arr1[0] = 10;
     arr1[1] = 20;
@@ -352,7 +410,8 @@ TEST(ArrayTest, AssignmentOperator_CopiesElements) {
     EXPECT_NE(arr1.data(), arr2.data());
 }
 
-TEST(ArrayTest, AssignmentOperator_SelfAssignment) {
+TEST(ArrayTest, AssignmentOperator_SelfAssignment)
+{
     stdx::array<int, 3> arr;
     arr[0] = 1;
     arr[1] = 2;
@@ -368,7 +427,8 @@ TEST(ArrayTest, AssignmentOperator_SelfAssignment) {
 
 // ===== begin() / end() =====
 
-TEST(ArrayIteratorTest, BeginPointsToFirstElement) {
+TEST(ArrayIteratorTest, BeginPointsToFirstElement)
+{
     stdx::array<int, 3> arr{1, 2, 3};
     stdx::array<int, 3>::iterator it = arr.begin();
     stdx::array<int, 3>::const_iterator cit = arr.cbegin();
@@ -376,7 +436,8 @@ TEST(ArrayIteratorTest, BeginPointsToFirstElement) {
     EXPECT_EQ(*cit, 1);
 }
 
-TEST(ArrayIteratorTest, EndPointsPastLastElement) {
+TEST(ArrayIteratorTest, EndPointsPastLastElement)
+{
     stdx::array<int, 3> arr{1, 2, 3};
     const stdx::array<int, 3>::iterator begin = arr.begin();
     stdx::array<int, 3>::iterator end = arr.end();
@@ -391,17 +452,20 @@ TEST(ArrayIteratorTest, EndPointsPastLastElement) {
     EXPECT_EQ(*--cend, 3);
 }
 
-TEST(ArrayIteratorTest, IterateForwardFromBeginToEnd) {
+TEST(ArrayIteratorTest, IterateForwardFromBeginToEnd)
+{
     stdx::array<int, 3> arr{1, 2, 3};
 
     int expected[] = {1, 2, 3};
     int i = 0;
     int j = 0;
 
-    for (stdx::array<int, 3>::iterator it = arr.begin(); it != arr.end(); ++it) {
+    for (stdx::array<int, 3>::iterator it = arr.begin(); it != arr.end(); ++it)
+    {
         EXPECT_EQ(*it, expected[i++]);
     }
-    for (stdx::array<int, 3>::const_iterator cit = arr.cbegin(); cit != arr.cend(); ++cit) {
+    for (stdx::array<int, 3>::const_iterator cit = arr.cbegin(); cit != arr.cend(); ++cit)
+    {
         EXPECT_EQ(*cit, expected[j++]);
     }
 
@@ -409,39 +473,45 @@ TEST(ArrayIteratorTest, IterateForwardFromBeginToEnd) {
     EXPECT_EQ(3, j);
 }
 
-TEST(ArrayIteratorTest, IterateForwardRangeBasedForLoop) {
+TEST(ArrayIteratorTest, IterateForwardRangeBasedForLoop)
+{
     stdx::array<int, 3> arr{1, 2, 3};
 
     int expected[] = {1, 2, 3};
     int i = 0;
 
-    for (auto& x : arr) {
+    for (auto& x : arr)
+    {
         EXPECT_EQ(x, expected[i++]);
     }
 
     EXPECT_EQ(3, i);
 }
 
-TEST(ArrayIteratorTest, ConstIterationMatchesNonConst) {
+TEST(ArrayIteratorTest, ConstIterationMatchesNonConst)
+{
     stdx::array<int, 3> arr{1, 2, 3};
 
     int i = 0;
     stdx::array<int, 3>::iterator it = arr.begin();
     stdx::array<int, 3>::const_iterator cit = arr.cbegin();
-    for (; it != arr.end() && cit != arr.cend(); ++it, ++cit) {
+    for (; it != arr.end() && cit != arr.cend(); ++it, ++cit)
+    {
         EXPECT_EQ(*it, *cit);
         ++i;
     }
     EXPECT_EQ(3, i);
 }
 
-TEST(ArrayIteratorTest, BeginEqualsEndForEmptyArray) {
+TEST(ArrayIteratorTest, BeginEqualsEndForEmptyArray)
+{
     stdx::array<int, 0> arr;
     EXPECT_EQ(arr.begin(), arr.end());
     EXPECT_EQ(arr.cbegin(), arr.cend());
 }
 
-TEST(ArrayIteratorTest, ConvertIteratorToConstIterator) {
+TEST(ArrayIteratorTest, ConvertIteratorToConstIterator)
+{
     stdx::array<int, 3> arr{1, 2, 3};
 
     stdx::array<int, 3>::iterator it = arr.begin();
@@ -455,7 +525,8 @@ TEST(ArrayIteratorTest, ConvertIteratorToConstIterator) {
     (void)cend;
 }
 
-TEST(ArrayIteratorTest, SingleElementForwardIteration) {
+TEST(ArrayIteratorTest, SingleElementForwardIteration)
+{
     stdx::array<int, 1> arr{99};
 
     stdx::array<int, 1>::iterator it = arr.begin();
@@ -469,7 +540,8 @@ TEST(ArrayIteratorTest, SingleElementForwardIteration) {
     EXPECT_EQ(cit, arr.cend());
 }
 
-TEST(ArrayIteratorTest, SizeZeroArray) {
+TEST(ArrayIteratorTest, SizeZeroArray)
+{
     stdx::array<int, 0> arr;
     const stdx::array<int, 0> constArr{};
 
@@ -484,7 +556,8 @@ TEST(ArrayIteratorTest, SizeZeroArray) {
 
 // ===== rbegin() / rend() =====
 
-TEST(ArrayIteratorTest, RBeginPointsToLastElement) {
+TEST(ArrayIteratorTest, RBeginPointsToLastElement)
+{
     stdx::array<int, 3> arr{1, 2, 3};
     stdx::array<int, 3>::reverse_iterator rit = arr.rbegin();
     stdx::array<int, 3>::const_reverse_iterator crit = arr.crbegin();
@@ -492,7 +565,8 @@ TEST(ArrayIteratorTest, RBeginPointsToLastElement) {
     EXPECT_EQ(*crit, 3);
 }
 
-TEST(ArrayIteratorTest, REndPointsBeforeFirstElement) {
+TEST(ArrayIteratorTest, REndPointsBeforeFirstElement)
+{
     stdx::array<int, 3> arr{1, 2, 3};
 
     const stdx::array<int, 3>::reverse_iterator rbegin = arr.rbegin();
@@ -508,17 +582,20 @@ TEST(ArrayIteratorTest, REndPointsBeforeFirstElement) {
     EXPECT_EQ(*--crend, 1);
 }
 
-TEST(ArrayIteratorTest, IterateReverseFromRBeginToREnd) {
+TEST(ArrayIteratorTest, IterateReverseFromRBeginToREnd)
+{
     stdx::array<int, 3> arr{1, 2, 3};
 
     int expected[] = {3, 2, 1};
     int i = 0;
     int j = 0;
 
-    for (stdx::array<int, 3>::reverse_iterator rit = arr.rbegin(); rit != arr.rend(); ++rit) {
+    for (stdx::array<int, 3>::reverse_iterator rit = arr.rbegin(); rit != arr.rend(); ++rit)
+    {
         EXPECT_EQ(*rit, expected[i++]);
     }
-    for (stdx::array<int, 3>::const_reverse_iterator crit = arr.crbegin(); crit != arr.crend(); ++crit) {
+    for (stdx::array<int, 3>::const_reverse_iterator crit = arr.crbegin(); crit != arr.crend(); ++crit)
+    {
         EXPECT_EQ(*crit, expected[j++]);
     }
 
@@ -526,26 +603,30 @@ TEST(ArrayIteratorTest, IterateReverseFromRBeginToREnd) {
     EXPECT_EQ(3, j);
 }
 
-TEST(ArrayIteratorTest, ConstReverseIterationMatchesNonConst) {
+TEST(ArrayIteratorTest, ConstReverseIterationMatchesNonConst)
+{
     stdx::array<int, 3> arr{1, 2, 3};
 
     int i = 0;
     stdx::array<int, 3>::reverse_iterator rit = arr.rbegin();
     stdx::array<int, 3>::const_reverse_iterator crit = arr.crbegin();
-    for (; rit != arr.rend() && crit != arr.crend(); ++rit, ++crit) {
+    for (; rit != arr.rend() && crit != arr.crend(); ++rit, ++crit)
+    {
         EXPECT_EQ(*rit, *crit);
         ++i;
     }
     EXPECT_EQ(3, i);
 }
 
-TEST(ArrayIteratorTest, RBeginEqualsREndForEmptyArray) {
+TEST(ArrayIteratorTest, RBeginEqualsREndForEmptyArray)
+{
     stdx::array<int, 0> arr;
     EXPECT_EQ(arr.rbegin(), arr.rend());
     EXPECT_EQ(arr.crbegin(), arr.crend());
 }
 
-TEST(ArrayIteratorTest, ConvertReverseIteratorToConstReverseIterator) {
+TEST(ArrayIteratorTest, ConvertReverseIteratorToConstReverseIterator)
+{
     stdx::array<int, 3> arr{1, 2, 3};
 
     stdx::array<int, 3>::reverse_iterator rit = arr.rbegin();
@@ -559,7 +640,8 @@ TEST(ArrayIteratorTest, ConvertReverseIteratorToConstReverseIterator) {
     (void)crend;
 }
 
-TEST(ArrayIteratorTest, ReverseIteratorBaseRelationship) {
+TEST(ArrayIteratorTest, ReverseIteratorBaseRelationship)
+{
     stdx::array<int, 3> arr{1, 2, 3};
 
     stdx::array<int, 3>::reverse_iterator rit = arr.rbegin();
@@ -569,7 +651,8 @@ TEST(ArrayIteratorTest, ReverseIteratorBaseRelationship) {
     EXPECT_EQ(base, arr.end());
 }
 
-TEST(ArrayIteratorTest, SingleElementReverseIteration) {
+TEST(ArrayIteratorTest, SingleElementReverseIteration)
+{
     stdx::array<int, 1> arr{99};
 
     stdx::array<int, 1>::reverse_iterator rit = arr.rbegin();
@@ -584,52 +667,62 @@ TEST(ArrayIteratorTest, SingleElementReverseIteration) {
 }
 
 // ==== fill() ====
-TEST(ArrayFillTest, FillsEmptyArray) {
+TEST(ArrayFillTest, FillsEmptyArray)
+{
     stdx::array<int, 5> arr;
     arr.fill(42);
 
-    for (std::size_t i = 0; i < 5; ++i) {
+    for (std::size_t i = 0; i < 5; ++i)
+    {
         EXPECT_EQ(arr[i], 42);
     }
 }
 
-TEST(ArrayFillTest, FillsEmptyArrayClassType) {
+TEST(ArrayFillTest, FillsEmptyArrayClassType)
+{
     stdx::array<test_object, 5> arr;
     const test_object testObj(10);
     arr.fill(testObj);
 
-    for (std::size_t i = 0; i < 5; ++i) {
+    for (std::size_t i = 0; i < 5; ++i)
+    {
         EXPECT_EQ(arr[i].value, 10);
     }
 }
 
-TEST(ArrayFillTest, FillsAllElementsOverrides) {
+TEST(ArrayFillTest, FillsAllElementsOverrides)
+{
     stdx::array<int, 5> arr{1, 2, 3, 4, 5};
-    for (std::size_t i = 0; i < 5; ++i) {
+    for (std::size_t i = 0; i < 5; ++i)
+    {
         EXPECT_EQ(arr[i], i + 1);
     }
 
     arr.fill(42);
 
-    for (std::size_t i = 0; i < 5; ++i) {
+    for (std::size_t i = 0; i < 5; ++i)
+    {
         EXPECT_EQ(arr[i], 42);
     }
 }
 
 // ==== swap() ====
 
-TEST(ArraySwapTest, Swaps) {
+TEST(ArraySwapTest, Swaps)
+{
     stdx::array<int, 3> a = {0, 1, 2};
     stdx::array<int, 3> b = {3, 4, 5};
     a.swap(b);
 
-    for (std::size_t i = 0; i < 3; ++i) {
+    for (std::size_t i = 0; i < 3; ++i)
+    {
         EXPECT_EQ(a[i], 3 + i);
         EXPECT_EQ(b[i], i);
     }
 }
 
-TEST(ArraySwapTest, SwapDoesNotAlias) {
+TEST(ArraySwapTest, SwapDoesNotAlias)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{4, 5, 6};
 
@@ -649,7 +742,8 @@ TEST(ArraySwapTest, SwapDoesNotAlias) {
 // Basic Functionality
 // ==============================
 
-TEST(ArrayConcatTest, BasicConcatenation) {
+TEST(ArrayConcatTest, BasicConcatenation)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 2> b{4, 5};
 
@@ -668,7 +762,8 @@ TEST(ArrayConcatTest, BasicConcatenation) {
 // Different Sizes
 // ==============================
 
-TEST(ArrayConcatTest, DifferentSizes) {
+TEST(ArrayConcatTest, DifferentSizes)
+{
     stdx::array<int, 1> a{42};
     stdx::array<int, 4> b{1, 2, 3, 4};
 
@@ -685,7 +780,8 @@ TEST(ArrayConcatTest, DifferentSizes) {
 // Empty Arrays
 // ==============================
 
-TEST(ArrayConcatTest, LeftEmpty) {
+TEST(ArrayConcatTest, LeftEmpty)
+{
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -702,7 +798,8 @@ TEST(ArrayConcatTest, LeftEmpty) {
     EXPECT_EQ(3, result[2]);
 }
 
-TEST(ArrayConcatTest, RightEmpty) {
+TEST(ArrayConcatTest, RightEmpty)
+{
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -731,7 +828,8 @@ TEST(ArrayConcatTest, RightEmpty) {
 // Order Preservation
 // ==============================
 
-TEST(ArrayConcatTest, OrderPreserved) {
+TEST(ArrayConcatTest, OrderPreserved)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{4, 5, 6};
 
@@ -748,7 +846,8 @@ TEST(ArrayConcatTest, OrderPreserved) {
 // Chaining
 // ==============================
 
-TEST(ArrayConcatTest, Chaining) {
+TEST(ArrayConcatTest, Chaining)
+{
     stdx::array<int, 1> a{1};
     stdx::array<int, 1> b{2};
     stdx::array<int, 1> c{3};
@@ -764,7 +863,8 @@ TEST(ArrayConcatTest, Chaining) {
 // Non-Trivial Type
 // ==============================
 
-TEST(ArrayConcatTest, NonTrivialType) {
+TEST(ArrayConcatTest, NonTrivialType)
+{
     stdx::array<test_object, 2> a{test_object(1), test_object(2)};
     stdx::array<test_object, 2> b{test_object(3), test_object(4)};
 
@@ -780,7 +880,8 @@ TEST(ArrayConcatTest, NonTrivialType) {
 
 // === operator== / operator!= ====
 
-TEST(ArrayRelationalTest, EqualitySameValues) {
+TEST(ArrayRelationalTest, EqualitySameValues)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{1, 2, 3};
 
@@ -788,7 +889,8 @@ TEST(ArrayRelationalTest, EqualitySameValues) {
     EXPECT_FALSE(a != b);
 }
 
-TEST(ArrayRelationalTest, InequalityDifferentValues) {
+TEST(ArrayRelationalTest, InequalityDifferentValues)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{1, 2, 4};
 
@@ -800,7 +902,8 @@ TEST(ArrayRelationalTest, InequalityDifferentValues) {
 // Less Than (Lexicographical)
 // ==============================
 
-TEST(ArrayRelationalTest, LessThanBasic) {
+TEST(ArrayRelationalTest, LessThanBasic)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{1, 2, 4};
 
@@ -808,14 +911,16 @@ TEST(ArrayRelationalTest, LessThanBasic) {
     EXPECT_FALSE(b < a);
 }
 
-TEST(ArrayRelationalTest, LessThanFirstElement) {
+TEST(ArrayRelationalTest, LessThanFirstElement)
+{
     stdx::array<int, 3> a{0, 9, 9};
     stdx::array<int, 3> b{1, 0, 0};
 
     EXPECT_TRUE(a < b);
 }
 
-TEST(ArrayRelationalTest, LessThanMiddleElement) {
+TEST(ArrayRelationalTest, LessThanMiddleElement)
+{
     stdx::array<int, 3> a{1, 2, 9};
     stdx::array<int, 3> b{1, 3, 0};
 
@@ -826,7 +931,8 @@ TEST(ArrayRelationalTest, LessThanMiddleElement) {
 // Greater Than
 // ==============================
 
-TEST(ArrayRelationalTest, GreaterThanBasic) {
+TEST(ArrayRelationalTest, GreaterThanBasic)
+{
     stdx::array<int, 3> a{1, 2, 4};
     stdx::array<int, 3> b{1, 2, 3};
 
@@ -838,7 +944,8 @@ TEST(ArrayRelationalTest, GreaterThanBasic) {
 // Less Than or Equal
 // ==============================
 
-TEST(ArrayRelationalTest, LessEqualEqualCase) {
+TEST(ArrayRelationalTest, LessEqualEqualCase)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{1, 2, 3};
 
@@ -846,7 +953,8 @@ TEST(ArrayRelationalTest, LessEqualEqualCase) {
     EXPECT_TRUE(b <= a);
 }
 
-TEST(ArrayRelationalTest, LessEqualLessCase) {
+TEST(ArrayRelationalTest, LessEqualLessCase)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{1, 2, 4};
 
@@ -858,7 +966,8 @@ TEST(ArrayRelationalTest, LessEqualLessCase) {
 // Greater Than or Equal
 // ==============================
 
-TEST(ArrayRelationalTest, GreaterEqualEqualCase) {
+TEST(ArrayRelationalTest, GreaterEqualEqualCase)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{1, 2, 3};
 
@@ -866,7 +975,8 @@ TEST(ArrayRelationalTest, GreaterEqualEqualCase) {
     EXPECT_TRUE(b >= a);
 }
 
-TEST(ArrayRelationalTest, GreaterEqualGreaterCase) {
+TEST(ArrayRelationalTest, GreaterEqualGreaterCase)
+{
     stdx::array<int, 3> a{1, 2, 4};
     stdx::array<int, 3> b{1, 2, 3};
 
@@ -878,7 +988,8 @@ TEST(ArrayRelationalTest, GreaterEqualGreaterCase) {
 // All Operators Consistency
 // ==============================
 
-TEST(ArrayRelationalTest, OperatorConsistency) {
+TEST(ArrayRelationalTest, OperatorConsistency)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{1, 2, 4};
 
@@ -894,7 +1005,8 @@ TEST(ArrayRelationalTest, OperatorConsistency) {
 // Self Comparison
 // ==============================
 
-TEST(ArrayRelationalTest, SelfComparison) {
+TEST(ArrayRelationalTest, SelfComparison)
+{
     stdx::array<int, 3> a{1, 2, 3};
 
     EXPECT_TRUE(a == a);
@@ -909,7 +1021,8 @@ TEST(ArrayRelationalTest, SelfComparison) {
 // Edge Case: All Equal Except Last
 // ==============================
 
-TEST(ArrayRelationalTest, LastElementDifference) {
+TEST(ArrayRelationalTest, LastElementDifference)
+{
     stdx::array<int, 3> a{1, 2, 3};
     stdx::array<int, 3> b{1, 2, 4};
 
@@ -920,7 +1033,8 @@ TEST(ArrayRelationalTest, LastElementDifference) {
 // Edge Case: Completely Different
 // ==============================
 
-TEST(ArrayRelationalTest, CompletelyDifferent) {
+TEST(ArrayRelationalTest, CompletelyDifferent)
+{
     stdx::array<int, 3> a{9, 9, 9};
     stdx::array<int, 3> b{1, 1, 1};
 

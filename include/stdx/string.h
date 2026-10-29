@@ -239,7 +239,8 @@ char* trim(char* str, std::size_t len, const char* trimChars = " ");
  * @param N The initial capacity of this string allocated on the stack.
  */
 template <std::size_t N = DEFAULT_STRING_CAPACITY_BYTES>
-class string {
+class string
+{
   public:
     using iterator = char*;
     using const_iterator = const char*;
@@ -291,12 +292,14 @@ class string {
      * @param other string object to copy if different from *this.
      * @return Reference to this string object
      */
-    string& operator=(const string& other) {
+    string& operator=(const string& other)
+    {
         assign(other.c_str(), other.size());
         return *this;
     }
     template <std::size_t M>
-    string& operator=(const string<M>& other) {
+    string& operator=(const string<M>& other)
+    {
         assign(other.c_str(), other.size());
         return *this;
     }
@@ -308,7 +311,8 @@ class string {
      * string.
      * @return Reference to this string object
      */
-    string& operator=(const char* cstr) {
+    string& operator=(const char* cstr)
+    {
         assign(cstr, strlen(cstr));
         return *this;
     }
@@ -336,7 +340,10 @@ class string {
      *
      * @return The number of bytes in the string.
      */
-    std::size_t size() const { return m_size; }
+    std::size_t size() const
+    {
+        return m_size;
+    }
 
     /**
      * @brief Return size of allocated storage
@@ -347,14 +354,20 @@ class string {
      *
      * @return The size of the storage capacity currently allocated for the string.
      */
-    std::size_t capacity() const { return m_capacity; }
+    std::size_t capacity() const
+    {
+        return m_capacity;
+    }
 
     /**
      * @brief Returns whether the string is empty (i.e. whether its length is 0).
      *
      * @return true if the string length is 0, false otherwise.
      */
-    bool empty() const { return m_size == 0; }
+    bool empty() const
+    {
+        return m_size == 0;
+    }
 
     //////////////////////// Element Access ////////////////////////
 
@@ -366,7 +379,10 @@ class string {
      *
      * @return A pointer to the c-string representation of the string object's value.
      */
-    const char* c_str() const { return get_data(); }
+    const char* c_str() const
+    {
+        return get_data();
+    }
 
     /**
      * @brief Returns a reference to the character at specified location pos if pos < size(), or if pos == size()
@@ -376,39 +392,81 @@ class string {
      * @param pos Position of the character to return
      * @return Reference to char at position pos
      */
-    char& operator[](std::size_t pos) { return get_data()[pos]; }
-    const char& operator[](std::size_t pos) const { return get_data()[pos]; }
+    char& operator[](std::size_t pos)
+    {
+        return get_data()[pos];
+    }
+    const char& operator[](std::size_t pos) const
+    {
+        return get_data()[pos];
+    }
 
     //////////////////////// Iterators ////////////////////////
 
     /// @brief Returns a contiguous iterator to the first element of *this.
     /// If *this is empty, the returned iterator will be equal to end().
     /// @return contiguous iterator to the first element.
-    iterator begin() { return iterator(get_data()); }
-    const_iterator begin() const { return const_iterator(get_data()); }
-    const_iterator cbegin() const { return const_iterator(get_data()); }
+    iterator begin()
+    {
+        return iterator(get_data());
+    }
+    const_iterator begin() const
+    {
+        return const_iterator(get_data());
+    }
+    const_iterator cbegin() const
+    {
+        return const_iterator(get_data());
+    }
 
     /// @brief Returns a contiguous iterator past the last element of *this.
     /// This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
     /// @return contiguous iterator past the last element.
-    iterator end() { return iterator(get_data() + m_size); }
-    const_iterator end() const { return const_iterator(get_data() + m_size); }
-    const_iterator cend() const { return const_iterator(get_data() + m_size); }
+    iterator end()
+    {
+        return iterator(get_data() + m_size);
+    }
+    const_iterator end() const
+    {
+        return const_iterator(get_data() + m_size);
+    }
+    const_iterator cend() const
+    {
+        return const_iterator(get_data() + m_size);
+    }
 
     /// @brief Returns a reverse contiguous iterator to the first element of the reversed *this. It corresponds to the
     /// last element of the non-reversed *this. If *this is empty, the returned iterator will be equal to end().
     /// @return Reverse contiguous iterator to the first element.
-    reverse_iterator rbegin() { return reverse_iterator(get_data() + m_size); }
-    const_reverse_iterator rbegin() const { return const_reverse_iterator(get_data() + m_size); }
-    const_reverse_iterator crbegin() const { return const_reverse_iterator(get_data() + m_size); }
+    reverse_iterator rbegin()
+    {
+        return reverse_iterator(get_data() + m_size);
+    }
+    const_reverse_iterator rbegin() const
+    {
+        return const_reverse_iterator(get_data() + m_size);
+    }
+    const_reverse_iterator crbegin() const
+    {
+        return const_reverse_iterator(get_data() + m_size);
+    }
 
     /// @brief Returns a reverse contiguous iterator past the last element of the reversed *this. It corresponds to the
     /// element preceding the first element of the non-reversed *this. This returned iterator only acts as a sentinel.
     /// It is not guaranteed to be dereferenceable.
     /// @return Reverse contiguous iterator to the element following the last element.
-    reverse_iterator rend() { return reverse_iterator(get_data()); }
-    const_reverse_iterator rend() const { return const_reverse_iterator(get_data()); }
-    const_reverse_iterator crend() const { return const_reverse_iterator(get_data()); }
+    reverse_iterator rend()
+    {
+        return reverse_iterator(get_data());
+    }
+    const_reverse_iterator rend() const
+    {
+        return const_reverse_iterator(get_data());
+    }
+    const_reverse_iterator crend() const
+    {
+        return const_reverse_iterator(get_data());
+    }
 
     //////////////////////// Modifiers ////////////////////////
 
@@ -420,12 +478,14 @@ class string {
      * @param other A string object, whose value is copied at the end.
      * @return Reference to this string object
      */
-    string& operator+=(const string<N>& other) {
+    string& operator+=(const string<N>& other)
+    {
         append(other.c_str(), other.size());
         return *this;
     }
     template <std::size_t M>
-    string& operator+=(const string<M>& other) {
+    string& operator+=(const string<M>& other)
+    {
         append(other.c_str(), other.size());
         return *this;
     }
@@ -438,7 +498,8 @@ class string {
      * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the string.
      * @return Reference to this string object
      */
-    string& operator+=(const char* cstr) {
+    string& operator+=(const char* cstr)
+    {
         append(cstr, strlen(cstr));
         return *this;
     }
@@ -475,8 +536,14 @@ class string {
      *
      * @returns Pointer to the string's character buffer
      */
-    char* get_data() { return m_capacity > N ? m_data.heap_ptr : m_data.stack_buffer; }
-    const char* get_data() const { return m_capacity > N ? m_data.heap_ptr : m_data.stack_buffer; }
+    char* get_data()
+    {
+        return m_capacity > N ? m_data.heap_ptr : m_data.stack_buffer;
+    }
+    const char* get_data() const
+    {
+        return m_capacity > N ? m_data.heap_ptr : m_data.stack_buffer;
+    }
 
     /**
      * @brief Delete any dynamically allocated memory for this class
@@ -539,7 +606,8 @@ bool operator==(const string<N>& lhs, const string<M>& rhs);
 template <std::size_t N>
 bool operator==(const string<N>& lhs, const char* rhs);
 template <std::size_t N>
-inline bool operator==(const char* lhs, const string<N>& rhs) {
+inline bool operator==(const char* lhs, const string<N>& rhs)
+{
     return rhs == lhs;
 }
 
@@ -553,7 +621,8 @@ inline bool operator==(const char* lhs, const string<N>& rhs) {
 template <std::size_t N>
 bool operator==(const string<N>& lhs, char rhs);
 template <std::size_t N>
-inline bool operator==(char lhs, const string<N>& rhs) {
+inline bool operator==(char lhs, const string<N>& rhs)
+{
     return rhs == lhs;
 }
 
@@ -565,11 +634,13 @@ inline bool operator==(char lhs, const string<N>& rhs) {
  * @return True if lhs and rhs are equal, false otherwise.
  */
 template <std::size_t N>
-inline bool operator!=(const string<N>& lhs, const string<N>& rhs) {
+inline bool operator!=(const string<N>& lhs, const string<N>& rhs)
+{
     return !(lhs == rhs);
 }
 template <std::size_t N, std::size_t M>
-inline bool operator!=(const string<N>& lhs, const string<M>& rhs) {
+inline bool operator!=(const string<N>& lhs, const string<M>& rhs)
+{
     return !(lhs == rhs);
 }
 
@@ -581,11 +652,13 @@ inline bool operator!=(const string<N>& lhs, const string<M>& rhs) {
  * @return True if lhs and rhs are equal, false otherwise.
  */
 template <std::size_t N>
-inline bool operator!=(const string<N>& lhs, const char* rhs) {
+inline bool operator!=(const string<N>& lhs, const char* rhs)
+{
     return !(lhs == rhs);
 }
 template <std::size_t N>
-inline bool operator!=(const char* lhs, const string<N>& rhs) {
+inline bool operator!=(const char* lhs, const string<N>& rhs)
+{
     return !(rhs == lhs);
 }
 
@@ -597,81 +670,115 @@ inline bool operator!=(const char* lhs, const string<N>& rhs) {
  * @return True if lhs and rhs are equal, false otherwise.
  */
 template <std::size_t N>
-inline bool operator!=(const string<N>& lhs, char rhs) {
+inline bool operator!=(const string<N>& lhs, char rhs)
+{
     return !(lhs == rhs);
 }
 template <std::size_t N>
-inline bool operator!=(char lhs, const string<N>& rhs) {
+inline bool operator!=(char lhs, const string<N>& rhs)
+{
     return !(rhs == lhs);
 }
 
 //////////////////////// Inline string Implementation ////////////////////////
 
 template <std::size_t N>
-inline string<N>::string() : m_size(0), m_capacity(N), m_data{{'\0'}} {}
+inline string<N>::string()
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
+}
 
 template <std::size_t N>
-inline string<N>::string(const string<N>& other) : m_size(0), m_capacity(N), m_data{{'\0'}} {
+inline string<N>::string(const string<N>& other)
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
     assign(other.c_str(), other.size());
 }
 
 template <std::size_t N>
 template <std::size_t M>
-inline string<N>::string(const string<M>& other) : m_size(0), m_capacity(N), m_data{{'\0'}} {
+inline string<N>::string(const string<M>& other)
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
     assign(other.c_str(), other.size());
 }
 
 template <std::size_t N>
-inline string<N>::string(const char* cstr) : m_size(0), m_capacity(N), m_data{{'\0'}} {
+inline string<N>::string(const char* cstr)
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
     assign(cstr, strlen(cstr));
 }
 
 template <std::size_t N>
-inline string<N>::string(char c) : m_size(0), m_capacity(N), m_data{{'\0'}} {
+inline string<N>::string(char c)
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
     char buff[] = {c, '\0'};
     assign(buff, 1);
 }
 
 template <std::size_t N>
-inline string<N>::~string() {
+inline string<N>::~string()
+{
     deallocate();
 }
 
 template <std::size_t N>
-inline string<N>& string<N>::operator=(char c) {
+inline string<N>& string<N>::operator=(char c)
+{
     char buff[] = {c, '\0'};
     assign(buff, 1);
     return *this;
 }
 
 template <std::size_t N>
-inline string<N>& string<N>::operator+=(char c) {
+inline string<N>& string<N>::operator+=(char c)
+{
     char buff[] = {c, '\0'};
     append(buff, 1);
     return *this;
 }
 
 template <std::size_t N>
-inline void string<N>::clear() {
+inline void string<N>::clear()
+{
     m_size = 0;
     get_data()[0] = '\0';
 }
 
 template <std::size_t N>
-inline void string<N>::deallocate() {
-    if (m_capacity > N) {
+inline void string<N>::deallocate()
+{
+    if (m_capacity > N)
+    {
         delete[] m_data.heap_ptr;
         m_data.heap_ptr = 0;
     }
 }
 
 template <std::size_t N>
-inline size_t string<N>::calculate_new_capacity(std::size_t minimumSize) const {
+inline size_t string<N>::calculate_new_capacity(std::size_t minimumSize) const
+{
     size_t newCapacity = m_capacity;
-    while (newCapacity < minimumSize) {
-        if (newCapacity == 0) {
+    while (newCapacity < minimumSize)
+    {
+        if (newCapacity == 0)
+        {
             newCapacity = 1;
-        } else {
+        }
+        else
+        {
             newCapacity *= 2;
         }
     }
@@ -679,8 +786,10 @@ inline size_t string<N>::calculate_new_capacity(std::size_t minimumSize) const {
 }
 
 template <std::size_t N>
-inline void string<N>::assign(const char* cstr, std::size_t cstrLength) {
-    if (cstrLength > m_capacity) {
+inline void string<N>::assign(const char* cstr, std::size_t cstrLength)
+{
+    if (cstrLength > m_capacity)
+    {
         // need to allocate more memory
         deallocate();
         m_capacity = calculate_new_capacity(cstrLength);
@@ -694,9 +803,11 @@ inline void string<N>::assign(const char* cstr, std::size_t cstrLength) {
 }
 
 template <std::size_t N>
-inline void string<N>::append(const char* cstr, std::size_t cstrLength) {
+inline void string<N>::append(const char* cstr, std::size_t cstrLength)
+{
     char* data = get_data();
-    if (m_size + cstrLength > m_capacity) {
+    if (m_size + cstrLength > m_capacity)
+    {
         // Need to allocate more memory.
         size_t newCapacity = calculate_new_capacity(m_size + cstrLength);
         char* tempData = new char[newCapacity + 1];
@@ -714,28 +825,34 @@ inline void string<N>::append(const char* cstr, std::size_t cstrLength) {
 }
 
 template <std::size_t N>
-inline bool operator==(const string<N>& lhs, const string<N>& rhs) {
-    if (lhs.size() != rhs.size()) {
+inline bool operator==(const string<N>& lhs, const string<N>& rhs)
+{
+    if (lhs.size() != rhs.size())
+    {
         return false;
     }
     return memcmp(lhs.c_str(), rhs.c_str(), lhs.size() + 1) == 0;
 }
 
 template <std::size_t N, std::size_t M>
-inline bool operator==(const string<N>& lhs, const string<M>& rhs) {
-    if (lhs.size() != rhs.size()) {
+inline bool operator==(const string<N>& lhs, const string<M>& rhs)
+{
+    if (lhs.size() != rhs.size())
+    {
         return false;
     }
     return memcmp(lhs.c_str(), rhs.c_str(), lhs.size() + 1) == 0;
 }
 
 template <std::size_t N>
-inline bool operator==(const string<N>& lhs, const char* rhs) {
+inline bool operator==(const string<N>& lhs, const char* rhs)
+{
     return memcmp(lhs.c_str(), rhs, lhs.size() + 1) == 0;
 }
 
 template <std::size_t N>
-inline bool operator==(const string<N>& lhs, char rhs) {
+inline bool operator==(const string<N>& lhs, char rhs)
+{
     return lhs.size() == 1 && lhs.c_str()[0] == rhs;
 }
 } // namespace stdx

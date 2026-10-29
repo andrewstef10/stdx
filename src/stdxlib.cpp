@@ -5,14 +5,17 @@
 
 namespace stdx {
 
-long strtol(const char* str, int base, char** endptr) {
+long strtol(const char* str, int base, char** endptr)
+{
     // Set endptr to str. Will be overridden if parsing is successful.
-    if (endptr != nullptr) {
+    if (endptr != nullptr)
+    {
         *endptr = const_cast<char*>(str); // NOLINT(cppcoreguidelines-pro-type-const-cast)
     }
 
     // Only support bases from 0 - 36
-    if (base < 0 || base > 36) { // NOLINT(readability-magic-numbers)
+    if (base < 0 || base > 36) // NOLINT(readability-magic-numbers)
+    {
         return 0L;
     }
 
@@ -21,32 +24,45 @@ long strtol(const char* str, int base, char** endptr) {
 
     // Handle sign
     bool negative = false;
-    if (*str == '+') {
+    if (*str == '+')
+    {
         ++str;
-    } else if (*str == '-') {
+    }
+    else if (*str == '-')
+    {
         negative = true;
         ++str;
     }
 
     // Handle base 0 (auto detect base)
-    if (base == 0) {
-        if (*str == '0') {
+    if (base == 0)
+    {
+        if (*str == '0')
+        {
             ++str;
-            if (stdx::to_lower(*str) == 'x') {
+            if (stdx::to_lower(*str) == 'x')
+            {
                 // hex
                 base = 16; // NOLINT(readability-magic-numbers)
                 ++str;
-            } else {
+            }
+            else
+            {
                 // octal
                 base = 8; // NOLINT(readability-magic-numbers)
             }
-        } else {
+        }
+        else
+        {
             // else assume decimal
             base = 10; // NOLINT(readability-magic-numbers)
         }
-    } else if (base == 16) { // NOLINT(readability-magic-numbers)
+    }
+    else if (base == 16) // NOLINT(readability-magic-numbers)
+    {
         // strip 0x prefix
-        if (*str == '0' && stdx::to_lower(*(str + 1)) == 'x') {
+        if (*str == '0' && stdx::to_lower(*(str + 1)) == 'x')
+        {
             // hex
             str += 2;
         }
@@ -55,9 +71,11 @@ long strtol(const char* str, int base, char** endptr) {
     // Parse result
     long result = 0L;
     bool valid = false;
-    while (*str != '\0') {
+    while (*str != '\0')
+    {
         int digit = stdx::char_to_digit(*str, base);
-        if (digit < 0) {
+        if (digit < 0)
+        {
             break;
         }
         result = (result * base) + digit;
@@ -65,11 +83,14 @@ long strtol(const char* str, int base, char** endptr) {
         ++str;
     }
 
-    if (valid) {
-        if (negative) {
+    if (valid)
+    {
+        if (negative)
+        {
             result = -result;
         }
-        if (endptr != nullptr) {
+        if (endptr != nullptr)
+        {
             *endptr = const_cast<char*>(str); // NOLINT(cppcoreguidelines-pro-type-const-cast)
         }
     }
