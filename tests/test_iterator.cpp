@@ -1,14 +1,13 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 #include <numeric>
-#include <vector>
 
 #include <stdx/iterator.h>
 
 /// @brief Test class used to test creating a custom forward iterator
 /// @tparam T Iterator value type
 template <typename T>
-class TestForwardIterator : public stdx::forward_iterator<TestForwardIterator<T>, T>
+class TestForwardIterator : public stdx::ForwardIterator<TestForwardIterator<T>, T>
 {
   public:
     // ===== Constructors =====
@@ -60,7 +59,7 @@ class TestForwardIterator : public stdx::forward_iterator<TestForwardIterator<T>
 /// @brief Test class used to test creating a custom bidirectional iterator
 /// @tparam T Iterator value type
 template <typename T>
-class TestBidirectionalIterator : public stdx::bidirectional_iterator<TestBidirectionalIterator<T>, T>
+class TestBidirectionalIterator : public stdx::BidirectionalIterator<TestBidirectionalIterator<T>, T>
 {
   public:
     // ===== Constructors =====
@@ -118,7 +117,7 @@ class TestBidirectionalIterator : public stdx::bidirectional_iterator<TestBidire
 /// @brief Test class used to test creating a custom random access iterator
 /// @tparam T Iterator value type
 template <typename T>
-class TestRandomAccessIterator : public stdx::random_access_iterator<TestRandomAccessIterator<T>, T>
+class TestRandomAccessIterator : public stdx::RandomAccessIterator<TestRandomAccessIterator<T>, T>
 {
   public:
     // ===== Constructors =====
@@ -175,12 +174,12 @@ class TestRandomAccessIterator : public stdx::random_access_iterator<TestRandomA
         m_ptr += n;
     }
 
-    std::ptrdiff_t distance_to(const TestRandomAccessIterator& other) const
+    std::ptrdiff_t distanceTo(const TestRandomAccessIterator& other) const
     {
         return m_ptr - other.m_ptr;
     }
 
-    bool less_than(const TestRandomAccessIterator& other) const
+    bool lessThan(const TestRandomAccessIterator& other) const
     {
         return m_ptr < other.m_ptr;
     }
@@ -738,14 +737,14 @@ TEST(CustomRandomAccessIteratorTest, ConvertedIteratorTracksSameLocation)
 
 TEST(ReverseIteratorTest, ReverseIteratorTraitsTest)
 {
-    using BIIt = stdx::reverse_iterator<TestBidirectionalIterator<int>>;
+    using BIIt = stdx::ReverseIterator<TestBidirectionalIterator<int>>;
     static_assert(std::is_same_v<std::iterator_traits<BIIt>::value_type, int>);
     static_assert(std::is_same_v<std::iterator_traits<BIIt>::reference, int&>);
     static_assert(std::is_same_v<std::iterator_traits<BIIt>::pointer, int*>);
     static_assert(std::is_same_v<std::iterator_traits<BIIt>::difference_type, std::ptrdiff_t>);
     static_assert(std::is_same_v<std::iterator_traits<BIIt>::iterator_category, std::bidirectional_iterator_tag>);
 
-    using RAIt = stdx::reverse_iterator<TestRandomAccessIterator<int>>;
+    using RAIt = stdx::ReverseIterator<TestRandomAccessIterator<int>>;
     static_assert(std::is_same_v<std::iterator_traits<RAIt>::value_type, int>);
     static_assert(std::is_same_v<std::iterator_traits<RAIt>::reference, int&>);
     static_assert(std::is_same_v<std::iterator_traits<RAIt>::pointer, int*>);
@@ -756,8 +755,8 @@ TEST(ReverseIteratorTest, ReverseIteratorTraitsTest)
 TEST(ReverseIteratorTest, BaseConstructorAndDereference)
 {
     int arr[] = {1, 2, 3};
-    stdx::reverse_iterator<TestBidirectionalIterator<int>> birit(TestBidirectionalIterator<int>(arr + 3));
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rarit(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestBidirectionalIterator<int>> birit(TestBidirectionalIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rarit(TestRandomAccessIterator<int>(arr + 3));
 
     EXPECT_EQ(*birit, 3);
     EXPECT_EQ(*rarit, 3);
@@ -765,8 +764,8 @@ TEST(ReverseIteratorTest, BaseConstructorAndDereference)
 
 TEST(ReverseIteratorTest, DefaultConstructor)
 {
-    stdx::reverse_iterator<TestBidirectionalIterator<int>> birit;
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rarit;
+    stdx::ReverseIterator<TestBidirectionalIterator<int>> birit;
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rarit;
     SUCCEED();
 }
 
@@ -774,8 +773,8 @@ TEST(ReverseIteratorTest, CopyConstructor)
 {
     int arr[] = {1, 2, 3};
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> b(a);
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> b(a);
     EXPECT_EQ(*b, 3);
 }
 
@@ -783,8 +782,8 @@ TEST(ReverseIteratorTest, CopyAssignment)
 {
     int arr[] = {1, 2, 3};
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> b;
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> b;
     b = a;
 
     EXPECT_EQ(*b, 3);
@@ -794,8 +793,8 @@ TEST(ReverseIteratorTest, MoveConstructor)
 {
     int arr[] = {1, 2, 3};
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> b(std::move(a));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> b(std::move(a));
     EXPECT_EQ(*b, 3);
 }
 
@@ -803,8 +802,8 @@ TEST(ReverseIteratorTest, MoveAssignment)
 {
     int arr[] = {1, 2, 3};
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> b;
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> b;
     b = std::move(a);
 
     EXPECT_EQ(*b, 3);
@@ -813,15 +812,15 @@ TEST(ReverseIteratorTest, MoveAssignment)
 TEST(ReverseIteratorTest, Destructor)
 {
     int arr[] = {1, 2, 3};
-    stdx::reverse_iterator<TestRandomAccessIterator<int>>* it =
-        new stdx::reverse_iterator<TestRandomAccessIterator<int>>(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>>* it =
+        new stdx::ReverseIterator<TestRandomAccessIterator<int>>(TestRandomAccessIterator<int>(arr + 3));
     delete it;
 }
 
 TEST(ReverseIteratorTest, ArrowOperator)
 {
     int arr[] = {10, 20};
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 2));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 2));
 
     EXPECT_EQ(rit.operator->(), &arr[1]);
 }
@@ -829,7 +828,7 @@ TEST(ReverseIteratorTest, ArrowOperator)
 TEST(ReverseIteratorTest, PreIncrement)
 {
     int arr[] = {1, 2, 3};
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 3));
 
     ++rit;
     EXPECT_EQ(*rit, 2);
@@ -838,9 +837,9 @@ TEST(ReverseIteratorTest, PreIncrement)
 TEST(ReverseIteratorTest, PostIncrement)
 {
     int arr[] = {1, 2, 3};
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 3));
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> old = rit++;
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> old = rit++;
     EXPECT_EQ(*old, 3);
     EXPECT_EQ(*rit, 2);
 }
@@ -848,7 +847,7 @@ TEST(ReverseIteratorTest, PostIncrement)
 TEST(ReverseIteratorTest, PreDecrement)
 {
     int arr[] = {1, 2, 3};
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 2));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 2));
 
     --rit;
     EXPECT_EQ(*rit, 3);
@@ -857,9 +856,9 @@ TEST(ReverseIteratorTest, PreDecrement)
 TEST(ReverseIteratorTest, PostDecrement)
 {
     int arr[] = {1, 2, 3};
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 2));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 2));
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> old = rit--;
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> old = rit--;
     EXPECT_EQ(*old, 2);
     EXPECT_EQ(*rit, 3);
 }
@@ -867,7 +866,7 @@ TEST(ReverseIteratorTest, PostDecrement)
 TEST(ReverseIteratorTest, Arithmetic)
 {
     int arr[] = {1, 2, 3, 4};
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 4));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 4));
 
     rit += 2;
     EXPECT_EQ(*rit, 2);
@@ -875,10 +874,10 @@ TEST(ReverseIteratorTest, Arithmetic)
     rit -= 1;
     EXPECT_EQ(*rit, 3);
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> r2 = rit + 1;
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> r2 = rit + 1;
     EXPECT_EQ(*r2, 2);
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> r3 = r2 - 2;
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> r3 = r2 - 2;
     EXPECT_EQ(*r3, 4);
 }
 
@@ -887,10 +886,10 @@ TEST(ReverseIteratorTest, AdditionSymmetry)
     int arr[] = {1, 2, 3, 4};
 
     using It = TestRandomAccessIterator<int>;
-    stdx::reverse_iterator<It> rit(It(arr + 4));
+    stdx::ReverseIterator<It> rit(It(arr + 4));
 
-    stdx::reverse_iterator<It> a = rit + 2;
-    stdx::reverse_iterator<It> b = 2 + rit;
+    stdx::ReverseIterator<It> a = rit + 2;
+    stdx::ReverseIterator<It> b = 2 + rit;
 
     EXPECT_EQ(*a, *b);
     EXPECT_EQ(a, b);
@@ -900,13 +899,13 @@ TEST(ReverseIteratorTest, Distance)
 {
     int arr[] = {1, 2, 3, 4};
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 4));
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> b(TestRandomAccessIterator<int>(arr + 1));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 4));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> b(TestRandomAccessIterator<int>(arr + 1));
 
     EXPECT_EQ(a - b, -3);
     EXPECT_EQ(b - a, 3);
 
-    stdx::reverse_iterator<TestRandomAccessIterator<const int>> crit(TestRandomAccessIterator<const int>(arr + 2));
+    stdx::ReverseIterator<TestRandomAccessIterator<const int>> crit(TestRandomAccessIterator<const int>(arr + 2));
     EXPECT_EQ(a - crit, -2);
     EXPECT_EQ(crit - a, 2);
 }
@@ -914,7 +913,7 @@ TEST(ReverseIteratorTest, Distance)
 TEST(ReverseIteratorTest, IndexOperator)
 {
     int arr[] = {10, 20, 30, 40};
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 4));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rit(TestRandomAccessIterator<int>(arr + 4));
 
     EXPECT_EQ(rit[0], 40);
     EXPECT_EQ(rit[2], 20);
@@ -924,9 +923,9 @@ TEST(ReverseIteratorTest, Comparisons)
 {
     int arr[] = {1, 2, 3};
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> aCopy(TestRandomAccessIterator<int>(arr + 3));
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> b(TestRandomAccessIterator<int>(arr + 2));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> aCopy(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> b(TestRandomAccessIterator<int>(arr + 2));
 
     EXPECT_TRUE(a != b);
     EXPECT_FALSE(a == b);
@@ -950,9 +949,9 @@ TEST(ReverseIteratorTest, ComparisonsBetweenConstAndNormal)
 {
     int arr[] = {1, 2, 3};
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
-    stdx::reverse_iterator<TestRandomAccessIterator<const int>> caCopy(TestRandomAccessIterator<int>(arr + 3));
-    stdx::reverse_iterator<TestRandomAccessIterator<const int>> b(TestRandomAccessIterator<int>(arr + 2));
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> a(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<const int>> caCopy(TestRandomAccessIterator<int>(arr + 3));
+    stdx::ReverseIterator<TestRandomAccessIterator<const int>> b(TestRandomAccessIterator<int>(arr + 2));
 
     EXPECT_FALSE(a == b);
     EXPECT_TRUE(a != b);
@@ -980,7 +979,7 @@ TEST(ReverseIteratorTest, BaseFunction)
     int arr[] = {1, 2, 3};
     TestRandomAccessIterator<int> it(arr + 2);
 
-    stdx::reverse_iterator<TestRandomAccessIterator<int>> rit(it);
+    stdx::ReverseIterator<TestRandomAccessIterator<int>> rit(it);
 
     EXPECT_EQ(rit.base(), it);
 }
@@ -992,8 +991,8 @@ TEST(ReverseIteratorTest, NonConstToConstConversion)
     using It = TestRandomAccessIterator<int>;
     using CIt = TestRandomAccessIterator<const int>;
 
-    stdx::reverse_iterator<It> rit(It(arr + 3));
-    stdx::reverse_iterator<CIt> crit = rit;
+    stdx::ReverseIterator<It> rit(It(arr + 3));
+    stdx::ReverseIterator<CIt> crit = rit;
 
     EXPECT_EQ(*crit, 3);
 }
@@ -1005,8 +1004,8 @@ TEST(ReverseIteratorTest, ConvertedIteratorTracksSamePosition)
     using It = TestRandomAccessIterator<int>;
     using CIt = TestRandomAccessIterator<const int>;
 
-    stdx::reverse_iterator<It> rit(It(arr + 3));
-    stdx::reverse_iterator<CIt> crit = rit;
+    stdx::ReverseIterator<It> rit(It(arr + 3));
+    stdx::ReverseIterator<CIt> crit = rit;
 
     ++rit;
     ++crit;
@@ -1023,8 +1022,8 @@ TEST(ReverseIteratorTest, ConvertedIteratorTracksSamePosition)
 //     using It  = TestRandomAccessIterator<int>;
 //     using CIt = TestRandomAccessIterator<const int>;
 
-//     stdx::reverse_iterator<CIt> crit(CIt(arr + 3));
-//     stdx::reverse_iterator<It> rit = crit; // should NOT compile
+//     stdx::ReverseIterator<CIt> crit(CIt(arr + 3));
+//     stdx::ReverseIterator<It> rit = crit; // should NOT compile
 // }
 
 // ============================================================
@@ -1054,8 +1053,8 @@ TEST(STLCompatibilityTest, SortWithReverseIterator)
     It begin(arr);
     It end(arr + 4);
 
-    stdx::reverse_iterator<It> rbegin(end);
-    stdx::reverse_iterator<It> rend(begin);
+    stdx::ReverseIterator<It> rbegin(end);
+    stdx::ReverseIterator<It> rend(begin);
 
     std::sort(rbegin, rend);
 

@@ -20,7 +20,7 @@ long strtol(const char* str, int base, char** endptr)
     }
 
     // skip white space
-    str = stdx::trim_front(str);
+    str = stdx::trimFront(str);
 
     // Handle sign
     bool negative = false;
@@ -40,7 +40,7 @@ long strtol(const char* str, int base, char** endptr)
         if (*str == '0')
         {
             ++str;
-            if (stdx::to_lower(*str) == 'x')
+            if (stdx::toLower(*str) == 'x')
             {
                 // hex
                 base = 16; // NOLINT(readability-magic-numbers)
@@ -61,7 +61,7 @@ long strtol(const char* str, int base, char** endptr)
     else if (base == 16) // NOLINT(readability-magic-numbers)
     {
         // strip 0x prefix
-        if (*str == '0' && stdx::to_lower(*(str + 1)) == 'x')
+        if (*str == '0' && stdx::toLower(*(str + 1)) == 'x')
         {
             // hex
             str += 2;
@@ -73,7 +73,7 @@ long strtol(const char* str, int base, char** endptr)
     bool valid = false;
     while (*str != '\0')
     {
-        int digit = stdx::char_to_digit(*str, base);
+        int digit = stdx::charToDigit(*str, base);
         if (digit < 0)
         {
             break;

@@ -37,32 +37,32 @@ TEST(WithinTests, ValueAboveRange)
 
 TEST(WithinExclusiveTests, ValueInsideRange)
 {
-    EXPECT_TRUE(stdx::within_exclusive(5, 1, 10));
-    EXPECT_TRUE(stdx::within_exclusive(-5, -10, -1));
+    EXPECT_TRUE(stdx::withinExclusive(5, 1, 10));
+    EXPECT_TRUE(stdx::withinExclusive(-5, -10, -1));
 }
 
 TEST(WithinExclusiveTests, ValueOnLowerBound)
 {
-    EXPECT_FALSE(stdx::within_exclusive(1, 1, 10));
-    EXPECT_FALSE(stdx::within_exclusive(-10, -10, -1));
+    EXPECT_FALSE(stdx::withinExclusive(1, 1, 10));
+    EXPECT_FALSE(stdx::withinExclusive(-10, -10, -1));
 }
 
 TEST(WithinExclusiveTests, ValueOnUpperBound)
 {
-    EXPECT_FALSE(stdx::within_exclusive(10, 1, 10));
-    EXPECT_FALSE(stdx::within_exclusive(-1, -10, -1));
+    EXPECT_FALSE(stdx::withinExclusive(10, 1, 10));
+    EXPECT_FALSE(stdx::withinExclusive(-1, -10, -1));
 }
 
 TEST(WithinExclusiveTests, ValueBelowRange)
 {
-    EXPECT_FALSE(stdx::within_exclusive(0, 1, 10));
-    EXPECT_FALSE(stdx::within_exclusive(-11, -10, -1));
+    EXPECT_FALSE(stdx::withinExclusive(0, 1, 10));
+    EXPECT_FALSE(stdx::withinExclusive(-11, -10, -1));
 }
 
 TEST(WithinExclusiveTests, ValueAboveRange)
 {
-    EXPECT_FALSE(stdx::within_exclusive(11, 1, 10));
-    EXPECT_FALSE(stdx::within_exclusive(0, -10, -1));
+    EXPECT_FALSE(stdx::withinExclusive(11, 1, 10));
+    EXPECT_FALSE(stdx::withinExclusive(0, -10, -1));
 }
 
 // ---------- OUTSIDE (Exclusive) ----------
@@ -101,32 +101,32 @@ TEST(OutsideTests, ValueAboveRange)
 
 TEST(OutsideExclusiveTests, ValueInsideRange)
 {
-    EXPECT_FALSE(stdx::outside_inclusive(5, 1, 10));
-    EXPECT_FALSE(stdx::outside_inclusive(-5, -10, -1));
+    EXPECT_FALSE(stdx::outsideInclusive(5, 1, 10));
+    EXPECT_FALSE(stdx::outsideInclusive(-5, -10, -1));
 }
 
 TEST(OutsideExclusiveTests, ValueOnLowerBound)
 {
-    EXPECT_TRUE(stdx::outside_inclusive(1, 1, 10));
-    EXPECT_TRUE(stdx::outside_inclusive(-11, -10, -1));
+    EXPECT_TRUE(stdx::outsideInclusive(1, 1, 10));
+    EXPECT_TRUE(stdx::outsideInclusive(-11, -10, -1));
 }
 
 TEST(OutsideExclusiveTests, ValueOnUpperBound)
 {
-    EXPECT_TRUE(stdx::outside_inclusive(10, 1, 10));
-    EXPECT_TRUE(stdx::outside_inclusive(-1, -10, -1));
+    EXPECT_TRUE(stdx::outsideInclusive(10, 1, 10));
+    EXPECT_TRUE(stdx::outsideInclusive(-1, -10, -1));
 }
 
 TEST(OutsideExclusiveTests, ValueBelowRange)
 {
-    EXPECT_TRUE(stdx::outside_inclusive(0, 1, 10));
-    EXPECT_TRUE(stdx::outside_inclusive(-11, -10, -1));
+    EXPECT_TRUE(stdx::outsideInclusive(0, 1, 10));
+    EXPECT_TRUE(stdx::outsideInclusive(-11, -10, -1));
 }
 
 TEST(OutsideExclusiveTests, ValueAboveRange)
 {
-    EXPECT_TRUE(stdx::outside_inclusive(11, 1, 10));
-    EXPECT_TRUE(stdx::outside_inclusive(0, -10, -1));
+    EXPECT_TRUE(stdx::outsideInclusive(11, 1, 10));
+    EXPECT_TRUE(stdx::outsideInclusive(0, -10, -1));
 }
 
 // ---------- CLAMP ----------

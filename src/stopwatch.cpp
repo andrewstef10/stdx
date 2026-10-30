@@ -2,13 +2,13 @@
 
 namespace stdx {
 
-stopwatch::stopwatch()
+Stopwatch::Stopwatch()
     : m_running(false)
 {
     reset();
 }
 
-void stopwatch::start(bool resetStopwatch)
+void Stopwatch::start(bool resetStopwatch)
 {
     if (!m_running)
     {
@@ -24,7 +24,7 @@ void stopwatch::start(bool resetStopwatch)
     }
 }
 
-void stopwatch::stop()
+void Stopwatch::stop()
 {
     if (m_running)
     {
@@ -33,14 +33,14 @@ void stopwatch::stop()
     }
 }
 
-void stopwatch::reset()
+void Stopwatch::reset()
 {
     m_startTime = now();
     m_stopTime = m_startTime;
 }
 
-double stopwatch::get_elapsed_time_sec() const
+double Stopwatch::getElapsedTimeSec() const
 {
-    return get_elapsed_time<std::chrono::duration<double, std::chrono::seconds::period>>().count();
+    return getElapsedTime<std::chrono::duration<double, std::chrono::seconds::period>>().count();
 }
 } // namespace stdx

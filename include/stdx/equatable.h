@@ -27,7 +27,7 @@ namespace stdx {
 /// @tparam Derived The type that inherits from this class and implements
 /// `bool equals(const Derived&) const`.
 template <typename Derived>
-class equatable
+class Equatable
 {
   public:
     /// @brief Equality operator
@@ -50,7 +50,7 @@ class equatable
 
   protected:
     // ==== equatable should not be constructed directly ====
-    equatable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
+    Equatable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 } // namespace stdx
 

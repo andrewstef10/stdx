@@ -13,13 +13,13 @@ namespace stdx {
  * @brief Fixed size contiguous array class.
  */
 template <typename T, std::size_t N>
-struct array
+struct Array
 {
 
     using iterator = T*;
     using const_iterator = const T*;
-    using reverse_iterator = stdx::reverse_iterator<iterator>;
-    using const_reverse_iterator = stdx::reverse_iterator<const_iterator>;
+    using reverse_iterator = stdx::ReverseIterator<iterator>;
+    using const_reverse_iterator = stdx::ReverseIterator<const_iterator>;
 
     // ==== Implicitly-defined member functions ====
 
@@ -183,7 +183,7 @@ struct array
     /// @brief Exchanges the contents of the container with those of other.
     /// Does not cause iterators and references to associate with the other container.
     /// @param other container to exchange the contents with
-    void swap(array& other) noexcept(noexcept(std::swap(std::declval<T&>(), std::declval<T&>())));
+    void swap(Array& other) noexcept(noexcept(std::swap(std::declval<T&>(), std::declval<T&>())));
 
     // ==== Comparison ====
 
@@ -192,20 +192,20 @@ struct array
     /// first mismatch. NOTE: T must be equality comparable and implement operator==
     /// @param other Other array
     /// @return True if this is equal to other, false otherwise.
-    bool equals(const array& other) const;
+    bool equals(const Array& other) const;
 
     /// @brief Get if this array is less than other
     /// NOTE: T must be less than comparable and implement operator<
     /// @param other Other array
     /// @return True if this array is less thn other, false otherwise
-    bool less_than(const array& other) const;
+    bool lessThan(const Array& other) const;
 
     /// @brief Equality operator
     /// NOTE: T must be equality comparable and implement operator==
     /// @param lhs left hand side
     /// @param rhs right had side
     /// @return True if lhs is equal to rhs, false otherwise.
-    friend bool operator==(const array& lhs, const array& rhs)
+    friend bool operator==(const Array& lhs, const Array& rhs)
     {
         return lhs.equals(rhs);
     }
@@ -215,7 +215,7 @@ struct array
     /// @param lhs left hand side iterator
     /// @param rhs right had side iterator
     /// @return True if lhs is not equal to rhs, false otherwise.
-    friend bool operator!=(const array& lhs, const array& rhs)
+    friend bool operator!=(const Array& lhs, const Array& rhs)
     {
         return !lhs.equals(rhs);
     }
@@ -225,9 +225,9 @@ struct array
     /// @param lhs left hand sid
     /// @param rhs right had side
     /// @return True if lhs is less than rhs, false otherwise.
-    friend bool operator<(const array& lhs, const array& rhs)
+    friend bool operator<(const Array& lhs, const Array& rhs)
     {
-        return lhs.less_than(rhs);
+        return lhs.lessThan(rhs);
     }
 
     /// @brief Greater than operator
@@ -235,9 +235,9 @@ struct array
     /// @param lhs left hand side
     /// @param rhs right had side
     /// @return True if lhs is greater than rhs, false otherwise.
-    friend bool operator>(const array& lhs, const array& rhs)
+    friend bool operator>(const Array& lhs, const Array& rhs)
     {
-        return rhs.less_than(lhs);
+        return rhs.lessThan(lhs);
     }
 
     /// @brief Less than or equal to operator
@@ -245,9 +245,9 @@ struct array
     /// @param lhs left hand side
     /// @param rhs right had side
     /// @return True if lhs is less than or equal to rhs, false otherwise.
-    friend bool operator<=(const array& lhs, const array& rhs)
+    friend bool operator<=(const Array& lhs, const Array& rhs)
     {
-        return !rhs.less_than(lhs);
+        return !rhs.lessThan(lhs);
     }
 
     /// @brief Greater than or equal to operator
@@ -255,9 +255,9 @@ struct array
     /// @param lhs left hand side
     /// @param rhs right had side
     /// @return True if lhs is greater than or equal to rhs, false otherwise.
-    friend bool operator>=(const array& lhs, const array& rhs)
+    friend bool operator>=(const Array& lhs, const Array& rhs)
     {
-        return !lhs.less_than(rhs);
+        return !lhs.lessThan(rhs);
     }
 
     /// @brief Underlying array of type T
@@ -272,12 +272,12 @@ struct array
 /// @param rhs Right hand side Array
 /// @return An Array size N + M with contents of lhs and then rhs
 template <typename T, std::size_t N, std::size_t M>
-array<T, N + M> operator+(const array<T, N>& lhs, const array<T, M>& rhs);
+Array<T, N + M> operator+(const Array<T, N>& lhs, const Array<T, M>& rhs);
 
 // ===== Inline Array Implementation =====
 
 template <typename T, std::size_t N>
-inline T& array<T, N>::at(std::size_t pos)
+inline T& Array<T, N>::at(std::size_t pos)
 {
     if (pos >= N)
     {
@@ -287,7 +287,7 @@ inline T& array<T, N>::at(std::size_t pos)
 }
 
 template <typename T, std::size_t N>
-inline const T& array<T, N>::at(std::size_t pos) const
+inline const T& Array<T, N>::at(std::size_t pos) const
 {
     if (pos >= N)
     {
@@ -297,7 +297,7 @@ inline const T& array<T, N>::at(std::size_t pos) const
 }
 
 template <typename T, std::size_t N>
-inline void array<T, N>::fill(const T& value)
+inline void Array<T, N>::fill(const T& value)
 {
     for (std::size_t i = 0; i < N; ++i)
     {
@@ -306,7 +306,7 @@ inline void array<T, N>::fill(const T& value)
 }
 
 template <typename T, std::size_t N>
-inline void array<T, N>::swap(array<T, N>& other) noexcept(noexcept(std::swap(std::declval<T&>(), std::declval<T&>())))
+inline void Array<T, N>::swap(Array<T, N>& other) noexcept(noexcept(std::swap(std::declval<T&>(), std::declval<T&>())))
 {
     for (std::size_t i = 0; i < N; ++i)
     {
@@ -315,7 +315,7 @@ inline void array<T, N>::swap(array<T, N>& other) noexcept(noexcept(std::swap(st
 }
 
 template <typename T, std::size_t N>
-inline bool array<T, N>::equals(const array& other) const
+inline bool Array<T, N>::equals(const Array& other) const
 {
     bool equals = true;
     for (std::size_t i = 0; equals && i < N; ++i)
@@ -326,7 +326,7 @@ inline bool array<T, N>::equals(const array& other) const
 }
 
 template <typename T, std::size_t N>
-inline bool array<T, N>::less_than(const array& other) const
+inline bool Array<T, N>::lessThan(const Array& other) const
 {
     bool lessThan = false;
     for (std::size_t i = 0; i < N; ++i)
@@ -341,10 +341,10 @@ inline bool array<T, N>::less_than(const array& other) const
 }
 
 template <typename T, std::size_t N, std::size_t M>
-inline array<T, N + M> operator+(const array<T, N>& lhs, const array<T, M>& rhs)
+inline Array<T, N + M> operator+(const Array<T, N>& lhs, const Array<T, M>& rhs)
 {
     static_assert(N + M > 0, "Adding two arrays of size 0 is not allowed");
-    array<T, N + M> combinedArray;
+    Array<T, N + M> combinedArray;
     for (std::size_t i = 0; i < N; ++i)
     {
         combinedArray[i] = lhs[i];

@@ -27,7 +27,7 @@ bool within(const T& val, const T& low, const T& high);
  * @return True if val is greater than low AND val is less than high.
  */
 template <typename T>
-bool within_exclusive(const T& val, const T& low, const T& high);
+bool withinExclusive(const T& val, const T& low, const T& high);
 
 /**
  * @brief Get if a value val is outside values low and high (exclusive).
@@ -53,7 +53,7 @@ bool outside(const T& val, const T& low, const T& high);
  * @return True if val is less than or equal to low OR val is greater than or equal to high.
  */
 template <typename T>
-bool outside_inclusive(const T& val, const T& low, const T& high);
+bool outsideInclusive(const T& val, const T& low, const T& high);
 
 /**
  * @brief Clamp a value val so that it is within a range.
@@ -77,7 +77,7 @@ inline bool within(const T& val, const T& low, const T& high)
 }
 
 template <typename T>
-inline bool within_exclusive(const T& val, const T& low, const T& high)
+inline bool withinExclusive(const T& val, const T& low, const T& high)
 {
     return val > low && val < high;
 }
@@ -89,7 +89,7 @@ inline bool outside(const T& val, const T& low, const T& high)
 }
 
 template <typename T>
-inline bool outside_inclusive(const T& val, const T& low, const T& high)
+inline bool outsideInclusive(const T& val, const T& low, const T& high)
 {
     return val <= low || val >= high;
 }

@@ -161,7 +161,7 @@ bool contains(const char* str, char c)
     return result;
 }
 
-bool contains_any(const char* str, const char* chars)
+bool containsAny(const char* str, const char* chars)
 {
     bool result = false;
     for (; *chars != '\0'; ++chars)
@@ -177,7 +177,7 @@ bool contains_any(const char* str, const char* chars)
 
 namespace helper {
 template <typename CharT>
-CharT* trim_front_impl(CharT* str, const char* trimChars)
+CharT* trimFrontImpl(CharT* str, const char* trimChars)
 {
     while (*str != '\0' && contains(trimChars, *str))
     {
@@ -187,17 +187,17 @@ CharT* trim_front_impl(CharT* str, const char* trimChars)
 }
 } // namespace helper
 
-const char* trim_front(const char* str, const char* trimChars)
+const char* trimFront(const char* str, const char* trimChars)
 {
-    return helper::trim_front_impl(str, trimChars);
+    return helper::trimFrontImpl(str, trimChars);
 }
 
-char* trim_front(char* str, const char* trimChars)
+char* trimFront(char* str, const char* trimChars)
 {
-    return helper::trim_front_impl(str, trimChars);
+    return helper::trimFrontImpl(str, trimChars);
 }
 
-char* trim_back(char* str, std::size_t len, const char* trimChars)
+char* trimBack(char* str, std::size_t len, const char* trimChars)
 {
     if (len == 0)
     {
@@ -221,7 +221,7 @@ char* trim_back(char* str, std::size_t len, const char* trimChars)
 
 char* trim(char* str, std::size_t len, const char* trimChars)
 {
-    trim_back(str, len, trimChars);
-    return trim_front(str, trimChars);
+    trimBack(str, len, trimChars);
+    return trimFront(str, trimChars);
 }
 } // namespace stdx

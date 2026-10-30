@@ -3,22 +3,22 @@
 
 namespace stdx {
 
-bool is_alpha(char c)
+bool isAlpha(char c)
 {
     return stdx::within(c, 'A', 'Z') || stdx::within(c, 'a', 'z');
 }
 
-bool is_digit(char c)
+bool isDigit(char c)
 {
     return stdx::within(c, '0', '9');
 }
 
-bool is_digit_of_base(char c, int base)
+bool isDigitOfBase(char c, int base)
 {
-    return char_to_digit(c, base) >= 0;
+    return charToDigit(c, base) >= 0;
 }
 
-int char_to_digit(char c, int base)
+int charToDigit(char c, int base)
 {
     constexpr int ALPHABETIC_DIGIT_OFFSET = 10;
     constexpr int FIRST_ALPHABETIC_BASE = 11;
@@ -64,7 +64,7 @@ int char_to_digit(char c, int base)
     return result;
 }
 
-char to_lower(char c)
+char toLower(char c)
 {
     if (stdx::within(c, 'A', 'Z'))
     {
@@ -73,7 +73,7 @@ char to_lower(char c)
     return c;
 }
 
-char to_upper(char c)
+char toUpper(char c)
 {
     if (stdx::within(c, 'a', 'z'))
     {

@@ -5,7 +5,7 @@
 
 namespace stdx {
 
-class stopwatch
+class Stopwatch
 {
   public:
     /**
@@ -13,19 +13,19 @@ class stopwatch
      *
      * Creates a stopwatch that is not running with no elapsed time.
      */
-    stopwatch();
+    Stopwatch();
 
     /**
      * @brief Default Destructor.
      */
-    ~stopwatch() = default;
+    ~Stopwatch() = default;
 
     /**
      * @brief Copy constructor.
      *
      * @param
      */
-    stopwatch(const stopwatch&) = default;
+    Stopwatch(const Stopwatch&) = default;
 
     /**
      * @brief Assignment operator.
@@ -33,16 +33,16 @@ class stopwatch
      * @param
      * @return Reference to this object
      */
-    stopwatch& operator=(const stopwatch&) = default;
+    Stopwatch& operator=(const Stopwatch&) = default;
 
     /// @brief Move constructor
     /// @param
-    stopwatch(stopwatch&&) = default;
+    Stopwatch(Stopwatch&&) = default;
 
     /// @brief Move assignment operator
     /// @param
     /// @return Reference to this object
-    stopwatch& operator=(stopwatch&&) = default;
+    Stopwatch& operator=(Stopwatch&&) = default;
 
     /**
      * @brief Starts the stopwatch.
@@ -69,14 +69,14 @@ class stopwatch
      * @return Elapsed time in the desired units as a duration
      */
     template <typename Duration>
-    Duration get_elapsed_time() const;
+    Duration getElapsedTime() const;
 
     /**
      * @brief Get the elapsed time in seconds.
      *
      * @return Elapsed time in seconds
      */
-    double get_elapsed_time_sec() const;
+    double getElapsedTimeSec() const;
 
     /**
      * @brief Get if the stopwatch is running.
@@ -105,7 +105,7 @@ class stopwatch
 };
 
 template <typename Duration>
-inline Duration stopwatch::get_elapsed_time() const
+inline Duration Stopwatch::getElapsedTime() const
 {
     std::chrono::steady_clock::time_point latestTime = m_running ? now() : m_stopTime;
     return std::chrono::duration_cast<Duration>(latestTime - m_startTime);
