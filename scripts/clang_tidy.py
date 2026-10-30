@@ -31,6 +31,12 @@ def main():
         action="store_true",
         help="Echo each command as it is run.",
     )
+    parser.add_argument(
+        "-f",
+        "--fix",
+        action="store_true",
+        help="Apply clang-tidy's suggested fixes to the source files.",
+    )
     args = parser.parse_args()
 
     clang_tidy = shutil.which("clang-tidy")
@@ -50,6 +56,8 @@ def main():
         return version_result.returncode
 
     command = ["python", str(run_clang_tidy), "-p", args.build_dir] + PATHS + ["-use-color"]
+    if args.fix:
+        command.append("-fix")
 
     return run_command(command, args.echo).returncode
 

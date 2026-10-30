@@ -1,13 +1,15 @@
 #include <gtest/gtest.h>
 #include <stdx/math.h>
 
-TEST(AbsTest, Int) {
+TEST(AbsTest, Int)
+{
     EXPECT_EQ(10, stdx::abs(-10));
     EXPECT_EQ(10, stdx::abs(10));
     EXPECT_EQ(0, stdx::abs(0));
 }
 
-TEST(AbsTest, Long) {
+TEST(AbsTest, Long)
+{
     long neg = -123456L;
     long pos = 123456L;
 
@@ -16,7 +18,8 @@ TEST(AbsTest, Long) {
     EXPECT_EQ(0L, stdx::abs(0L));
 }
 
-TEST(AbsTest, LongLong) {
+TEST(AbsTest, LongLong)
+{
     long long neg = -9876543210LL;
     long long pos = 9876543210LL;
 
@@ -25,7 +28,8 @@ TEST(AbsTest, LongLong) {
     EXPECT_EQ(0LL, stdx::abs(0LL));
 }
 
-TEST(AbsTest, Float) {
+TEST(AbsTest, Float)
+{
     float neg = -3.5f;
     float pos = 3.5f;
 
@@ -34,7 +38,8 @@ TEST(AbsTest, Float) {
     EXPECT_FLOAT_EQ(0.0f, stdx::abs(0.0f));
 }
 
-TEST(AbsTest, Double) {
+TEST(AbsTest, Double)
+{
     double neg = -3.1415926535;
     double pos = 3.1415926535;
 
@@ -43,7 +48,8 @@ TEST(AbsTest, Double) {
     EXPECT_DOUBLE_EQ(0.0, stdx::abs(0.0));
 }
 
-TEST(AbsTest, LongDouble) {
+TEST(AbsTest, LongDouble)
+{
     long double neg = -1.23456789012345L;
     long double pos = 1.23456789012345L;
 
@@ -52,7 +58,8 @@ TEST(AbsTest, LongDouble) {
     EXPECT_EQ(0.0L, stdx::abs(0.0L));
 }
 
-TEST(PowTest, FloatRaisedToInt) {
+TEST(PowTest, FloatRaisedToInt)
+{
     float base = 2.0f;
     EXPECT_FLOAT_EQ(1.0f, stdx::pow(base, 0));
     EXPECT_FLOAT_EQ(2.0f, stdx::pow(base, 1));
@@ -91,7 +98,8 @@ TEST(PowTest, FloatRaisedToInt) {
     EXPECT_FLOAT_EQ(1.0f, stdx::pow(base, 0));
 }
 
-TEST(PowTest, DoubleRaisedToInt) {
+TEST(PowTest, DoubleRaisedToInt)
+{
     double base = 2.0;
     EXPECT_DOUBLE_EQ(1.0, stdx::pow(base, 0));
     EXPECT_DOUBLE_EQ(2.0, stdx::pow(base, 1));

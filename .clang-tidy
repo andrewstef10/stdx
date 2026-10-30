@@ -34,52 +34,38 @@ HeaderFilterRegex: '^.*[\\/]include[\\/]stdx[\\/].*'
 
 # Check options for specific modules
 CheckOptions:
-  # -------------------------
-  # Variable Naming
-  # -------------------------
+  # Namespace Naming
+  - { key: readability-identifier-naming.NamespaceCase, value: lower_case }
 
+  # Classes Types Naming
+  - { key: readability-identifier-naming.ClassCase,  value: CamelCase }
+  - { key: readability-identifier-naming.StructCase, value: CamelCase }
+  - { key: readability-identifier-naming.EnumCase,   value: CamelCase }
+  - { key: readability-identifier-naming.UnionCase,  value: CamelCase }
+
+  # Function Naming
+  - { key: readability-identifier-naming.FunctionCase,        value: camelBack }
+  - { key: readability-identifier-naming.MacroDefinitionCase, value: UPPER_CASE }
+
+  # Variable Naming
   - { key: readability-identifier-naming.VariableCase,          value: camelBack }
   - { key: readability-identifier-naming.ParameterCase,         value: camelBack }
 
-  - { key: readability-identifier-naming.PublicMemberCase,      value: lower_case }
+  - { key: readability-identifier-naming.PublicMemberCase,      value: camelBack }
   - { key: readability-identifier-naming.ProtectedMemberCase,   value: camelBack }
   - { key: readability-identifier-naming.PrivateMemberCase,     value: camelBack }
   - { key: readability-identifier-naming.ProtectedMemberPrefix, value: m_ }
   - { key: readability-identifier-naming.PrivateMemberPrefix,   value: m_ }
 
-  # -------------------------
-  # Function Naming
-  # -------------------------
+  - { key: readability-identifier-naming.ConstantCase,                 value: UPPER_CASE }
+  - { key: readability-identifier-naming.ConstantParameterCase,        value: camelBack }
+  - { key: readability-identifier-naming.ConstantPointerParameterCase, value: camelBack }
 
-  - { key: readability-identifier-naming.FunctionCase, value: lower_case }
+  # Template Naming
+  - { key: readability-identifier-naming.TemplateParameterCase, value: CamelCase }
 
-  # -------------------------
-  # Constant Naming
-  # -------------------------
+  # Not enforcing this because most type traits must be lower_case to stay compatible with STL API (Ex. value_type)
+  #- { key: readability-identifier-naming.TypeAliasCase,         value: CamelCase }
 
-  - { key: readability-identifier-naming.ConstantCase,       value: UPPER_CASE }
-  - { key: readability-identifier-naming.MemberConstantCase, value: UPPER_CASE }
-  - { key: readability-identifier-naming.GlobalConstantCase, value: UPPER_CASE }
-
-
-  # -------------------------
-  # Classes / Structs / Enums Naming
-  # -------------------------
-
-  - { key: readability-identifier-naming.ClassCase,  value: lower_case }
-  - { key: readability-identifier-naming.StructCase, value: lower_case }
-  - { key: readability-identifier-naming.EnumCase,   value: lower_case }
-  - { key: readability-identifier-naming.UnionCase,  value: lower_case }
-
-  # -------------------------
-  # Macros
-  # -------------------------
-
-  - { key: readability-identifier-naming.MacroDefinitionCase, value: UPPER_CASE }
-
-
-  # -------------------------
   # Other
-  # -------------------------
-
-  - { key: readability-magic-numbers.IgnoredIntegerValues, value: '0;1;2;3,4;10' }
+  - { key: readability-magic-numbers.IgnoredIntegerValues, value: '0;1;2;3,4;10' } # ignore some common magic numbers
