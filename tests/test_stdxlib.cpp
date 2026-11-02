@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <stdx/stdxlib.h>
 
+namespace stdx_test {
+
 TEST(StrtolTest, ParsesSimpleDecimal)
 {
     EXPECT_EQ(123, stdx::strtol("123"));
@@ -200,3 +202,5 @@ TEST(StrtolTest, OnlySign)
     EXPECT_EQ(0, stdx::strtol(onlySign, 10, &end));
     EXPECT_EQ(end, onlySign);
 }
+
+} // namespace stdx_test

@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <stdx/math.h>
 
+namespace stdx_test {
+
 TEST(AbsTest, Int)
 {
     EXPECT_EQ(10, stdx::abs(-10));
@@ -137,3 +139,5 @@ TEST(PowTest, DoubleRaisedToInt)
     EXPECT_DOUBLE_EQ(0.0, stdx::pow(base, 5));
     EXPECT_DOUBLE_EQ(1.0, stdx::pow(base, 0));
 }
+
+} // namespace stdx_test

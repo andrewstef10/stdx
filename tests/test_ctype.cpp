@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <stdx/ctype.h>
 
+namespace stdx_test {
+
 // ---------------- isAlpha ----------------
 
 TEST(IsAlphaTests, LowercaseLetters)
@@ -498,3 +500,5 @@ TEST(ToUpperTests, AdjacentAsciiCharacters)
     EXPECT_EQ(stdx::toUpper('`'), '`'); // before 'a'
     EXPECT_EQ(stdx::toUpper('{'), '{'); // after 'z'
 }
+
+} // namespace stdx_test

@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include <stdx/string.h>
 
+namespace stdx_test {
+
 // memchar tests
 TEST(MemchrTest, FindCharacter)
 {
@@ -1906,3 +1908,5 @@ TEST(StringGrowthTest, GrowsCapacity_Size100)
         "a"; // 101 chars > 100
     EXPECT_EQ(101u, s.size());
 }
+
+} // namespace stdx_test

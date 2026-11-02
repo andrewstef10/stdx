@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <stdx/num_utils.h>
 
+namespace stdx_test {
+
 // ---------- WITHIN (Inclusive) ----------
 
 TEST(WithinTests, ValueInsideRange)
@@ -180,3 +182,5 @@ TEST(ClampTests, ValueAboveRange)
     EXPECT_EQ(10, val);
     EXPECT_EQ(-1, negVal);
 }
+
+} // namespace stdx_test

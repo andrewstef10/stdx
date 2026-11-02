@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <stdx/array.h>
 
+namespace stdx_test {
+
 // ===== Helper Type =====
 
 struct test_object
@@ -1040,3 +1042,5 @@ TEST(ArrayRelationalTest, CompletelyDifferent)
 
     EXPECT_TRUE(a > b);
 }
+
+} // namespace stdx_test

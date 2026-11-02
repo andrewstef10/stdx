@@ -4,6 +4,8 @@
 #include <stdx/math.h>
 #include <thread>
 
+namespace stdx_test {
+
 TEST(StopWatchTest, DefaultState)
 {
     stdx::Stopwatch sw;
@@ -169,3 +171,5 @@ TEST(StopWatchTest, CopyConstructorAndAssignmentOperator)
     EXPECT_EQ(sw.running(), assignmentCopy2.running());
     EXPECT_NE(&sw, &assignmentCopy2);
 }
+
+} // namespace stdx_test

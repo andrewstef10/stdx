@@ -4,6 +4,8 @@
 
 #include <stdx/iterator.h>
 
+namespace stdx_test {
+
 /// @brief Test class used to test creating a custom forward iterator
 /// @tparam T Iterator value type
 template <typename T>
@@ -1246,3 +1248,5 @@ TEST(STLCompatibilityTest, InteropWithVector)
     EXPECT_EQ(v[1], 2);
     EXPECT_EQ(v[2], 3);
 }
+
+} // namespace stdx_test
