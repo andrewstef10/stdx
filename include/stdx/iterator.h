@@ -109,7 +109,7 @@ class ForwardIterator : public Iterator<Category, T, Difference, Pointer, Refere
     }
 
   protected:
-    // ==== forward_iterator should not be constructed directly ====
+    // ==== ForwardIterator should not be constructed directly ====
     ForwardIterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 
     /// @brief Helper function to cast this to a Derived reference
@@ -163,7 +163,7 @@ class BidirectionalIterator : public ForwardIterator<Derived, T, Difference, Poi
     }
 
   protected:
-    // ==== bidirectional_iterator should not be constructed directly ====
+    // ==== BidirectionalIterator should not be constructed directly ====
     BidirectionalIterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 
@@ -256,7 +256,7 @@ class RandomAccessIterator : public BidirectionalIterator<Derived, T, Difference
     }
 
   protected:
-    // ==== random_access_iterator should not be constructed directly ====
+    // ==== RandomAccessIterator should not be constructed directly ====
     RandomAccessIterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 
@@ -273,7 +273,7 @@ class ReverseIterator
     using traits = std::iterator_traits<Iterator>;
 
     static_assert(std::is_base_of<std::bidirectional_iterator_tag, typename traits::iterator_category>::value,
-                  "reverse_iterator requires bidirectional or better iterator");
+                  "ReverseIterator requires bidirectional or better iterator");
 
     /// @brief Default constructor
     /// Reverses Iterator calling Iterator's default constructor
@@ -308,7 +308,7 @@ class ReverseIterator
     ReverseIterator& operator=(ReverseIterator&&) = default;
 
     /// @brief Const conversion constructor
-    /// @tparam OtherIterator The const version this reverse_iterator
+    /// @tparam OtherIterator The const version this ReverseIterator
     /// NOTE: This constructor is only enabled if OtherIterator::pointer is convertible to this::pointer
     /// @param other The other iterator
     template <typename OtherIterator,
@@ -349,8 +349,8 @@ class ReverseIterator
         --m_base;
     }
 
-    /// @brief Determines if reverse_iterator other is equal to this
-    /// @param other Other reverse_iterator
+    /// @brief Determines if ReverseIterator other is equal to this
+    /// @param other Other ReverseIterator
     /// @return True if other is equal to this, false otherwise
     bool equals(const ReverseIterator& other) const
     {
@@ -380,9 +380,9 @@ class ReverseIterator
         return other.m_base - m_base;
     }
 
-    /// @brief Determines if reverse_iterator other is less than this
+    /// @brief Determines if ReverseIterator other is less than this
     /// NOTE: Function is only available for iterators that are at least random access iterators
-    /// @param other Other reverse_iterator
+    /// @param other Other ReverseIterator
     /// @return True if other is less than this, false otherwise
     bool lessThan(const ReverseIterator& other) const
     {

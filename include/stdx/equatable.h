@@ -49,7 +49,7 @@ class Equatable
     }
 
   protected:
-    // ==== equatable should not be constructed directly ====
+    // ==== Equatable should not be constructed directly ====
     Equatable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 } // namespace stdx

@@ -734,7 +734,7 @@ TEST(CustomRandomAccessIteratorTest, ConvertedIteratorTracksSameLocation)
 // }
 
 // ============================================================
-// reverse_iterator Tests
+// ReverseIterator Tests
 // ============================================================
 
 TEST(ReverseIteratorTest, ReverseIteratorTraitsTest)

@@ -80,7 +80,7 @@ class Comparable : public Equatable<Derived>
     }
 
   protected:
-    // ==== comparable should not be constructed directly ====
+    // ==== Comparable should not be constructed directly ====
     Comparable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 } // namespace stdx

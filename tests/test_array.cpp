@@ -5,40 +5,40 @@ namespace stdx_test {
 
 // ===== Helper Type =====
 
-struct test_object
+struct TestObject
 {
     static int constructed;
     static int destructed;
     int value;
 
-    test_object()
+    TestObject()
         : value(42)
     {
         ++constructed;
     }
 
-    test_object(int val)
+    TestObject(int val)
         : value(val)
     {
         ++constructed;
     }
 
-    ~test_object()
+    ~TestObject()
     {
         ++destructed;
     }
 };
 
-int test_object::constructed = 0;
-int test_object::destructed = 0;
+int TestObject::constructed = 0;
+int TestObject::destructed = 0;
 
 // ===== Default Constructor =====
 
 TEST(ArrayTest, DefaultConstructor_ClassType_CallsConstructors)
 {
-    test_object::constructed = 0;
-    stdx::Array<test_object, 5> arr;
-    EXPECT_EQ(test_object::constructed, 5);
+    TestObject::constructed = 0;
+    stdx::Array<TestObject, 5> arr;
+    EXPECT_EQ(TestObject::constructed, 5);
     EXPECT_EQ(5, arr.size());
 }
 
@@ -62,14 +62,14 @@ TEST(ArrayTest, DefaultConstructor_PrimitiveType_NoCrash)
 
 TEST(ArrayTest, Destructor_DestructsAllElements)
 {
-    test_object::constructed = 0;
-    test_object::destructed = 0;
-    stdx::Array<test_object, 5>* arr = new stdx::Array<test_object, 5>();
-    EXPECT_EQ(test_object::constructed, 5);
-    EXPECT_EQ(test_object::destructed, 0);
+    TestObject::constructed = 0;
+    TestObject::destructed = 0;
+    stdx::Array<TestObject, 5>* arr = new stdx::Array<TestObject, 5>();
+    EXPECT_EQ(TestObject::constructed, 5);
+    EXPECT_EQ(TestObject::destructed, 0);
 
     delete arr;
-    EXPECT_EQ(test_object::destructed, 5);
+    EXPECT_EQ(TestObject::destructed, 5);
 
     stdx::Array<int, 5>* arr2 = new stdx::Array<int, 5>();
     delete arr2;
@@ -85,9 +85,9 @@ TEST(ArrayTest, AggregateInitialization_Zeros)
         EXPECT_EQ(0, arr[i]);
     }
 
-    test_object::constructed = 0;
-    stdx::Array<test_object, 1000> arr2{};
-    EXPECT_EQ(1000, test_object::constructed);
+    TestObject::constructed = 0;
+    stdx::Array<TestObject, 1000> arr2{};
+    EXPECT_EQ(1000, TestObject::constructed);
     for (std::size_t i = 0; i < 1000; ++i)
     {
         EXPECT_EQ(42, arr2[i].value);
@@ -106,15 +106,15 @@ TEST(ArrayTest, AggregateInitialization_Partial)
     EXPECT_EQ(2, arr2[1]);
     EXPECT_EQ(0, arr2[2]);
 
-    test_object::constructed = 0;
-    stdx::Array<test_object, 3> arr3{test_object(10)};
-    EXPECT_EQ(3, test_object::constructed);
+    TestObject::constructed = 0;
+    stdx::Array<TestObject, 3> arr3{TestObject(10)};
+    EXPECT_EQ(3, TestObject::constructed);
     EXPECT_EQ(10, arr3[0].value);
     EXPECT_EQ(42, arr3[1].value);
     EXPECT_EQ(42, arr3[2].value);
 
-    stdx::Array<test_object, 3> arr4{test_object(10), test_object(11)};
-    EXPECT_EQ(6, test_object::constructed);
+    stdx::Array<TestObject, 3> arr4{TestObject(10), TestObject(11)};
+    EXPECT_EQ(6, TestObject::constructed);
     EXPECT_EQ(10, arr4[0].value);
     EXPECT_EQ(11, arr4[1].value);
     EXPECT_EQ(42, arr4[2].value);
@@ -197,7 +197,7 @@ TEST(ArrayTest, Empty_ReturnsTrueForZeroSize)
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
     stdx::Array<int, 0> arr;
-    stdx::Array<test_object, 0> arr1;
+    stdx::Array<TestObject, 0> arr1;
     EXPECT_TRUE(arr.empty());
     EXPECT_TRUE(arr1.empty());
 #if defined(__GNUC__) && !defined(__clang__)
@@ -682,8 +682,8 @@ TEST(ArrayFillTest, FillsEmptyArray)
 
 TEST(ArrayFillTest, FillsEmptyArrayClassType)
 {
-    stdx::Array<test_object, 5> arr;
-    const test_object testObj(10);
+    stdx::Array<TestObject, 5> arr;
+    const TestObject testObj(10);
     arr.fill(testObj);
 
     for (std::size_t i = 0; i < 5; ++i)
@@ -867,13 +867,13 @@ TEST(ArrayConcatTest, Chaining)
 
 TEST(ArrayConcatTest, NonTrivialType)
 {
-    stdx::Array<test_object, 2> a{test_object(1), test_object(2)};
-    stdx::Array<test_object, 2> b{test_object(3), test_object(4)};
+    stdx::Array<TestObject, 2> a{TestObject(1), TestObject(2)};
+    stdx::Array<TestObject, 2> b{TestObject(3), TestObject(4)};
 
-    test_object::constructed = 0;
+    TestObject::constructed = 0;
     auto result = a + b;
 
-    EXPECT_EQ(4, test_object::constructed);
+    EXPECT_EQ(4, TestObject::constructed);
     EXPECT_EQ(1, result[0].value);
     EXPECT_EQ(2, result[1].value);
     EXPECT_EQ(3, result[2].value);
