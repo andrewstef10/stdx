@@ -1,10 +1,59 @@
-BasedOnStyle: LLVM
+BasedOnStyle: Microsoft
 
-ColumnLimit: 120
-
-IndentWidth: 4
-UseTab: Never
-
+# Insert a new line at the end of files
 InsertNewlineAtEOF: true
+
+# Align pointer (*) and reference (&) symbols left
+#   int* ptr;        // Left (this repo)
+#   int *ptr;        // Right
+#   int * ptr;       // Middle
 PointerAlignment: Left
+
+# Always put the template declaration on its own line above the entity it declares.
+#   template <typename T>
+#   class Foo { ... };
+#
+#   // instead of:
+#   template <typename T> class Foo { ... };
 AlwaysBreakTemplateDeclarations: true
+
+# Constructor initializer list formatting: never pack multiple initializers onto one
+# line, and when the list must wrap, break before each comma (comma starts the next
+# line rather than ending the previous one).
+#   Foo::Foo(int a, int b)
+#       : m_a(a)
+#       , m_b(b)
+#   {
+#   }
+#
+#   // instead of (PackConstructorInitializers: Never prevents this):
+#   Foo::Foo(int a, int b) : m_a(a), m_b(b)
+#   {
+#   }
+#
+#   // instead of (BreakConstructorInitializers: BeforeComma prevents this):
+#   Foo::Foo(int a, int b)
+#       : m_a(a),
+#         m_b(b)
+#   {
+#   }
+PackConstructorInitializers: Never
+BreakConstructorInitializers: BeforeComma
+
+# Fixes the conflict with Microsoft's default brace wrapping rules: Custom brace
+# wrapping with AfterNamespace: false keeps a namespace's opening brace on the same
+# line, while CompactNamespaces collapses nested namespace declarations into one line.
+#   namespace test1 {
+#   namespace test2 {
+#   ...
+#   }  // namespace test1
+#   }  // namespace test2
+#
+#   // CompactNamespaces merges the two declarations above into:
+#   namespace test1 { namespace test2 {
+#   ...
+#   }  // namespace test1::test2
+CompactNamespaces: true
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterNamespace: false

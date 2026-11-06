@@ -4,3 +4,6 @@ If:
 Diagnostics:
   ClangTidy:
     Remove: ["*"]
+---
+Documentation:
+  CommentFormat: Doxygen
