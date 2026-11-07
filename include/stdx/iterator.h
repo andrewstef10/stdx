@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include <stdx/comparable.h>
+#include <stdx/equatable.h>
 
 namespace stdx {
 
@@ -92,7 +93,7 @@ class ForwardIterator : public Iterator<Category, T, Difference, Pointer, Refere
   public:
     /// @brief Pre-increment operator
     /// @return A reference to this iterator after the increment
-    Derived& operator++()
+    constexpr Derived& operator++()
     {
         this->derived().increment();
         return this->derived();
@@ -101,7 +102,7 @@ class ForwardIterator : public Iterator<Category, T, Difference, Pointer, Refere
     /// @brief Post-increment operator
     /// @param
     /// @return Copy of this iterator before the increment
-    Derived operator++(int)
+    constexpr Derived operator++(int)
     {
         Derived temp = this->derived();
         this->derived().increment();
@@ -110,15 +111,15 @@ class ForwardIterator : public Iterator<Category, T, Difference, Pointer, Refere
 
   protected:
     // ==== ForwardIterator should not be constructed directly ====
-    ForwardIterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
+    constexpr ForwardIterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 
     /// @brief Helper function to cast this to a Derived reference
     /// @return Derived reference
-    Derived& derived()
+    constexpr Derived& derived()
     {
         return static_cast<Derived&>(*this);
     }
-    const Derived& derived() const
+    constexpr const Derived& derived() const
     {
         return static_cast<const Derived&>(*this);
     }
@@ -146,7 +147,7 @@ class BidirectionalIterator : public ForwardIterator<Derived, T, Difference, Poi
   public:
     /// @brief Pre-decrement operator
     /// @return A reference to this iterator after the decrement
-    Derived& operator--()
+    constexpr Derived& operator--()
     {
         this->derived().decrement();
         return this->derived();
@@ -155,7 +156,7 @@ class BidirectionalIterator : public ForwardIterator<Derived, T, Difference, Poi
     /// @brief Post-decrement operator
     /// @param
     /// @return Copy of this iterator before the decrement
-    Derived operator--(int)
+    constexpr Derived operator--(int)
     {
         Derived temp = this->derived();
         this->derived().decrement();
@@ -164,7 +165,7 @@ class BidirectionalIterator : public ForwardIterator<Derived, T, Difference, Poi
 
   protected:
     // ==== BidirectionalIterator should not be constructed directly ====
-    BidirectionalIterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
+    constexpr BidirectionalIterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 
 /// @brief Base CRTP random access iterator class.
@@ -194,7 +195,7 @@ class RandomAccessIterator : public BidirectionalIterator<Derived, T, Difference
     /// @brief Addition assignment operator. Advances this iterator by n.
     /// @param n Amount to advance this iterator
     /// @return A reference to this iterator
-    Derived& operator+=(Difference n)
+    constexpr Derived& operator+=(Difference n)
     {
         this->derived().advance(n);
         return this->derived();
@@ -203,7 +204,7 @@ class RandomAccessIterator : public BidirectionalIterator<Derived, T, Difference
     /// @brief Subtraction assignment operator. Retreats this iterator by n.
     /// @param n Amount to retreats this iterator
     /// @return A reference to this iterator
-    Derived& operator-=(Difference n)
+    constexpr Derived& operator-=(Difference n)
     {
         this->derived().advance(-n);
         return this->derived();
@@ -212,7 +213,7 @@ class RandomAccessIterator : public BidirectionalIterator<Derived, T, Difference
     /// @brief Addition operator
     /// @param n Amount to add to this iterator
     /// @return Iterator advanced by n
-    Derived operator+(Difference n) const
+    constexpr Derived operator+(Difference n) const
     {
         Derived temp = this->derived();
         temp += n;
@@ -223,7 +224,7 @@ class RandomAccessIterator : public BidirectionalIterator<Derived, T, Difference
     /// @param n Amount to add to this iterator
     /// @param it The iterator to add to
     /// @return Iterator advanced by n
-    friend Derived operator+(Difference n, const Derived& it)
+    friend constexpr Derived operator+(Difference n, const Derived& it)
     {
         return it + n;
     }
@@ -231,7 +232,7 @@ class RandomAccessIterator : public BidirectionalIterator<Derived, T, Difference
     /// @brief Subtraction operator
     /// @param n Amount to subtract to this iterator
     /// @return An Iterator retreated by n
-    Derived operator-(Difference n) const
+    constexpr Derived operator-(Difference n) const
     {
         Derived temp = this->derived();
         temp -= n;
@@ -242,7 +243,7 @@ class RandomAccessIterator : public BidirectionalIterator<Derived, T, Difference
     /// @param lhs left hand side iterator
     /// @param rhs right had side iterator
     /// @return The difference between two iterators
-    friend Difference operator-(const Derived& lhs, const Derived& rhs)
+    friend constexpr Difference operator-(const Derived& lhs, const Derived& rhs)
     {
         return lhs.distanceTo(rhs);
     }
@@ -250,14 +251,14 @@ class RandomAccessIterator : public BidirectionalIterator<Derived, T, Difference
     /// @brief Subscript operator
     /// @param n Number of elements to offset from the current iterator position
     /// @return A reference to the iterator at *this + n
-    Reference operator[](Difference n) const
+    constexpr Reference operator[](Difference n) const
     {
         return *(this->derived() + n);
     }
 
   protected:
     // ==== RandomAccessIterator should not be constructed directly ====
-    RandomAccessIterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
+    constexpr RandomAccessIterator() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 
 /// @brief Class to reverse an iterator
@@ -278,34 +279,34 @@ class ReverseIterator
     /// @brief Default constructor
     /// Reverses Iterator calling Iterator's default constructor
     /// NOTE: Constructor is only enabled for iterators that are at least bidirectional iterators
-    ReverseIterator()
+    constexpr ReverseIterator()
         : m_base()
     {
     }
 
     /// @brief Iterator constructor. Reverses Iterator it
     /// @param it Iterator to reverse
-    ReverseIterator(Iterator it)
+    constexpr ReverseIterator(Iterator it)
         : m_base(it)
     {
     }
 
     /// @brief Implicitly defined Copy constructor.
-    ReverseIterator(const ReverseIterator&) = default;
+    constexpr ReverseIterator(const ReverseIterator&) = default;
 
     /// @brief Implicitly defined Move constructor.
-    ReverseIterator(ReverseIterator&&) = default;
+    constexpr ReverseIterator(ReverseIterator&&) = default;
 
     /// @brief Implicitly defined destructor.
-    ~ReverseIterator() = default;
+    constexpr ~ReverseIterator() = default;
 
     /// @brief Implicitly defined assignment operator
     /// @return Reference to this object
-    ReverseIterator& operator=(const ReverseIterator&) = default;
+    constexpr ReverseIterator& operator=(const ReverseIterator&) = default;
 
     /// @brief Implicitly defined move assignment operator
     /// @return Reference to this object
-    ReverseIterator& operator=(ReverseIterator&&) = default;
+    constexpr ReverseIterator& operator=(ReverseIterator&&) = default;
 
     /// @brief Const conversion constructor
     /// @tparam OtherIterator The const version this ReverseIterator
@@ -314,21 +315,21 @@ class ReverseIterator
     template <typename OtherIterator,
               typename = std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<OtherIterator>::pointer,
                                                                 typename traits::pointer>>>
-    ReverseIterator(const ReverseIterator<OtherIterator>& other)
+    constexpr ReverseIterator(const ReverseIterator<OtherIterator>& other)
         : m_base(other.base())
     {
     }
 
     /// @brief Get the reverse iterator's base iterator
     /// @return Base iterator object
-    Iterator base() const
+    constexpr Iterator base() const
     {
         return m_base;
     }
 
     /// @brief Dereference operator
     /// @return A reference to this reverse iterator object
-    traits::reference operator*() const
+    constexpr typename traits::reference operator*() const
     {
         Iterator tmp = m_base;
         return *--tmp;
@@ -336,7 +337,7 @@ class ReverseIterator
 
     /// @brief Class member access (arrow) operator
     /// @return A pointer to this reverse iterator object
-    traits::pointer operator->() const
+    constexpr typename traits::pointer operator->() const
     {
         Iterator tmp = m_base;
         --tmp;
@@ -344,7 +345,7 @@ class ReverseIterator
     }
 
     /// @brief Increments the reverse iterator
-    void increment()
+    constexpr void increment()
     {
         --m_base;
     }
@@ -352,13 +353,13 @@ class ReverseIterator
     /// @brief Determines if ReverseIterator other is equal to this
     /// @param other Other ReverseIterator
     /// @return True if other is equal to this, false otherwise
-    bool equals(const ReverseIterator& other) const
+    constexpr bool equals(const ReverseIterator& other) const
     {
         return m_base == other.m_base;
     }
 
     /// @brief Decrements the reverse iterator
-    void decrement()
+    constexpr void decrement()
     {
         ++m_base;
     };
@@ -366,7 +367,7 @@ class ReverseIterator
     /// @brief Advances the reverse iterator
     /// NOTE: Function is only available for iterators that are at least random access iterators
     /// @param n Number of elements to advance
-    void advance(traits::difference_type n)
+    constexpr void advance(typename traits::difference_type n)
     {
         m_base -= n;
     };
@@ -375,8 +376,9 @@ class ReverseIterator
     /// NOTE: Function is only available for iterators that are at least random access iterators
     /// @param other Other reverse iterator
     /// @return The distance between this and other
-    traits::difference_type distanceTo(const ReverseIterator& other) const
+    constexpr typename traits::difference_type distanceTo(const ReverseIterator& other) const
     {
+
         return other.m_base - m_base;
     }
 
@@ -384,7 +386,7 @@ class ReverseIterator
     /// NOTE: Function is only available for iterators that are at least random access iterators
     /// @param other Other ReverseIterator
     /// @return True if other is less than this, false otherwise
-    bool lessThan(const ReverseIterator& other) const
+    constexpr bool lessThan(const ReverseIterator& other) const
     {
         return other.m_base < m_base;
     }

@@ -34,7 +34,7 @@ class Equatable
     /// @param lhs left hand side
     /// @param rhs right had side
     /// @return True if lhs is equal to rhs, false otherwise.
-    friend bool operator==(const Derived& lhs, const Derived& rhs)
+    friend constexpr bool operator==(const Derived& lhs, const Derived& rhs)
     {
         return lhs.equals(rhs);
     }
@@ -43,14 +43,14 @@ class Equatable
     /// @param lhs left hand side iterator
     /// @param rhs right had side iterator
     /// @return True if lhs is not equal to rhs, false otherwise.
-    friend bool operator!=(const Derived& lhs, const Derived& rhs)
+    friend constexpr bool operator!=(const Derived& lhs, const Derived& rhs)
     {
         return !lhs.equals(rhs);
     }
 
   protected:
     // ==== Equatable should not be constructed directly ====
-    Equatable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
+    constexpr Equatable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 } // namespace stdx
 

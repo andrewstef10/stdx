@@ -175,7 +175,7 @@ bool containsAny(const char* str, const char* chars)
     return result;
 }
 
-namespace helper {
+namespace {
 template <typename CharT>
 CharT* trimFrontImpl(CharT* str, const char* trimChars)
 {
@@ -185,16 +185,16 @@ CharT* trimFrontImpl(CharT* str, const char* trimChars)
     }
     return str;
 }
-} // namespace helper
+} // namespace
 
 const char* trimFront(const char* str, const char* trimChars)
 {
-    return helper::trimFrontImpl(str, trimChars);
+    return trimFrontImpl(str, trimChars);
 }
 
 char* trimFront(char* str, const char* trimChars)
 {
-    return helper::trimFrontImpl(str, trimChars);
+    return trimFrontImpl(str, trimChars);
 }
 
 char* trimBack(char* str, std::size_t len, const char* trimChars)

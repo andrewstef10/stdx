@@ -107,8 +107,8 @@ class Stopwatch
 template <typename Duration>
 inline Duration Stopwatch::getElapsedTime() const
 {
-    std::chrono::steady_clock::time_point latestTime = m_running ? now() : m_stopTime;
-    return std::chrono::duration_cast<Duration>(latestTime - m_startTime);
+    const std::chrono::steady_clock::time_point LATEST_TIME = m_running ? now() : m_stopTime;
+    return std::chrono::duration_cast<Duration>(LATEST_TIME - m_startTime);
 }
 } // namespace stdx
 

@@ -1,7 +1,14 @@
 #include <gtest/gtest.h>
 #include <stdx/array.h>
 
+#include "support/contiguous_container_test_suite.h"
+
 namespace stdx_test {
+
+// Instantiate general contiguous container test cases for array.
+// Covers indexing and iteration as well as basic size tests.
+using ContiguousContainerTypes = ::testing::Types<stdx::Array<int, 3>>;
+INSTANTIATE_TYPED_TEST_SUITE_P(ArrayContiguousContainerTests, ContiguousContainerTest, ContiguousContainerTypes);
 
 // ===== Helper Type =====
 

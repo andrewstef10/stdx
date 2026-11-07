@@ -73,12 +73,12 @@ long strtol(const char* str, int base, char** endptr)
     bool valid = false;
     while (*str != '\0')
     {
-        int digit = stdx::charToDigit(*str, base);
-        if (digit < 0)
+        const int DIGIT = stdx::charToDigit(*str, base);
+        if (DIGIT < 0)
         {
             break;
         }
-        result = (result * base) + digit;
+        result = (result * base) + DIGIT;
         valid = true;
         ++str;
     }

@@ -1,13 +1,11 @@
 #ifndef COMPARABLE_H
 #define COMPARABLE_H
 
-#include <stdx/equatable.h>
-
 namespace stdx {
 
 /// @brief CRTP base class that provides full comparison operators.
 ///
-/// This class extends @ref equatable to automatically provide all relational
+/// This class automatically provides all relational
 /// comparison operators (`<`, `>`, `<=`, `>=`) for a derived type by requiring
 /// the implementation of a single member function:
 ///
@@ -20,10 +18,6 @@ namespace stdx {
 /// @code
 /// struct MyType : public comparable<MyType> {
 ///     int value;
-///
-///     bool equals(const MyType& other) const {
-///         return value == other.value;
-///     }
 ///
 ///     bool lessThan(const MyType& other) const {
 ///         return value < other.value;
@@ -40,14 +34,14 @@ namespace stdx {
 /// - bool equals(const Derived&) const  (from equatable)
 /// - bool lessThan(const Derived&) const
 template <typename Derived>
-class Comparable : public Equatable<Derived>
+class Comparable
 {
   public:
     /// @brief Less than operator
     /// @param lhs left hand sid
     /// @param rhs right had side
     /// @return True if lhs is less than rhs, false otherwise.
-    friend bool operator<(const Derived& lhs, const Derived& rhs)
+    friend constexpr bool operator<(const Derived& lhs, const Derived& rhs)
     {
         return lhs.lessThan(rhs);
     }
@@ -56,7 +50,7 @@ class Comparable : public Equatable<Derived>
     /// @param lhs left hand side
     /// @param rhs right had side
     /// @return True if lhs is greater than rhs, false otherwise.
-    friend bool operator>(const Derived& lhs, const Derived& rhs)
+    friend constexpr bool operator>(const Derived& lhs, const Derived& rhs)
     {
         return rhs.lessThan(lhs);
     }
@@ -65,7 +59,7 @@ class Comparable : public Equatable<Derived>
     /// @param lhs left hand side
     /// @param rhs right had side
     /// @return True if lhs is less than or equal to rhs, false otherwise.
-    friend bool operator<=(const Derived& lhs, const Derived& rhs)
+    friend constexpr bool operator<=(const Derived& lhs, const Derived& rhs)
     {
         return !rhs.lessThan(lhs);
     }
@@ -74,14 +68,14 @@ class Comparable : public Equatable<Derived>
     /// @param lhs left hand side
     /// @param rhs right had side
     /// @return True if lhs is greater than or equal to rhs, false otherwise.
-    friend bool operator>=(const Derived& lhs, const Derived& rhs)
+    friend constexpr bool operator>=(const Derived& lhs, const Derived& rhs)
     {
         return !lhs.lessThan(rhs);
     }
 
   protected:
     // ==== Comparable should not be constructed directly ====
-    Comparable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
+    constexpr Comparable() = default; // NOLINT(bugprone-crtp-constructor-accessibility)
 };
 } // namespace stdx
 
