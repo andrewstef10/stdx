@@ -8,23 +8,35 @@
 #include <vector>
 
 namespace {
-struct test_object {
+struct TestObject
+{
     int value;
 
-    explicit test_object(int v = 0) : value(v) {}
+    explicit TestObject(int v = 0)
+        : value(v)
+    {
+    }
 };
 
-struct destructor_counter {
+struct DestructorCounter
+{
     int* count;
 
-    explicit destructor_counter(int* c) : count(c) {}
-    ~destructor_counter() { ++(*count); }
+    explicit DestructorCounter(int* c)
+        : count(c)
+    {
+    }
+    ~DestructorCounter()
+    {
+        ++(*count);
+    }
 };
 } // namespace
 
-TEST(GrowthPolicy, ExactGrowthPolicy) {
+TEST(GrowthPolicy, ExactGrowthPolicy)
+{
     // Always returns required capacity
-    stdx::exact_growth exactGrowth;
+    stdx::ExactGrowth exactGrowth;
 
     EXPECT_EQ(0, exactGrowth(0, 0));
     EXPECT_EQ(1, exactGrowth(0, 1));
@@ -34,9 +46,10 @@ TEST(GrowthPolicy, ExactGrowthPolicy) {
     EXPECT_EQ(1, exactGrowth(2, 1));
 }
 
-TEST(GrowthPolicy, DoublingGrowthPolicy) {
+TEST(GrowthPolicy, DoublingGrowthPolicy)
+{
     // Doubles capacity
-    stdx::doubling_growth doublingGrowth;
+    stdx::DoublingGrowth doublingGrowth;
 
     EXPECT_EQ(0, doublingGrowth(0, 0));
     EXPECT_EQ(1, doublingGrowth(0, 1));
@@ -55,21 +68,23 @@ TEST(GrowthPolicy, DoublingGrowthPolicy) {
 // Traits
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, value_type_is_correct) {
-    static_assert(std::is_same<stdx::allocator<int>::value_type, int>::value, "value_type incorrect");
+TEST(allocator_tests, value_type_is_correct)
+{
+    static_assert(std::is_same<stdx::Allocator<int>::value_type, int>::value, "value_type incorrect");
 }
 
-TEST(allocator_tests, allocator_traits_are_correct) {
-    static_assert(std::is_same<stdx::allocator<int>::is_always_equal, std::true_type>::value,
+TEST(allocator_tests, allocator_traits_are_correct)
+{
+    static_assert(std::is_same<stdx::Allocator<int>::is_always_equal, std::true_type>::value,
                   "is_always_equal incorrect");
 
-    static_assert(std::is_same<stdx::allocator<int>::propagate_on_container_copy_assignment, std::false_type>::value,
+    static_assert(std::is_same<stdx::Allocator<int>::propagate_on_container_copy_assignment, std::false_type>::value,
                   "copy propagation incorrect");
 
-    static_assert(std::is_same<stdx::allocator<int>::propagate_on_container_move_assignment, std::false_type>::value,
+    static_assert(std::is_same<stdx::Allocator<int>::propagate_on_container_move_assignment, std::false_type>::value,
                   "move propagation incorrect");
 
-    static_assert(std::is_same<stdx::allocator<int>::propagate_on_container_swap, std::false_type>::value,
+    static_assert(std::is_same<stdx::Allocator<int>::propagate_on_container_swap, std::false_type>::value,
                   "swap propagation incorrect");
 }
 
@@ -77,98 +92,111 @@ TEST(allocator_tests, allocator_traits_are_correct) {
 // Construction
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, default_constructible) {
-    stdx::allocator<int> alloc;
+TEST(allocator_tests, default_constructible)
+{
+    stdx::Allocator<int> alloc;
     (void)alloc;
 }
 
-TEST(allocator_tests, copy_constructible) {
-    stdx::allocator<int> a;
-    stdx::allocator<int> b(a);
+TEST(allocator_tests, copy_constructible)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<int> b(a);
 
     EXPECT_TRUE(a == b);
 }
 
-TEST(allocator_tests, move_constructible) {
-    stdx::allocator<int> a;
-    stdx::allocator<int> b(std::move(a));
+TEST(allocator_tests, move_constructible)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<int> b(std::move(a));
 
-    EXPECT_TRUE(b == stdx::allocator<int>());
+    EXPECT_TRUE(b == stdx::Allocator<int>());
 }
 
-TEST(allocator_tests, copy_assignable) {
-    stdx::allocator<int> a;
-    stdx::allocator<int> b;
+TEST(allocator_tests, copy_assignable)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<int> b;
 
     b = a;
 
     EXPECT_TRUE(a == b);
 }
 
-TEST(allocator_tests, move_assignable) {
-    stdx::allocator<int> a;
-    stdx::allocator<int> b;
+TEST(allocator_tests, move_assignable)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<int> b;
 
     b = std::move(a);
 
-    EXPECT_TRUE(b == stdx::allocator<int>());
+    EXPECT_TRUE(b == stdx::Allocator<int>());
 }
 
-TEST(allocator_tests, converting_constructor) {
-    stdx::allocator<int> a;
-    stdx::allocator<double> b(a);
+TEST(allocator_tests, converting_constructor)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<double> b(a);
 
     EXPECT_TRUE(a == b);
 }
 
-TEST(allocator_tests, size_of_allocator) {
-    EXPECT_EQ(1, sizeof(stdx::allocator<int>));
-    EXPECT_EQ(1, sizeof(stdx::allocator<long>));
-    EXPECT_EQ(1, sizeof(stdx::allocator<double>));
+TEST(allocator_tests, size_of_allocator)
+{
+    EXPECT_EQ(1, sizeof(stdx::Allocator<int>));
+    EXPECT_EQ(1, sizeof(stdx::Allocator<long>));
+    EXPECT_EQ(1, sizeof(stdx::Allocator<double>));
 }
 
 //------------------------------------------------------------------------------
 // Equality
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, equals_same_type) {
-    stdx::allocator<int> a;
-    stdx::allocator<int> b;
+TEST(allocator_tests, equals_same_type)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<int> b;
 
     EXPECT_TRUE(a.equals(b));
 }
 
-TEST(allocator_tests, equals_different_type) {
-    stdx::allocator<int> a;
-    stdx::allocator<double> b;
+TEST(allocator_tests, equals_different_type)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<double> b;
 
     EXPECT_TRUE(a.equals(b));
 }
 
-TEST(allocator_tests, operator_equal_same_type) {
-    stdx::allocator<int> a;
-    stdx::allocator<int> b;
+TEST(allocator_tests, operator_equal_same_type)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<int> b;
 
     EXPECT_TRUE(a == b);
 }
 
-TEST(allocator_tests, operator_equal_different_type) {
-    stdx::allocator<int> a;
-    stdx::allocator<double> b;
+TEST(allocator_tests, operator_equal_different_type)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<double> b;
 
     EXPECT_TRUE(a == b);
 }
 
-TEST(allocator_tests, operator_not_equal_same_type) {
-    stdx::allocator<int> a;
-    stdx::allocator<int> b;
+TEST(allocator_tests, operator_not_equal_same_type)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<int> b;
 
     EXPECT_FALSE(a != b);
 }
 
-TEST(allocator_tests, operator_not_equal_different_type) {
-    stdx::allocator<int> a;
-    stdx::allocator<double> b;
+TEST(allocator_tests, operator_not_equal_different_type)
+{
+    stdx::Allocator<int> a;
+    stdx::Allocator<double> b;
 
     EXPECT_FALSE(a != b);
 }
@@ -177,8 +205,9 @@ TEST(allocator_tests, operator_not_equal_different_type) {
 // Allocation
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, allocate_and_deallocate_single_object) {
-    stdx::allocator<int> alloc;
+TEST(allocator_tests, allocate_and_deallocate_single_object)
+{
+    stdx::Allocator<int> alloc;
 
     int* ptr = alloc.allocate(1);
 
@@ -190,26 +219,30 @@ TEST(allocator_tests, allocate_and_deallocate_single_object) {
     alloc.deallocate(ptr, 1);
 }
 
-TEST(allocator_tests, allocate_and_deallocate_multiple_objects) {
-    stdx::allocator<int> alloc;
+TEST(allocator_tests, allocate_and_deallocate_multiple_objects)
+{
+    stdx::Allocator<int> alloc;
 
     int* ptr = alloc.allocate(10);
 
     ASSERT_NE(ptr, nullptr);
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i)
+    {
         ptr[i] = i;
     }
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i)
+    {
         EXPECT_EQ(ptr[i], i);
     }
 
     alloc.deallocate(ptr, 10);
 }
 
-TEST(allocator_tests, max_size_is_non_zero) {
-    stdx::allocator<int> alloc;
+TEST(allocator_tests, max_size_is_non_zero)
+{
+    stdx::Allocator<int> alloc;
 
     EXPECT_GT(alloc.max_size(), 0u);
 }
@@ -218,16 +251,17 @@ TEST(allocator_tests, max_size_is_non_zero) {
 // allocator_traits integration
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, allocator_traits_construct_destroy) {
-    stdx::allocator<test_object> alloc;
+TEST(allocator_tests, allocator_traits_construct_destroy)
+{
+    stdx::Allocator<TestObject> alloc;
 
-    test_object* ptr = alloc.allocate(1);
+    TestObject* ptr = alloc.allocate(1);
 
-    std::allocator_traits<stdx::allocator<test_object>>::construct(alloc, ptr, 123);
+    std::allocator_traits<stdx::Allocator<TestObject>>::construct(alloc, ptr, 123);
 
     EXPECT_EQ(ptr->value, 123);
 
-    std::allocator_traits<stdx::allocator<test_object>>::destroy(alloc, ptr);
+    std::allocator_traits<stdx::Allocator<TestObject>>::destroy(alloc, ptr);
 
     alloc.deallocate(ptr, 1);
 }
@@ -236,22 +270,26 @@ TEST(allocator_tests, allocator_traits_construct_destroy) {
 // STL compatibility
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, works_with_vector) {
-    std::vector<int, stdx::allocator<int>> vec;
+TEST(allocator_tests, works_with_vector)
+{
+    std::vector<int, stdx::Allocator<int>> vec;
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 100; ++i)
+    {
         vec.push_back(i);
     }
 
     ASSERT_EQ(vec.size(), 100u);
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 100; ++i)
+    {
         EXPECT_EQ(vec[i], i);
     }
 }
 
-TEST(allocator_tests, works_with_list) {
-    std::list<int, stdx::allocator<int>> lst;
+TEST(allocator_tests, works_with_list)
+{
+    std::list<int, stdx::Allocator<int>> lst;
 
     lst.push_back(1);
     lst.push_back(2);
@@ -266,18 +304,20 @@ TEST(allocator_tests, works_with_list) {
     EXPECT_EQ(*it++, 3);
 }
 
-TEST(allocator_tests, vector_copy_move_operations) {
-    std::vector<int, stdx::allocator<int>> v1;
+TEST(allocator_tests, vector_copy_move_operations)
+{
+    std::vector<int, stdx::Allocator<int>> v1;
 
-    for (int i = 0; i < 50; ++i) {
+    for (int i = 0; i < 50; ++i)
+    {
         v1.push_back(i);
     }
 
-    std::vector<int, stdx::allocator<int>> v2(v1);
+    std::vector<int, stdx::Allocator<int>> v2(v1);
 
     EXPECT_EQ(v1, v2);
 
-    std::vector<int, stdx::allocator<int>> v3(std::move(v2));
+    std::vector<int, stdx::Allocator<int>> v3(std::move(v2));
 
     EXPECT_EQ(v3.size(), 50u);
 }
@@ -286,11 +326,12 @@ TEST(allocator_tests, vector_copy_move_operations) {
 // Statelessness (is_always_equal)
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, memory_from_one_instance_freeable_by_another) {
+TEST(allocator_tests, memory_from_one_instance_freeable_by_another)
+{
     // is_always_equal = true means any two instances are interchangeable:
     // memory allocated by `a` must be safely deallocatable by `b`.
-    stdx::allocator<int> a;
-    stdx::allocator<int> b;
+    stdx::Allocator<int> a;
+    stdx::Allocator<int> b;
 
     int* ptr = a.allocate(5);
     ASSERT_NE(ptr, nullptr);
@@ -301,15 +342,16 @@ TEST(allocator_tests, memory_from_one_instance_freeable_by_another) {
     b.deallocate(ptr, 5); // must not crash or corrupt
 }
 
-TEST(allocator_tests, memory_from_converting_instance_freeable_by_rebound) {
+TEST(allocator_tests, memory_from_converting_instance_freeable_by_rebound)
+{
     // Rebinding to a different type still yields an equal allocator.
-    stdx::allocator<int> int_alloc;
-    stdx::allocator<double> double_alloc(int_alloc);
+    stdx::Allocator<int> int_alloc;
+    stdx::Allocator<double> double_alloc(int_alloc);
 
     double* ptr = double_alloc.allocate(3);
     ASSERT_NE(ptr, nullptr);
 
-    stdx::allocator<double> other_double_alloc;
+    stdx::Allocator<double> other_double_alloc;
     other_double_alloc.deallocate(ptr, 3); // cross-instance deallocation
 }
 
@@ -317,8 +359,9 @@ TEST(allocator_tests, memory_from_converting_instance_freeable_by_rebound) {
 // Pointer alignment
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, allocated_pointer_is_aligned_for_type_int) {
-    stdx::allocator<int> alloc;
+TEST(allocator_tests, allocated_pointer_is_aligned_for_type_int)
+{
+    stdx::Allocator<int> alloc;
     int* ptr = alloc.allocate(1);
 
     ASSERT_NE(ptr, nullptr);
@@ -327,8 +370,9 @@ TEST(allocator_tests, allocated_pointer_is_aligned_for_type_int) {
     alloc.deallocate(ptr, 1);
 }
 
-TEST(allocator_tests, allocated_pointer_is_aligned_for_type_double) {
-    stdx::allocator<double> alloc;
+TEST(allocator_tests, allocated_pointer_is_aligned_for_type_double)
+{
+    stdx::Allocator<double> alloc;
     double* ptr = alloc.allocate(4);
 
     ASSERT_NE(ptr, nullptr);
@@ -337,8 +381,9 @@ TEST(allocator_tests, allocated_pointer_is_aligned_for_type_double) {
     alloc.deallocate(ptr, 4);
 }
 
-TEST(allocator_tests, allocated_pointer_is_aligned_for_type_long_double) {
-    stdx::allocator<long double> alloc;
+TEST(allocator_tests, allocated_pointer_is_aligned_for_type_long_double)
+{
+    stdx::Allocator<long double> alloc;
     long double* ptr = alloc.allocate(1);
 
     ASSERT_NE(ptr, nullptr);
@@ -351,10 +396,11 @@ TEST(allocator_tests, allocated_pointer_is_aligned_for_type_long_double) {
 // allocate(0)
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, allocate_zero_returns_non_null_and_is_deallocatable) {
+TEST(allocator_tests, allocate_zero_returns_non_null_and_is_deallocatable)
+{
     // ::operator new(0) guarantees a non-null unique pointer;
     // the returned pointer must be safely passable to deallocate.
-    stdx::allocator<int> alloc;
+    stdx::Allocator<int> alloc;
     int* ptr = alloc.allocate(0);
 
     EXPECT_NE(ptr, nullptr);
@@ -366,19 +412,21 @@ TEST(allocator_tests, allocate_zero_returns_non_null_and_is_deallocatable) {
 // max_size correctness
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, max_size_equals_size_t_max_divided_by_sizeof_T) {
-    stdx::allocator<char> char_alloc;
-    stdx::allocator<int> int_alloc;
-    stdx::allocator<double> double_alloc;
+TEST(allocator_tests, max_size_equals_size_t_max_divided_by_sizeof_T)
+{
+    stdx::Allocator<char> char_alloc;
+    stdx::Allocator<int> int_alloc;
+    stdx::Allocator<double> double_alloc;
 
     EXPECT_EQ(char_alloc.max_size(), std::numeric_limits<std::size_t>::max() / sizeof(char));
     EXPECT_EQ(int_alloc.max_size(), std::numeric_limits<std::size_t>::max() / sizeof(int));
     EXPECT_EQ(double_alloc.max_size(), std::numeric_limits<std::size_t>::max() / sizeof(double));
 }
 
-TEST(allocator_tests, max_size_decreases_with_larger_element_type) {
-    stdx::allocator<char> char_alloc;
-    stdx::allocator<int> int_alloc;
+TEST(allocator_tests, max_size_decreases_with_larger_element_type)
+{
+    stdx::Allocator<char> char_alloc;
+    stdx::Allocator<int> int_alloc;
 
     EXPECT_GT(char_alloc.max_size(), int_alloc.max_size());
 }
@@ -387,33 +435,35 @@ TEST(allocator_tests, max_size_decreases_with_larger_element_type) {
 // Destructor is actually invoked by allocator_traits::destroy
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, destroy_actually_calls_destructor) {
-    stdx::allocator<destructor_counter> alloc;
-    destructor_counter* ptr = alloc.allocate(1);
+TEST(allocator_tests, destroy_actually_calls_destructor)
+{
+    stdx::Allocator<DestructorCounter> alloc;
+    DestructorCounter* ptr = alloc.allocate(1);
 
     int count = 0;
-    std::allocator_traits<stdx::allocator<destructor_counter>>::construct(alloc, ptr, &count);
+    std::allocator_traits<stdx::Allocator<DestructorCounter>>::construct(alloc, ptr, &count);
     EXPECT_EQ(count, 0);
 
-    std::allocator_traits<stdx::allocator<destructor_counter>>::destroy(alloc, ptr);
+    std::allocator_traits<stdx::Allocator<DestructorCounter>>::destroy(alloc, ptr);
     EXPECT_EQ(count, 1); // destructor must have run exactly once
 
     alloc.deallocate(ptr, 1);
 }
 
-TEST(allocator_tests, destroy_array_calls_each_destructor) {
-    stdx::allocator<destructor_counter> alloc;
+TEST(allocator_tests, destroy_array_calls_each_destructor)
+{
+    stdx::Allocator<DestructorCounter> alloc;
     constexpr int N = 5;
-    destructor_counter* ptr = alloc.allocate(N);
+    DestructorCounter* ptr = alloc.allocate(N);
 
     int count = 0;
     for (int i = 0; i < N; ++i)
-        std::allocator_traits<stdx::allocator<destructor_counter>>::construct(alloc, ptr + i, &count);
+        std::allocator_traits<stdx::Allocator<DestructorCounter>>::construct(alloc, ptr + i, &count);
 
     EXPECT_EQ(count, 0);
 
     for (int i = 0; i < N; ++i)
-        std::allocator_traits<stdx::allocator<destructor_counter>>::destroy(alloc, ptr + i);
+        std::allocator_traits<stdx::Allocator<DestructorCounter>>::destroy(alloc, ptr + i);
 
     EXPECT_EQ(count, N);
 
@@ -424,8 +474,9 @@ TEST(allocator_tests, destroy_array_calls_each_destructor) {
 // Unique pointers
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, separate_allocations_return_distinct_pointers) {
-    stdx::allocator<int> alloc;
+TEST(allocator_tests, separate_allocations_return_distinct_pointers)
+{
+    stdx::Allocator<int> alloc;
 
     int* p1 = alloc.allocate(1);
     int* p2 = alloc.allocate(1);
@@ -442,39 +493,44 @@ TEST(allocator_tests, separate_allocations_return_distinct_pointers) {
 // allocator_traits::rebind_alloc
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, rebind_alloc_gives_correct_type) {
+TEST(allocator_tests, rebind_alloc_gives_correct_type)
+{
     static_assert(
-        std::is_same<std::allocator_traits<stdx::allocator<int>>::rebind_alloc<double>, stdx::allocator<double>>::value,
-        "rebind_alloc<double> should yield stdx::allocator<double>");
+        std::is_same<std::allocator_traits<stdx::Allocator<int>>::rebind_alloc<double>, stdx::Allocator<double>>::value,
+        "rebind_alloc<double> should yield stdx::Allocator<double>");
 }
 
 //------------------------------------------------------------------------------
 // Trivially copyable / default constructible
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, is_trivially_default_constructible) {
-    static_assert(std::is_trivially_default_constructible<stdx::allocator<int>>::value,
-                  "stdx::allocator must be trivially default constructible");
+TEST(allocator_tests, is_trivially_default_constructible)
+{
+    static_assert(std::is_trivially_default_constructible<stdx::Allocator<int>>::value,
+                  "stdx::Allocator must be trivially default constructible");
 }
 
-TEST(allocator_tests, is_trivially_copy_constructible) {
-    static_assert(std::is_trivially_copy_constructible<stdx::allocator<int>>::value,
-                  "stdx::allocator must be trivially copy constructible");
+TEST(allocator_tests, is_trivially_copy_constructible)
+{
+    static_assert(std::is_trivially_copy_constructible<stdx::Allocator<int>>::value,
+                  "stdx::Allocator must be trivially copy constructible");
 }
 
-TEST(allocator_tests, is_trivially_copy_assignable) {
-    static_assert(std::is_trivially_copy_assignable<stdx::allocator<int>>::value,
-                  "stdx::allocator must be trivially copy assignable");
+TEST(allocator_tests, is_trivially_copy_assignable)
+{
+    static_assert(std::is_trivially_copy_assignable<stdx::Allocator<int>>::value,
+                  "stdx::Allocator must be trivially copy assignable");
 }
 
 //------------------------------------------------------------------------------
 // select_on_container_copy_construction
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, select_on_container_copy_construction_returns_equal_allocator) {
-    stdx::allocator<int> alloc;
-    stdx::allocator<int> selected =
-        std::allocator_traits<stdx::allocator<int>>::select_on_container_copy_construction(alloc);
+TEST(allocator_tests, select_on_container_copy_construction_returns_equal_allocator)
+{
+    stdx::Allocator<int> alloc;
+    stdx::Allocator<int> selected =
+        std::allocator_traits<stdx::Allocator<int>>::select_on_container_copy_construction(alloc);
 
     EXPECT_TRUE(alloc == selected);
 }
@@ -483,10 +539,12 @@ TEST(allocator_tests, select_on_container_copy_construction_returns_equal_alloca
 // Repeated allocate/deallocate cycles
 //------------------------------------------------------------------------------
 
-TEST(allocator_tests, repeated_allocate_deallocate_does_not_corrupt) {
-    stdx::allocator<int> alloc;
+TEST(allocator_tests, repeated_allocate_deallocate_does_not_corrupt)
+{
+    stdx::Allocator<int> alloc;
 
-    for (int cycle = 0; cycle < 1000; ++cycle) {
+    for (int cycle = 0; cycle < 1000; ++cycle)
+    {
         int* ptr = alloc.allocate(1);
         ASSERT_NE(ptr, nullptr);
         *ptr = cycle;
@@ -495,8 +553,9 @@ TEST(allocator_tests, repeated_allocate_deallocate_does_not_corrupt) {
     }
 }
 
-TEST(allocator_tests, large_allocation) {
-    stdx::allocator<int> alloc;
+TEST(allocator_tests, large_allocation)
+{
+    stdx::Allocator<int> alloc;
     constexpr std::size_t N = 10000;
 
     int* ptr = alloc.allocate(N);

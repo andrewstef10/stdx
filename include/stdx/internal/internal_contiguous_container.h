@@ -19,8 +19,10 @@ namespace stdx { namespace internal { namespace contiguous_container {
 /// @return Reference to the requested element.
 /// @exception std::out_of_range if `index` is out of range (index >= size()).
 template <typename Container>
-auto at(Container& container, typename Container::size_type index) -> decltype(container[index]) {
-    if (index >= container.size()) {
+auto at(Container& container, typename Container::size_type index) -> decltype(container[index])
+{
+    if (index >= container.size())
+    {
         throw std::out_of_range("Index is outside the bounds of the container");
     }
     return container[index];
@@ -36,13 +38,17 @@ auto at(Container& container, typename Container::size_type index) -> decltype(c
 /// @param rhs rhs contiguous container to compare
 /// @return True if the elements of both containers compare equal.
 template <typename Container>
-bool equals(const Container& lhs, const Container& rhs) {
-    if (lhs.size() != rhs.size()) {
+bool equals(const Container& lhs, const Container& rhs)
+{
+    if (lhs.size() != rhs.size())
+    {
         return false;
     }
 
-    for (typename Container::size_type i = 0; i < lhs.size(); ++i) {
-        if (!(lhs[i] == rhs[i])) {
+    for (typename Container::size_type i = 0; i < lhs.size(); ++i)
+    {
+        if (!(lhs[i] == rhs[i]))
+        {
             return false;
         }
     }
@@ -59,12 +65,16 @@ bool equals(const Container& lhs, const Container& rhs) {
 /// @param rhs Reference to the rhs contiguous container to compare
 /// @return True if `lhs` is lexicographically less than `rhs`
 template <typename Container>
-bool less_than(const Container& lhs, const Container& rhs) {
-    for (typename Container::size_type i = 0; i < lhs.size() && i < rhs.size(); ++i) {
-        if (lhs[i] < rhs[i]) {
+bool lessThan(const Container& lhs, const Container& rhs)
+{
+    for (typename Container::size_type i = 0; i < lhs.size() && i < rhs.size(); ++i)
+    {
+        if (lhs[i] < rhs[i])
+        {
             return true;
         }
-        if (rhs[i] < lhs[i]) {
+        if (rhs[i] < lhs[i])
+        {
             return false;
         }
     }
@@ -84,7 +94,8 @@ bool less_than(const Container& lhs, const Container& rhs) {
 /// @param Container The contiguous container storing elements to shift
 /// @param index  Position of the gap to open.
 template <typename Allocator, typename Container>
-void shift_right(Allocator& alloc, Container& container, typename Container::size_type index) {
+void shiftRight(Allocator& alloc, Container& container, typename Container::size_type index)
+{
     using size_type = typename Container::size_type; // typically std::size_t
     const size_type LAST = container.size() - 1;
 
@@ -92,7 +103,8 @@ void shift_right(Allocator& alloc, Container& container, typename Container::siz
     std::allocator_traits<Allocator>::construct(alloc, container.data() + container.size(), std::move(container[LAST]));
 
     // Shift the rest of the elements between `index` and the end of the container
-    for (size_type i = LAST; i > index; --i) {
+    for (size_type i = LAST; i > index; --i)
+    {
         container[i] = std::move(container[i - 1]);
     }
 }
@@ -111,15 +123,18 @@ void shift_right(Allocator& alloc, Container& container, typename Container::siz
 /// @param last  Position one past the last element of the gap to close.
 /// @return The container's new logical element count (the position where the moved-from tail begins).
 template <typename Container>
-std::size_t shift_left(Container& container, typename Container::size_type first, typename Container::size_type last) {
+std::size_t shiftLeft(Container& container, typename Container::size_type first, typename Container::size_type last)
+{
     using size_type = typename Container::size_type; // typically std::size_t
 
-    if (first == last) {
+    if (first == last)
+    {
         return container.size();
     }
 
     size_type left = first;
-    for (size_type right = last; right < container.size(); ++left, ++right) {
+    for (size_type right = last; right < container.size(); ++left, ++right)
+    {
         container[left] = std::move(container[right]);
     }
     return left;
@@ -142,14 +157,20 @@ std::size_t shift_left(Container& container, typename Container::size_type first
 /// @param args   Arguments forwarded to Container::value_type's constructor if additional Container::value_type
 ///               constructions are needed.
 template <typename Allocator, typename Container, typename... Args>
-void resize(Allocator& alloc, Container& container, typename Container::size_type count, Args&&... args) {
+void resize(Allocator& alloc, Container& container, typename Container::size_type count, Args&&... args)
+{
     using size_type = typename Container::size_type; // typically std::size_t
-    if (container.size() < count) {
-        for (size_type i = container.size(); i < count; ++i) {
+    if (container.size() < count)
+    {
+        for (size_type i = container.size(); i < count; ++i)
+        {
             std::allocator_traits<Allocator>::construct(alloc, container.data() + i, std::forward<Args>(args)...);
         }
-    } else {
-        for (size_type i = container.size(); i > count; --i) {
+    }
+    else
+    {
+        for (size_type i = container.size(); i > count; --i)
+        {
             std::allocator_traits<Allocator>::destroy(alloc, container.data() + (i - 1));
         }
     }
@@ -172,14 +193,18 @@ void resize(Allocator& alloc, Container& container, typename Container::size_typ
 /// @param args   Arguments forwarded to Container::value_type's constructor.
 /// @return Pointer to the newly constructed element.
 template <typename Allocator, typename Container, typename... Args>
-typename Container::value_type* emplace_at(Allocator& alloc, Container& container, std::size_t index, Args&&... args) {
-    if (index < container.size()) {
+typename Container::value_type* emplaceAt(Allocator& alloc, Container& container, std::size_t index, Args&&... args)
+{
+    if (index < container.size())
+    {
         // Middle: build the value first so it stays correct even when args alias an existing element,
         // open a one-slot gap, then move the value into the now-live slot.
         typename Container::value_type value(std::forward<Args>(args)...);
-        shift_right(alloc, container, index);
+        shiftRight(alloc, container, index);
         container[index] = std::move(value);
-    } else {
+    }
+    else
+    {
         // End: the destination is raw storage, so construct the element directly in place.
         std::allocator_traits<Allocator>::construct(alloc, container.data() + index, std::forward<Args>(args)...);
     }
@@ -199,8 +224,10 @@ typename Container::value_type* emplace_at(Allocator& alloc, Container& containe
 /// @param first Forward iterator pointing to the first element to copy construct to dest.
 /// @param count Number of elements to copy starting with `first`
 template <typename Allocator, typename T, typename ForwardIt>
-void construct_copy(Allocator& alloc, T* dest, ForwardIt first, std::size_t count) {
-    for (std::size_t i = 0; i < count; ++i, ++first) {
+void constructCopy(Allocator& alloc, T* dest, ForwardIt first, std::size_t count)
+{
+    for (std::size_t i = 0; i < count; ++i, ++first)
+    {
         std::allocator_traits<Allocator>::construct(alloc, dest + i, *first);
     }
 }
@@ -219,28 +246,36 @@ void construct_copy(Allocator& alloc, T* dest, ForwardIt first, std::size_t coun
 /// @param count Number of copies of `value` the container holds afterwards.
 /// @param value Value to fill the container with.
 template <typename Allocator, typename Container>
-void assign_copy(Allocator& alloc, Container& dest, typename Container::size_type count,
-                 const typename Container::value_type& value) {
-    if (dest.size() < count) {
+void assignCopy(Allocator& alloc, Container& dest, typename Container::size_type count,
+                const typename Container::value_type& value)
+{
+    if (dest.size() < count)
+    {
         // Copy assign over the live elements
         typename Container::size_type i = 0;
-        for (; i < dest.size(); ++i) {
+        for (; i < dest.size(); ++i)
+        {
             dest[i] = value;
         }
 
         // Copy construct the remaining elements into raw storage
-        for (; i < count; ++i) {
+        for (; i < count; ++i)
+        {
             std::allocator_traits<Allocator>::construct(alloc, dest.data() + i, value);
         }
-    } else {
+    }
+    else
+    {
         // Copy assign over the first count live elements
         typename Container::size_type i = 0;
-        for (; i < count; ++i) {
+        for (; i < count; ++i)
+        {
             dest[i] = value;
         }
 
         // Destroy the surplus elements
-        for (; i < dest.size(); ++i) {
+        for (; i < dest.size(); ++i)
+        {
             std::allocator_traits<Allocator>::destroy(alloc, dest.data() + i);
         }
     }
@@ -261,27 +296,35 @@ void assign_copy(Allocator& alloc, Container& dest, typename Container::size_typ
 /// @param first Forward iterator pointing to the first element to copy assign to dest.
 /// @param count Number of elements to copy starting with `first`
 template <typename Allocator, typename Container, typename ForwardIt>
-void assign_copy(Allocator& alloc, Container& dest, ForwardIt first, typename Container::size_type count) {
+void assignCopy(Allocator& alloc, Container& dest, ForwardIt first, typename Container::size_type count)
+{
     typename Container::size_type i = 0;
     ForwardIt src = first;
-    if (dest.size() < count) { // if dest contains less elements than src
+    if (dest.size() < count)
+    { // if dest contains less elements than src
         // Copy assign all elements from src up to dest's live count
-        for (; i < dest.size(); ++i, ++src) {
+        for (; i < dest.size(); ++i, ++src)
+        {
             dest[i] = *src;
         }
 
         // Copy construct the remaining elements from src
-        for (; i < count; ++i, ++src) {
+        for (; i < count; ++i, ++src)
+        {
             std::allocator_traits<Allocator>::construct(alloc, dest.data() + i, *src);
         }
-    } else {
+    }
+    else
+    {
         // Copy assign all elements from src
-        for (; i < count; ++i, ++src) {
+        for (; i < count; ++i, ++src)
+        {
             dest[i] = *src;
         }
 
         // Destroy the surplus elements in dest
-        for (; i < dest.size(); ++i) {
+        for (; i < dest.size(); ++i)
+        {
             std::allocator_traits<Allocator>::destroy(alloc, dest.data() + i);
         }
     }
@@ -302,9 +345,11 @@ void assign_copy(Allocator& alloc, Container& dest, ForwardIt first, typename Co
 /// @param srcAlloc  Allocator used to destroy surplus elements from `src`.
 /// @param src       Container of the elements to move from.
 template <typename DestAllocator, typename SrcAllocator, typename Container>
-void construct_move(DestAllocator& destAlloc, typename Container::value_type* dest, SrcAllocator& srcAlloc,
-                    Container& src) {
-    for (std::size_t i = 0; i < src.size(); ++i) {
+void constructMove(DestAllocator& destAlloc, typename Container::value_type* dest, SrcAllocator& srcAlloc,
+                   Container& src)
+{
+    for (std::size_t i = 0; i < src.size(); ++i)
+    {
         std::allocator_traits<DestAllocator>::construct(destAlloc, dest + i, std::move(src[i]));
         std::allocator_traits<SrcAllocator>::destroy(srcAlloc, src.data() + i); // Destroy src's moved-from elements
     }
@@ -325,31 +370,38 @@ void construct_move(DestAllocator& destAlloc, typename Container::value_type* de
 /// @param srcAlloc  Allocator used to destroy surplus elements from `src`.
 /// @param src       Container of the elements to move from.
 template <typename DestAllocator, typename SrcAllocator, typename Container>
-void assign_move(DestAllocator& destAlloc, Container& dest, SrcAllocator& srcAlloc, Container& src) {
+void assignMove(DestAllocator& destAlloc, Container& dest, SrcAllocator& srcAlloc, Container& src)
+{
     if (dest.size() < src.size()) // if dest contains less elements than src
     {
         // Move assign all elements from src up to dest's live count
         std::size_t i = 0;
-        for (; i < dest.size(); ++i) {
+        for (; i < dest.size(); ++i)
+        {
             dest[i] = std::move(src[i]);
             std::allocator_traits<SrcAllocator>::destroy(srcAlloc, src.data() + i); // Destroy src's moved-from elements
         }
 
         // Move construct the remaining elements from src
-        for (; i < src.size(); ++i) {
+        for (; i < src.size(); ++i)
+        {
             std::allocator_traits<DestAllocator>::construct(destAlloc, dest.data() + i, std::move(src[i]));
             std::allocator_traits<SrcAllocator>::destroy(srcAlloc, src.data() + i); // Destroy src's moved-from elements
         }
-    } else {
+    }
+    else
+    {
         // Move assign all elements from src
         std::size_t i = 0;
-        for (; i < src.size(); ++i) {
+        for (; i < src.size(); ++i)
+        {
             dest[i] = std::move(src[i]);
             std::allocator_traits<SrcAllocator>::destroy(srcAlloc, src.data() + i); // Destroy src's moved-from elements
         }
 
         // Destroy the surplus elements in dest
-        for (; i < dest.size(); ++i) {
+        for (; i < dest.size(); ++i)
+        {
             std::allocator_traits<DestAllocator>::destroy(destAlloc, dest.data() + i);
         }
     }

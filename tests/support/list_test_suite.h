@@ -32,10 +32,12 @@
 /// reserve()/shrink_to_fit(), allocator propagation, etc.) does not belong here -- keep that in each type's own
 /// test_<header>.cpp.
 
-namespace StdxTest {
+namespace stdx_test {
 
 template <typename Container>
-class ListTest : public ::testing::Test {};
+class ListTest : public ::testing::Test
+{
+};
 
 TYPED_TEST_SUITE_P(ListTest);
 
@@ -43,13 +45,15 @@ TYPED_TEST_SUITE_P(ListTest);
 // === Construction / Assignment ===
 // ==================================
 
-TYPED_TEST_P(ListTest, DefaultConstructedIsEmpty) {
+TYPED_TEST_P(ListTest, DefaultConstructedIsEmpty)
+{
     TypeParam list;
     EXPECT_TRUE(list.empty());
     EXPECT_EQ(list.size(), 0U);
 }
 
-TYPED_TEST_P(ListTest, BeginEqualsEndWhenEmpty) {
+TYPED_TEST_P(ListTest, BeginEqualsEndWhenEmpty)
+{
     TypeParam list;
     EXPECT_EQ(list.begin(), list.end());
     EXPECT_EQ(list.cbegin(), list.cend());
@@ -61,19 +65,22 @@ TYPED_TEST_P(ListTest, BeginEqualsEndWhenEmpty) {
     EXPECT_EQ(constList.rbegin(), constList.rend());
 }
 
-TYPED_TEST_P(ListTest, CopyConstructorFromEmpty) {
+TYPED_TEST_P(ListTest, CopyConstructorFromEmpty)
+{
     TypeParam source;
     TypeParam copy(source);
     EXPECT_TRUE(copy.empty());
 }
 
-TYPED_TEST_P(ListTest, CopyConstructorFromNonEmpty) {
+TYPED_TEST_P(ListTest, CopyConstructorFromNonEmpty)
+{
     TypeParam source = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam copy(source);
     EXPECT_TRUE(copy == source);
 }
 
-TYPED_TEST_P(ListTest, CopyConstructorIsDeepCopy) {
+TYPED_TEST_P(ListTest, CopyConstructorIsDeepCopy)
+{
     using T = typename TypeParam::value_type;
     TypeParam source = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam copy(source);
@@ -81,13 +88,15 @@ TYPED_TEST_P(ListTest, CopyConstructorIsDeepCopy) {
     EXPECT_NE(copy[0], source[0]);
 }
 
-TYPED_TEST_P(ListTest, MoveConstructorFromEmpty) {
+TYPED_TEST_P(ListTest, MoveConstructorFromEmpty)
+{
     TypeParam source;
     TypeParam moved(std::move(source));
     EXPECT_TRUE(moved.empty());
 }
 
-TYPED_TEST_P(ListTest, MoveConstructorFromNonEmpty) {
+TYPED_TEST_P(ListTest, MoveConstructorFromNonEmpty)
+{
     using T = typename TypeParam::value_type;
     TypeParam source = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam moved(std::move(source));
@@ -97,28 +106,32 @@ TYPED_TEST_P(ListTest, MoveConstructorFromNonEmpty) {
     EXPECT_EQ(moved[2], TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, MoveConstructorLeavesSourceEmpty) {
+TYPED_TEST_P(ListTest, MoveConstructorLeavesSourceEmpty)
+{
     TypeParam source = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam moved(std::move(source));
     EXPECT_TRUE(source.empty());
     EXPECT_EQ(source.size(), 0U);
 }
 
-TYPED_TEST_P(ListTest, CopyAssignmentFromEmpty) {
+TYPED_TEST_P(ListTest, CopyAssignmentFromEmpty)
+{
     TypeParam source;
     TypeParam dest = ContainerFactory<TypeParam>::MakeFromTestValues();
     dest = source;
     EXPECT_TRUE(dest.empty());
 }
 
-TYPED_TEST_P(ListTest, CopyAssignmentFromNonEmpty) {
+TYPED_TEST_P(ListTest, CopyAssignmentFromNonEmpty)
+{
     TypeParam source = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam dest;
     dest = source;
     EXPECT_TRUE(dest == source);
 }
 
-TYPED_TEST_P(ListTest, CopyAssignmentOverwritesExisting) {
+TYPED_TEST_P(ListTest, CopyAssignmentOverwritesExisting)
+{
     using T = typename TypeParam::value_type;
     TypeParam source = ContainerFactory<TypeParam>::Make({TestValues<T>::VALUES[2], TestValues<T>::VALUES[1]});
     TypeParam dest = ContainerFactory<TypeParam>::MakeFromTestValues();
@@ -128,7 +141,8 @@ TYPED_TEST_P(ListTest, CopyAssignmentOverwritesExisting) {
     EXPECT_EQ(dest[1], TestValues<T>::VALUES[1]);
 }
 
-TYPED_TEST_P(ListTest, CopyAssignmentIsDeepCopy) {
+TYPED_TEST_P(ListTest, CopyAssignmentIsDeepCopy)
+{
     using T = typename TypeParam::value_type;
     TypeParam source = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam dest;
@@ -137,14 +151,16 @@ TYPED_TEST_P(ListTest, CopyAssignmentIsDeepCopy) {
     EXPECT_NE(dest[0], source[0]);
 }
 
-TYPED_TEST_P(ListTest, MoveAssignmentFromEmpty) {
+TYPED_TEST_P(ListTest, MoveAssignmentFromEmpty)
+{
     TypeParam source;
     TypeParam dest = ContainerFactory<TypeParam>::MakeFromTestValues();
     dest = std::move(source);
     EXPECT_TRUE(dest.empty());
 }
 
-TYPED_TEST_P(ListTest, MoveAssignmentFromNonEmpty) {
+TYPED_TEST_P(ListTest, MoveAssignmentFromNonEmpty)
+{
     using T = typename TypeParam::value_type;
     TypeParam source = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam dest;
@@ -155,7 +171,8 @@ TYPED_TEST_P(ListTest, MoveAssignmentFromNonEmpty) {
     EXPECT_EQ(dest[2], TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, MoveAssignmentLeavesSourceEmpty) {
+TYPED_TEST_P(ListTest, MoveAssignmentLeavesSourceEmpty)
+{
     TypeParam source = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam dest;
     dest = std::move(source);
@@ -163,7 +180,8 @@ TYPED_TEST_P(ListTest, MoveAssignmentLeavesSourceEmpty) {
     EXPECT_EQ(source.size(), 0U);
 }
 
-TYPED_TEST_P(ListTest, MoveAssignmentOverwritesExisting) {
+TYPED_TEST_P(ListTest, MoveAssignmentOverwritesExisting)
+{
     using T = typename TypeParam::value_type;
     TypeParam source = ContainerFactory<TypeParam>::Make({TestValues<T>::VALUES[0], TestValues<T>::VALUES[1]});
     TypeParam dest = ContainerFactory<TypeParam>::MakeFromTestValues();
@@ -177,38 +195,41 @@ TYPED_TEST_P(ListTest, MoveAssignmentOverwritesExisting) {
 // ====== Push / Pop ========
 // ==========================
 
-TYPED_TEST_P(ListTest, PushBackCopyAppendsValue) {
+TYPED_TEST_P(ListTest, PushBackCopyAppendsValue)
+{
     using T = typename TypeParam::value_type;
     TypeParam list;
     T value = TestValues<T>::VALUES[1];
-    list.push_back(value);
+    list.pushBack(value);
     EXPECT_EQ(list.size(), 1U);
     EXPECT_EQ(list.back(), TestValues<T>::VALUES[1]);
     EXPECT_NE(&list.back(), &value); // a copy was created
 }
 
-TYPED_TEST_P(ListTest, PushBackMoveAppendsValue) {
+TYPED_TEST_P(ListTest, PushBackMoveAppendsValue)
+{
     using T = typename TypeParam::value_type;
     TypeParam list;
     T value = TestValues<T>::VALUES[1];
-    list.push_back(std::move(value));
+    list.pushBack(std::move(value));
     EXPECT_EQ(list.size(), 1U);
     EXPECT_EQ(list.back(), TestValues<T>::VALUES[1]);
 }
 
-TYPED_TEST_P(ListTest, PushBackMultiplePreservesOrder) {
+TYPED_TEST_P(ListTest, PushBackMultiplePreservesOrder)
+{
     using T = typename TypeParam::value_type;
     TypeParam list;
 
-    list.push_back(TestValues<T>::VALUES[0]);
+    list.pushBack(TestValues<T>::VALUES[0]);
     ASSERT_EQ(list.size(), 1U);
     EXPECT_EQ(list[0], TestValues<T>::VALUES[0]);
 
-    list.push_back(TestValues<T>::VALUES[1]);
+    list.pushBack(TestValues<T>::VALUES[1]);
     ASSERT_EQ(list.size(), 2U);
     EXPECT_EQ(list[1], TestValues<T>::VALUES[1]);
 
-    list.push_back(TestValues<T>::VALUES[2]);
+    list.pushBack(TestValues<T>::VALUES[2]);
     ASSERT_EQ(list.size(), 3U);
     EXPECT_EQ(list[2], TestValues<T>::VALUES[2]);
 
@@ -217,22 +238,24 @@ TYPED_TEST_P(ListTest, PushBackMultiplePreservesOrder) {
     EXPECT_EQ(list[2], TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, PopBackRemovesLastElement) {
+TYPED_TEST_P(ListTest, PopBackRemovesLastElement)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     ASSERT_EQ(list.size(), TestValues<T>::SIZE);
 
     EXPECT_EQ(list.back(), TestValues<T>::VALUES[2]);
-    list.pop_back();
+    list.popBack();
     EXPECT_EQ(list.size(), TestValues<T>::SIZE - 1);
     EXPECT_EQ(list.back(), TestValues<T>::VALUES[1]);
 }
 
-TYPED_TEST_P(ListTest, PopBackToEmpty) {
+TYPED_TEST_P(ListTest, PopBackToEmpty)
+{
     using T = typename TypeParam::value_type;
     TypeParam list;
-    list.push_back(TestValues<T>::VALUES[0]);
-    list.pop_back();
+    list.pushBack(TestValues<T>::VALUES[0]);
+    list.popBack();
     EXPECT_TRUE(list.empty());
     EXPECT_EQ(list.size(), 0U);
 }
@@ -241,7 +264,8 @@ TYPED_TEST_P(ListTest, PopBackToEmpty) {
 // ========= Insert =========
 // ==========================
 
-TYPED_TEST_P(ListTest, InsertIntoEmptyContainer) {
+TYPED_TEST_P(ListTest, InsertIntoEmptyContainer)
+{
     using T = typename TypeParam::value_type;
     TypeParam list;
     list.insert(list.begin(), TestValues<T>::VALUES[0]);
@@ -249,7 +273,8 @@ TYPED_TEST_P(ListTest, InsertIntoEmptyContainer) {
     EXPECT_EQ(list[0], TestValues<T>::VALUES[0]);
 }
 
-TYPED_TEST_P(ListTest, InsertAtBeginShiftsExistingElements) {
+TYPED_TEST_P(ListTest, InsertAtBeginShiftsExistingElements)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::Make({TestValues<T>::VALUES[1], TestValues<T>::VALUES[2]});
     list.insert(list.begin(), TestValues<T>::VALUES[0]);
@@ -259,7 +284,8 @@ TYPED_TEST_P(ListTest, InsertAtBeginShiftsExistingElements) {
     EXPECT_EQ(list[2], TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, InsertAtEndAppendsValue) {
+TYPED_TEST_P(ListTest, InsertAtEndAppendsValue)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::Make({TestValues<T>::VALUES[0], TestValues<T>::VALUES[1]});
     list.insert(list.end(), TestValues<T>::VALUES[2]);
@@ -267,7 +293,8 @@ TYPED_TEST_P(ListTest, InsertAtEndAppendsValue) {
     EXPECT_EQ(list.back(), TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, InsertAtMiddleShiftsTail) {
+TYPED_TEST_P(ListTest, InsertAtMiddleShiftsTail)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::Make({TestValues<T>::VALUES[0], TestValues<T>::VALUES[2]});
     list.insert(list.begin() + 1, TestValues<T>::VALUES[1]);
@@ -277,7 +304,8 @@ TYPED_TEST_P(ListTest, InsertAtMiddleShiftsTail) {
     EXPECT_EQ(list[2], TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, InsertMoveAtBeginShiftsExistingElements) {
+TYPED_TEST_P(ListTest, InsertMoveAtBeginShiftsExistingElements)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::Make({TestValues<T>::VALUES[1], TestValues<T>::VALUES[2]});
     T value = TestValues<T>::VALUES[0];
@@ -288,7 +316,8 @@ TYPED_TEST_P(ListTest, InsertMoveAtBeginShiftsExistingElements) {
     EXPECT_EQ(list[2], TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, InsertSelfReferenceValue) {
+TYPED_TEST_P(ListTest, InsertSelfReferenceValue)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.insert(list.begin(), list[2]);
@@ -303,7 +332,8 @@ TYPED_TEST_P(ListTest, InsertSelfReferenceValue) {
 // ========== Erase =========
 // ==========================
 
-TYPED_TEST_P(ListTest, EraseFirstElementShiftsRemaining) {
+TYPED_TEST_P(ListTest, EraseFirstElementShiftsRemaining)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.erase(list.begin());
@@ -312,7 +342,8 @@ TYPED_TEST_P(ListTest, EraseFirstElementShiftsRemaining) {
     EXPECT_EQ(list[1], TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, EraseLastElement) {
+TYPED_TEST_P(ListTest, EraseLastElement)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.erase(list.end() - 1);
@@ -321,7 +352,8 @@ TYPED_TEST_P(ListTest, EraseLastElement) {
     EXPECT_EQ(list[1], TestValues<T>::VALUES[1]);
 }
 
-TYPED_TEST_P(ListTest, EraseRemovesElementAndShiftsTail) {
+TYPED_TEST_P(ListTest, EraseRemovesElementAndShiftsTail)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.erase(list.begin() + 1);
@@ -330,21 +362,24 @@ TYPED_TEST_P(ListTest, EraseRemovesElementAndShiftsTail) {
     EXPECT_EQ(list[1], TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, EraseOnlyElementLeavesContainerEmpty) {
+TYPED_TEST_P(ListTest, EraseOnlyElementLeavesContainerEmpty)
+{
     using T = typename TypeParam::value_type;
     TypeParam list;
-    list.push_back(TestValues<T>::VALUES[0]);
+    list.pushBack(TestValues<T>::VALUES[0]);
     list.erase(list.begin());
     EXPECT_TRUE(list.empty());
 }
 
-TYPED_TEST_P(ListTest, EraseFullRangeEmptiesContainer) {
+TYPED_TEST_P(ListTest, EraseFullRangeEmptiesContainer)
+{
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.erase(list.begin(), list.end());
     EXPECT_TRUE(list.empty());
 }
 
-TYPED_TEST_P(ListTest, EraseRangeRemovesAllElementsInRange) {
+TYPED_TEST_P(ListTest, EraseRangeRemovesAllElementsInRange)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::Make(
         {TestValues<T>::VALUES[0], TestValues<T>::VALUES[1], TestValues<T>::VALUES[2], TestValues<T>::UPDATED});
@@ -358,32 +393,36 @@ TYPED_TEST_P(ListTest, EraseRangeRemovesAllElementsInRange) {
 // ========== Clear =========
 // ==========================
 
-TYPED_TEST_P(ListTest, ClearOnEmptyContainerIsNoop) {
+TYPED_TEST_P(ListTest, ClearOnEmptyContainerIsNoop)
+{
     TypeParam list;
     list.clear();
     EXPECT_TRUE(list.empty());
     EXPECT_EQ(list.size(), 0U);
 }
 
-TYPED_TEST_P(ListTest, ClearRemovesAllElements) {
+TYPED_TEST_P(ListTest, ClearRemovesAllElements)
+{
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.clear();
     EXPECT_TRUE(list.empty());
     EXPECT_EQ(list.size(), 0U);
 }
 
-TYPED_TEST_P(ListTest, ClearPreservesCapacity) {
+TYPED_TEST_P(ListTest, ClearPreservesCapacity)
+{
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     const std::size_t capacityBefore = list.capacity();
     list.clear();
     EXPECT_EQ(list.capacity(), capacityBefore);
 }
 
-TYPED_TEST_P(ListTest, ClearThenPushBackWorks) {
+TYPED_TEST_P(ListTest, ClearThenPushBackWorks)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.clear();
-    list.push_back(TestValues<T>::UPDATED);
+    list.pushBack(TestValues<T>::UPDATED);
     ASSERT_EQ(list.size(), 1U);
     EXPECT_EQ(list.front(), TestValues<T>::UPDATED);
 }
@@ -392,7 +431,8 @@ TYPED_TEST_P(ListTest, ClearThenPushBackWorks) {
 // ========== Swap ==========
 // ==========================
 
-TYPED_TEST_P(ListTest, SwapExchangesContents) {
+TYPED_TEST_P(ListTest, SwapExchangesContents)
+{
     using T = typename TypeParam::value_type;
     TypeParam a = ContainerFactory<TypeParam>::Make({TestValues<T>::UPDATED, TestValues<T>::VALUES[1]});
     TypeParam b = ContainerFactory<TypeParam>::MakeFromTestValues();
@@ -403,7 +443,8 @@ TYPED_TEST_P(ListTest, SwapExchangesContents) {
     EXPECT_EQ(b[0], TestValues<T>::UPDATED);
 }
 
-TYPED_TEST_P(ListTest, SwapWithEmptyContainer) {
+TYPED_TEST_P(ListTest, SwapWithEmptyContainer)
+{
     using T = typename TypeParam::value_type;
     TypeParam a = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam b;
@@ -413,7 +454,8 @@ TYPED_TEST_P(ListTest, SwapWithEmptyContainer) {
     EXPECT_EQ(b[0], TestValues<T>::VALUES[0]);
 }
 
-TYPED_TEST_P(ListTest, SwapTwoEmptyContainersRemainsEmpty) {
+TYPED_TEST_P(ListTest, SwapTwoEmptyContainersRemainsEmpty)
+{
     TypeParam a;
     TypeParam b;
     a.swap(b);
@@ -421,13 +463,14 @@ TYPED_TEST_P(ListTest, SwapTwoEmptyContainersRemainsEmpty) {
     EXPECT_TRUE(b.empty());
 }
 
-TYPED_TEST_P(ListTest, SwapBothContainersUsableAfterSwap) {
+TYPED_TEST_P(ListTest, SwapBothContainersUsableAfterSwap)
+{
     using T = typename TypeParam::value_type;
     TypeParam a = ContainerFactory<TypeParam>::Make({TestValues<T>::VALUES[0], TestValues<T>::VALUES[1]});
     TypeParam b = ContainerFactory<TypeParam>::MakeFromTestValues();
     a.swap(b);
-    a.push_back(TestValues<T>::UPDATED);
-    b.push_back(TestValues<T>::UPDATED);
+    a.pushBack(TestValues<T>::UPDATED);
+    b.pushBack(TestValues<T>::UPDATED);
     EXPECT_EQ(a.back(), TestValues<T>::UPDATED);
     EXPECT_EQ(b.back(), TestValues<T>::UPDATED);
 }
@@ -436,14 +479,16 @@ TYPED_TEST_P(ListTest, SwapBothContainersUsableAfterSwap) {
 // ====== Comparision =========
 // ============================
 
-TYPED_TEST_P(ListTest, EqualsTrueForSameElements) {
+TYPED_TEST_P(ListTest, EqualsTrueForSameElements)
+{
     TypeParam a = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam b = ContainerFactory<TypeParam>::MakeFromTestValues();
     EXPECT_TRUE(a == b);
     EXPECT_TRUE(a.equals(b));
 }
 
-TYPED_TEST_P(ListTest, EqualsFalseForDifferentElements) {
+TYPED_TEST_P(ListTest, EqualsFalseForDifferentElements)
+{
     using T = typename TypeParam::value_type;
     TypeParam a = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam b =
@@ -452,7 +497,8 @@ TYPED_TEST_P(ListTest, EqualsFalseForDifferentElements) {
     EXPECT_FALSE(a.equals(b));
 }
 
-TYPED_TEST_P(ListTest, EqualsFalseForDifferentSizes) {
+TYPED_TEST_P(ListTest, EqualsFalseForDifferentSizes)
+{
     using T = typename TypeParam::value_type;
     TypeParam a = ContainerFactory<TypeParam>::Make({TestValues<T>::VALUES[0], TestValues<T>::VALUES[1]});
     TypeParam b = ContainerFactory<TypeParam>::MakeFromTestValues();
@@ -460,7 +506,8 @@ TYPED_TEST_P(ListTest, EqualsFalseForDifferentSizes) {
     EXPECT_FALSE(a.equals(b));
 }
 
-TYPED_TEST_P(ListTest, LessThanLexicographicallyOrders) {
+TYPED_TEST_P(ListTest, LessThanLexicographicallyOrders)
+{
     using T = typename TypeParam::value_type;
     TypeParam a = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam b =
@@ -469,7 +516,8 @@ TYPED_TEST_P(ListTest, LessThanLexicographicallyOrders) {
     EXPECT_TRUE(b > a);
 }
 
-TYPED_TEST_P(ListTest, LessThanTrueWhenSizeSmallerAndPrefixEqual) {
+TYPED_TEST_P(ListTest, LessThanTrueWhenSizeSmallerAndPrefixEqual)
+{
     using T = typename TypeParam::value_type;
     TypeParam a = ContainerFactory<TypeParam>::Make({TestValues<T>::VALUES[0], TestValues<T>::VALUES[1]});
     TypeParam b = ContainerFactory<TypeParam>::MakeFromTestValues();
@@ -477,14 +525,16 @@ TYPED_TEST_P(ListTest, LessThanTrueWhenSizeSmallerAndPrefixEqual) {
     EXPECT_TRUE(b > a);
 }
 
-TYPED_TEST_P(ListTest, LessOrEqualAndGreaterOrEqualTrueWhenEqual) {
+TYPED_TEST_P(ListTest, LessOrEqualAndGreaterOrEqualTrueWhenEqual)
+{
     TypeParam a = ContainerFactory<TypeParam>::MakeFromTestValues();
     TypeParam b = ContainerFactory<TypeParam>::MakeFromTestValues();
     EXPECT_TRUE(a <= b);
     EXPECT_TRUE(a >= b);
 }
 
-TYPED_TEST_P(ListTest, AllComparisonOperatorsTrueForTwoEmptyContainers) {
+TYPED_TEST_P(ListTest, AllComparisonOperatorsTrueForTwoEmptyContainers)
+{
     TypeParam a;
     TypeParam b;
     EXPECT_TRUE(a == b);
@@ -499,7 +549,8 @@ TYPED_TEST_P(ListTest, AllComparisonOperatorsTrueForTwoEmptyContainers) {
 // ========= Resize =========
 // ==========================
 
-TYPED_TEST_P(ListTest, ResizeSameSizeIsNoop) {
+TYPED_TEST_P(ListTest, ResizeSameSizeIsNoop)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.resize(TestValues<T>::SIZE);
@@ -509,13 +560,15 @@ TYPED_TEST_P(ListTest, ResizeSameSizeIsNoop) {
     EXPECT_EQ(list[2], TestValues<T>::VALUES[2]);
 }
 
-TYPED_TEST_P(ListTest, ResizeToZeroFromNonEmpty) {
+TYPED_TEST_P(ListTest, ResizeToZeroFromNonEmpty)
+{
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.resize(0);
     EXPECT_TRUE(list.empty());
 }
 
-TYPED_TEST_P(ListTest, ResizeLargerDefaultInsertsNewElements) {
+TYPED_TEST_P(ListTest, ResizeLargerDefaultInsertsNewElements)
+{
     using T = typename TypeParam::value_type;
     TypeParam list;
     list.resize(2);
@@ -524,7 +577,8 @@ TYPED_TEST_P(ListTest, ResizeLargerDefaultInsertsNewElements) {
     EXPECT_EQ(list[1], T{});
 }
 
-TYPED_TEST_P(ListTest, ResizeLargerPreservesExistingElements) {
+TYPED_TEST_P(ListTest, ResizeLargerPreservesExistingElements)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.resize(TestValues<T>::SIZE + 2);
@@ -536,7 +590,8 @@ TYPED_TEST_P(ListTest, ResizeLargerPreservesExistingElements) {
     EXPECT_EQ(list[4], T{});
 }
 
-TYPED_TEST_P(ListTest, ResizeSmallerReducesSizeKeepsFrontElements) {
+TYPED_TEST_P(ListTest, ResizeSmallerReducesSizeKeepsFrontElements)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.resize(1);
@@ -544,14 +599,16 @@ TYPED_TEST_P(ListTest, ResizeSmallerReducesSizeKeepsFrontElements) {
     EXPECT_EQ(list[0], TestValues<T>::VALUES[0]);
 }
 
-TYPED_TEST_P(ListTest, ResizeSmallerPreservesCapacity) {
+TYPED_TEST_P(ListTest, ResizeSmallerPreservesCapacity)
+{
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     const std::size_t capacityBefore = list.capacity();
     list.resize(1);
     EXPECT_EQ(list.capacity(), capacityBefore);
 }
 
-TYPED_TEST_P(ListTest, ResizeWithValueLargerFillsNewElementsWithValue) {
+TYPED_TEST_P(ListTest, ResizeWithValueLargerFillsNewElementsWithValue)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.resize(TestValues<T>::SIZE + 2, TestValues<T>::UPDATED);
@@ -563,7 +620,8 @@ TYPED_TEST_P(ListTest, ResizeWithValueLargerFillsNewElementsWithValue) {
     EXPECT_EQ(list[4], TestValues<T>::UPDATED);
 }
 
-TYPED_TEST_P(ListTest, ResizeWithValueSmallerReducesSize) {
+TYPED_TEST_P(ListTest, ResizeWithValueSmallerReducesSize)
+{
     using T = typename TypeParam::value_type;
     TypeParam list = ContainerFactory<TypeParam>::MakeFromTestValues();
     list.resize(1, TestValues<T>::UPDATED);
@@ -591,6 +649,6 @@ REGISTER_TYPED_TEST_SUITE_P(
     ResizeSmallerReducesSizeKeepsFrontElements, ResizeSmallerPreservesCapacity,
     ResizeWithValueLargerFillsNewElementsWithValue, ResizeWithValueSmallerReducesSize);
 
-} // namespace StdxTest
+} // namespace stdx_test
 
 #endif

@@ -17,20 +17,33 @@ namespace internal {
 /// @brief Holds span's element count when the size is known at compile time: stores nothing, the count lives in the
 ///        type. The constructor's count argument is a caller-asserted precondition (count == N) and is discarded.
 template <std::size_t N>
-class size_storage {
+class SizeStorage
+{
   public:
-    constexpr explicit size_storage(std::size_t /*count*/) noexcept {}
+    constexpr explicit SizeStorage(std::size_t /*count*/) noexcept
+    {
+    }
 
-    constexpr std::size_t size() const noexcept { return N; }
+    constexpr std::size_t size() const noexcept
+    {
+        return N;
+    }
 };
 
 /// @brief Holds span's element count when the extent is dynamic: stores the count per object.
 template <>
-class size_storage<DYNAMIC_SIZE> {
+class SizeStorage<DYNAMIC_SIZE>
+{
   public:
-    constexpr explicit size_storage(std::size_t count) noexcept : m_size(count) {}
+    constexpr explicit SizeStorage(std::size_t count) noexcept
+        : m_size(count)
+    {
+    }
 
-    constexpr std::size_t size() const noexcept { return m_size; }
+    constexpr std::size_t size() const noexcept
+    {
+        return m_size;
+    }
 
   private:
     std::size_t m_size;
@@ -43,8 +56,9 @@ class size_storage<DYNAMIC_SIZE> {
 /// @tparam N Number of elements in the sequence if known at compile time, otherwise default DYNAMIC_SIZE allows the
 ///           size to be determined at construction time.
 template <typename T, std::size_t N = DYNAMIC_SIZE>
-class span : private internal::size_storage<N> {
-    using size_storage = internal::size_storage<N>;
+class Span : private internal::SizeStorage<N>
+{
+    using SizeStorage = internal::SizeStorage<N>;
 
   public:
     using value_type = T;
@@ -52,8 +66,8 @@ class span : private internal::size_storage<N> {
 
     using iterator = T*;
     using const_iterator = const T*;
-    using reverse_iterator = stdx::reverse_iterator<iterator>;
-    using const_reverse_iterator = stdx::reverse_iterator<const_iterator>;
+    using reverse_iterator = stdx::ReverseIterator<iterator>;
+    using const_reverse_iterator = stdx::ReverseIterator<const_iterator>;
 
     /// @brief Default Constructor. Constructs an empty span (data() == nullptr, size() == 0)
     /// @details This constructor is only enabled when template parameter N == DYNAMIC_SIZE or N == 0.
@@ -62,7 +76,11 @@ class span : private internal::size_storage<N> {
     // N is already known when the class is instantiated, so an unsatisfied condition on N alone is a hard error instead
     // of removing the constructor from overload resolution (SFINAE).
     template <std::size_t E = N, typename std::enable_if<E == DYNAMIC_SIZE || E == 0, int>::type = 0>
-    constexpr span() noexcept : size_storage(0), m_data(nullptr) {}
+    constexpr Span() noexcept
+        : SizeStorage(0)
+        , m_data(nullptr)
+    {
+    }
 
     /// @brief Constructs a span viewing the first `count` elements of the buffer starting at `data`.
     /// @details `count` is a runtime value. As a result, a member variable for this view's size will be stored and
@@ -71,7 +89,11 @@ class span : private internal::size_storage<N> {
     /// @param data Pointer to the first element to view.
     /// @param count Number of elements in the buffer starting at `data`.
     template <std::size_t E = N, typename std::enable_if<E == DYNAMIC_SIZE, int>::type = 0>
-    constexpr span(T* data, std::size_t count) noexcept : size_storage(count), m_data(data) {}
+    constexpr Span(T* data, std::size_t count) noexcept
+        : SizeStorage(count)
+        , m_data(data)
+    {
+    }
 
     /// @brief Constructs a span viewing the first `N` elements of the buffer starting at `data`.
     /// @details `N` is a compile time constant. As a result, no member variable for this view's size is needed and
@@ -79,28 +101,32 @@ class span : private internal::size_storage<N> {
     ///          This constructor is only enabled when template parameter N != DYNAMIC_SIZE.
     /// @param data Pointer to the first element to view.
     template <std::size_t E = N, typename std::enable_if<E != DYNAMIC_SIZE, int>::type = 0>
-    constexpr span(T* data) noexcept : size_storage(N), m_data(data) {}
+    constexpr Span(T* data) noexcept
+        : SizeStorage(N)
+        , m_data(data)
+    {
+    }
 
     /// @brief Default copy constructor
     /// @param other Object to copy
-    constexpr span(const span& other) noexcept = default;
+    constexpr Span(const Span& other) noexcept = default;
 
     /// @brief Default move constructor
     /// @param other Object to move
-    constexpr span(span&& other) noexcept = default;
+    constexpr Span(Span&& other) noexcept = default;
 
     /// @brief Default destructor
-    constexpr ~span() = default;
+    constexpr ~Span() = default;
 
     /// @brief Default copy assignment operator
     /// @param other object to copy
     /// @return Reference to this
-    constexpr span& operator=(const span& other) noexcept = default;
+    constexpr Span& operator=(const Span& other) noexcept = default;
 
     /// @brief Default move assignment operator
     /// @param other object to move
     /// @return Reference to this
-    constexpr span& operator=(span&& other) noexcept = default;
+    constexpr Span& operator=(Span&& other) noexcept = default;
 
     // ==========================
     // ===== Element Access =====
@@ -111,14 +137,20 @@ class span : private internal::size_storage<N> {
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Reference to the first element.
-    constexpr T& front() const { return m_data[0]; }
+    constexpr T& front() const
+    {
+        return m_data[0];
+    }
 
     /// @brief Returns a reference to the last element in the span.
     /// @details Behavior is undefined if the span is empty.
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Reference to the last element.
-    constexpr T& back() const { return m_data[size() - 1]; }
+    constexpr T& back() const
+    {
+        return m_data[size() - 1];
+    }
 
     /// @brief Returns a reference to the element at specified location `index`, with bounds checking.
     /// @details If index is not within the range of the span, an exception of type std::out_of_range is thrown.
@@ -134,14 +166,20 @@ class span : private internal::size_storage<N> {
     ///          Space: O(1)
     /// @param index Position of the element to return.
     /// @return Reference to the requested element.
-    constexpr T& operator[](std::size_t index) const { return m_data[index]; }
+    constexpr T& operator[](std::size_t index) const
+    {
+        return m_data[index];
+    }
 
     /// @brief Returns a pointer to the underlying element storage. The range [data(), data() + size()) is always valid.
     /// @details Time:  O(1)
     ///          Space: O(1)
     ///          If the span is empty, data() may be nullptr and is not dereferenceable.
     /// @return Pointer to the first element.
-    constexpr T* data() const noexcept { return m_data; }
+    constexpr T* data() const noexcept
+    {
+        return m_data;
+    }
 
     // ===================
     // ==== Iterators ====
@@ -152,42 +190,60 @@ class span : private internal::size_storage<N> {
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Contiguous iterator to the first element.
-    constexpr iterator begin() { return iterator(m_data); }
+    constexpr iterator begin()
+    {
+        return iterator(m_data);
+    }
 
     /// @brief Returns a constant iterator to the first element of the span.
     /// @details If the span is empty, the returned iterator will be equal to end().
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Constant contiguous iterator to the first element.
-    constexpr const_iterator begin() const { return const_iterator(m_data); }
+    constexpr const_iterator begin() const
+    {
+        return const_iterator(m_data);
+    }
 
     /// @brief Returns a constant iterator to the first element of the span.
     /// @details If the span is empty, the returned iterator will be equal to end().
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Constant contiguous iterator to the first element.
-    constexpr const_iterator cbegin() const { return const_iterator(m_data); }
+    constexpr const_iterator cbegin() const
+    {
+        return const_iterator(m_data);
+    }
 
     /// @brief Returns an iterator past the last element of the span.
     /// @details This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Contiguous iterator past the last element.
-    constexpr iterator end() { return iterator(m_data + size()); }
+    constexpr iterator end()
+    {
+        return iterator(m_data + size());
+    }
 
     /// @brief Returns a const iterator past the last element of the span.
     /// @details This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Constant contiguous iterator past the last element.
-    constexpr const_iterator end() const { return const_iterator(m_data + size()); }
+    constexpr const_iterator end() const
+    {
+        return const_iterator(m_data + size());
+    }
 
     /// @brief Returns a const iterator past the last element of the span.
     /// @details This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Constant contiguous iterator past the last element.
-    constexpr const_iterator cend() const { return const_iterator(m_data + size()); }
+    constexpr const_iterator cend() const
+    {
+        return const_iterator(m_data + size());
+    }
 
     /// @brief Returns a reverse iterator to the first element of the reversed span.
     /// @details It corresponds to the last element of the non-reversed span.
@@ -195,7 +251,10 @@ class span : private internal::size_storage<N> {
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Reverse contiguous iterator to the first element.
-    constexpr reverse_iterator rbegin() { return reverse_iterator(m_data + size()); }
+    constexpr reverse_iterator rbegin()
+    {
+        return reverse_iterator(m_data + size());
+    }
 
     /// @brief Returns a constant reverse iterator to the first element of the reversed span.
     /// @details It corresponds to the last element of the non-reversed span.
@@ -203,7 +262,10 @@ class span : private internal::size_storage<N> {
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Constant reverse contiguous iterator to the first element.
-    constexpr const_reverse_iterator rbegin() const { return const_reverse_iterator(m_data + size()); }
+    constexpr const_reverse_iterator rbegin() const
+    {
+        return const_reverse_iterator(m_data + size());
+    }
 
     /// @brief Returns a constant reverse iterator to the first element of the reversed span.
     /// @details It corresponds to the last element of the non-reversed span.
@@ -211,7 +273,10 @@ class span : private internal::size_storage<N> {
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Constant reverse contiguous iterator to the first element.
-    constexpr const_reverse_iterator crbegin() const { return const_reverse_iterator(m_data + size()); }
+    constexpr const_reverse_iterator crbegin() const
+    {
+        return const_reverse_iterator(m_data + size());
+    }
 
     /// @brief Returns a reverse iterator past the last element of the reversed span.
     /// @details It corresponds to the element preceding the first element of the non-reversed span.
@@ -219,7 +284,10 @@ class span : private internal::size_storage<N> {
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Reverse contiguous iterator to the element following the last element.
-    constexpr reverse_iterator rend() { return reverse_iterator(m_data); }
+    constexpr reverse_iterator rend()
+    {
+        return reverse_iterator(m_data);
+    }
 
     /// @brief Returns a constant reverse iterator past the last element of the reversed span.
     /// @details It corresponds to the element preceding the first element of the non-reversed span.
@@ -227,7 +295,10 @@ class span : private internal::size_storage<N> {
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Constant reverse contiguous iterator to the element following the last element.
-    constexpr const_reverse_iterator rend() const { return const_reverse_iterator(m_data); }
+    constexpr const_reverse_iterator rend() const
+    {
+        return const_reverse_iterator(m_data);
+    }
 
     /// @brief Returns a constant reverse iterator past the last element of the reversed span.
     /// @details It corresponds to the element preceding the first element of the non-reversed span.
@@ -235,7 +306,10 @@ class span : private internal::size_storage<N> {
     ///          Time:  O(1)
     ///          Space: O(1)
     /// @return Constant reverse contiguous iterator to the element following the last element.
-    constexpr const_reverse_iterator crend() const { return const_reverse_iterator(m_data); }
+    constexpr const_reverse_iterator crend() const
+    {
+        return const_reverse_iterator(m_data);
+    }
 
     // ====================
     // ======= Size =======
@@ -245,17 +319,26 @@ class span : private internal::size_storage<N> {
     /// @details Time:  O(1)
     ///          Space: O(1)
     /// @return The number of elements in the span.
-    constexpr std::size_t size() const noexcept { return size_storage::size(); }
+    constexpr std::size_t size() const noexcept
+    {
+        return SizeStorage::size();
+    }
 
     /// @brief Returns the size of the sequence in bytes.
     /// @return size() * sizeof(element_type)
-    constexpr std::size_t size_bytes() const noexcept { return size() * sizeof(T); }
+    constexpr std::size_t sizeBytes() const noexcept
+    {
+        return size() * sizeof(T);
+    }
 
     /// @brief Checks if the span has no elements. Equivalent to size() == 0.
     /// @details Time:  O(1)
     ///          Space: O(1)
     /// @return true if the span is empty, false otherwise.
-    constexpr bool empty() const noexcept { return size() == 0; }
+    constexpr bool empty() const noexcept
+    {
+        return size() == 0;
+    }
 
   private:
     /// @brief Pointer to a contiguous span of elements
@@ -272,14 +355,17 @@ class span : private internal::size_storage<N> {
 /// @param array C style array to view.
 /// @return A view viewing the contents of `array` with static size N
 template <typename T, std::size_t N>
-constexpr span<T, N> make_span(T (&array)[N]) noexcept {
-    return span<T, N>(array);
+constexpr Span<T, N> makeSpan(T (&array)[N]) noexcept
+{
+    return Span<T, N>(array);
 }
 
 /// region - Span Inline Implementation ///
 template <typename T, std::size_t N>
-constexpr T& span<T, N>::at(std::size_t index) const {
-    if (index >= size()) {
+constexpr T& Span<T, N>::at(std::size_t index) const
+{
+    if (index >= size())
+    {
         throw std::out_of_range("Index is outside the bounds of the container");
     }
     return m_data[index];

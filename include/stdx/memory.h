@@ -17,7 +17,8 @@ namespace internal {
 ///        std::is_empty<Allocator>, the same default C++17 specifies.
 /// @tparam Allocator The allocator type to inspect.
 template <typename Allocator>
-class alloc_is_always_equal {
+class AllocIsAlwaysEqual
+{
     /// @brief Selected via SFINAE when Allocator declares a member type is_always_equal.
     template <typename A>
     static typename A::is_always_equal test(int);
@@ -39,13 +40,17 @@ class alloc_is_always_equal {
 /// frequent reallocations as the array_list grows.
 /// @tparam size_type The unsigned integer type used for capacity values.
 ///                   Defaults to std::size_t.
-template <typename size_type = std::size_t>
-struct exact_growth {
+template <typename SizeType = std::size_t>
+struct ExactGrowth
+{
     /// @brief Returns the required capacity without any growth factor.
     /// @param currentCapacity The current capacity (ignored by this policy).
     /// @param requiredCapacity The minimum capacity needed to accommodate new elements.
     /// @return The required_capacity unchanged, ensuring no overallocation.
-    size_type operator()(size_type /*currentCapacity*/, size_type requiredCapacity) const { return requiredCapacity; }
+    SizeType operator()(SizeType /*currentCapacity*/, SizeType requiredCapacity) const
+    {
+        return requiredCapacity;
+    }
 };
 
 /// @brief Growth policy that doubles capacity each time it needs to grow
@@ -54,16 +59,20 @@ struct exact_growth {
 /// current capacity until it meets or exceeds the required size.
 /// @tparam size_type size_type The unsigned integer type used for capacity values.
 ///                   Defaults to std::size_t.
-template <typename size_type = std::size_t>
-struct doubling_growth {
+template <typename SizeType = std::size_t>
+struct DoublingGrowth
+{
     /// @brief Computes new capacity by doubling until it meets or exceeds required
     /// @param currentCapacity The current allocated capacity
     /// @param requiredCapacity The minimum capacity needed for new elements
     /// @return size_type The new capacity which will always be >= required_capacity
-    size_type operator()(size_type currentCapacity, size_type requiredCapacity) const {
-        if (currentCapacity < requiredCapacity) {
+    SizeType operator()(SizeType currentCapacity, SizeType requiredCapacity) const
+    {
+        if (currentCapacity < requiredCapacity)
+        {
             currentCapacity = currentCapacity == 0 ? 1 : currentCapacity * 2;
-            while (currentCapacity < requiredCapacity) {
+            while (currentCapacity < requiredCapacity)
+            {
                 currentCapacity *= 2;
             }
         }
@@ -79,23 +88,27 @@ struct doubling_growth {
 ///          by successive smaller allocations while elements are already present.
 /// @tparam N           The maximum number of elements this container may ever hold.
 /// @tparam size_type   The unsigned integer type used for capacity values. Defaults to std::size_t.
-template <std::size_t N, typename size_type = std::size_t>
-struct no_growth {
+template <std::size_t N, typename SizeType = std::size_t>
+struct NoGrowth
+{
     /// @brief Returns N for any request that fits; throws std::length_error otherwise.
     /// @param current_capacity The current allocated capacity (unused).
     /// @param required_capacity The minimum capacity needed for the pending operation.
     /// @return N — the fixed capacity of the container.
     /// @exception std::length_error If required_capacity > N.
-    size_type operator()(size_type /*currentCapacity*/, size_type requiredCapacity) const {
-        if (requiredCapacity > static_cast<size_type>(N)) {
+    SizeType operator()(SizeType /*currentCapacity*/, SizeType requiredCapacity) const
+    {
+        if (requiredCapacity > static_cast<SizeType>(N))
+        {
             throw std::length_error("container cannot grow beyond fixed capacity");
         }
-        return static_cast<size_type>(N);
+        return static_cast<SizeType>(N);
     }
 };
 
 template <typename T>
-class allocator {
+class Allocator
+{
   public:
     using value_type = T;
 
@@ -137,34 +150,36 @@ class allocator {
     // max_size()
 
     /// @brief Default constructor
-    allocator() = default;
+    Allocator() = default;
 
     /// @brief Copy constructor
     /// @param other allocator to copy.
-    allocator(const allocator& other) = default;
+    Allocator(const Allocator& other) = default;
 
     /// @brief Move constructor
     /// @param other allocator to move.
-    allocator(allocator&& other) = default;
+    Allocator(Allocator&& other) = default;
 
     /// @brief Destructor.
-    ~allocator() = default;
+    ~Allocator() = default;
 
     /// @brief Copy assignment operator
     /// @param other allocator to copy
     /// @return Reference to this object
-    allocator& operator=(const allocator& other) = default;
+    Allocator& operator=(const Allocator& other) = default;
 
     /// @brief Move assignment operator
     /// @param other allocator to move
     /// @return Reference to this object
-    allocator& operator=(allocator&& other) = default;
+    Allocator& operator=(Allocator&& other) = default;
 
     /// @brief Copy constructor
     /// @tparam U Other allocator's type
     /// @param /*unused*/
     template <typename U>
-    allocator(const allocator<U>& /*unused*/) noexcept {}
+    Allocator(const Allocator<U>& /*unused*/) noexcept
+    {
+    }
 
     /// @brief Allocates n * sizeof(T) bytes of uninitialized storage by calling ::operator new(std::size_t) or
     /// ::operator new(std::size_t, std::align_val_t)(since C++17), but it is unspecified when and how this function is
@@ -184,14 +199,15 @@ class allocator {
 
     /// @brief Returns the maximum theoretically possible value of n, for which the call allocate(n) could succeed.
     /// @return The maximum supported allocation size.
-    constexpr std::size_t max_size() const noexcept;
+    constexpr std::size_t max_size() const noexcept; // NOLINT(readability-identifier-naming) STL API Naming convention
 
     /// @brief Compares two allocators
     /// @tparam U Other allocator's type
     /// @param
     /// @return true always because allocators of any type T are equal
     template <typename U>
-    bool constexpr equals(const allocator<U>& /*unused*/) const noexcept {
+    bool constexpr equals(const Allocator<U>& /*unused*/) const noexcept
+    {
         return true;
     }
 
@@ -201,7 +217,8 @@ class allocator {
     /// @param rhs right hand side
     /// @return true always because allocators of any type T are equal
     template <typename U>
-    friend constexpr bool operator==(const allocator<T>& lhs, const allocator<U>& rhs) noexcept {
+    friend constexpr bool operator==(const Allocator<T>& lhs, const Allocator<U>& rhs) noexcept
+    {
         return lhs.equals(rhs);
     }
 
@@ -211,7 +228,8 @@ class allocator {
     /// @param rhs right hand side iterator
     /// @return true always because allocators of any type T are equal
     template <typename U>
-    friend constexpr bool operator!=(const allocator<T>& lhs, const allocator<U>& rhs) noexcept {
+    friend constexpr bool operator!=(const Allocator<T>& lhs, const Allocator<U>& rhs) noexcept
+    {
         return !lhs.equals(rhs);
     }
 };
@@ -219,12 +237,14 @@ class allocator {
 // ===== Inline allocator Implementation =====
 
 template <typename T>
-inline T* allocator<T>::allocate(std::size_t n) {
+inline T* Allocator<T>::allocate(std::size_t n)
+{
     return static_cast<T*>(::operator new(n * sizeof(T)));
 }
 
 template <typename T>
-inline void allocator<T>::deallocate(T* ptr, std::size_t /*unused*/) noexcept {
+inline void Allocator<T>::deallocate(T* ptr, std::size_t /*unused*/) noexcept
+{
     // #if __cpp_sized_deallocation
     //         ::operator delete(ptr, n * sizeof(T));
     // #else
@@ -234,7 +254,8 @@ inline void allocator<T>::deallocate(T* ptr, std::size_t /*unused*/) noexcept {
 }
 
 template <typename T>
-constexpr std::size_t allocator<T>::max_size() const noexcept {
+constexpr std::size_t Allocator<T>::max_size() const noexcept
+{
     return static_cast<std::size_t>(-1) / sizeof(T);
 }
 

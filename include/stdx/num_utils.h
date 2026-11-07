@@ -27,7 +27,7 @@ bool within(const T& val, const T& low, const T& high);
  * @return True if val is greater than low AND val is less than high.
  */
 template <typename T>
-bool within_exclusive(const T& val, const T& low, const T& high);
+bool withinExclusive(const T& val, const T& low, const T& high);
 
 /**
  * @brief Get if a value val is outside values low and high (exclusive).
@@ -53,7 +53,7 @@ bool outside(const T& val, const T& low, const T& high);
  * @return True if val is less than or equal to low OR val is greater than or equal to high.
  */
 template <typename T>
-bool outside_inclusive(const T& val, const T& low, const T& high);
+bool outsideInclusive(const T& val, const T& low, const T& high);
 
 /**
  * @brief Clamp a value val so that it is within a range.
@@ -71,32 +71,40 @@ bool clamp(T& val, const T& low, const T& high);
 // inline implementation //
 
 template <typename T>
-inline bool within(const T& val, const T& low, const T& high) {
+inline bool within(const T& val, const T& low, const T& high)
+{
     return val >= low && val <= high;
 }
 
 template <typename T>
-inline bool within_exclusive(const T& val, const T& low, const T& high) {
+inline bool withinExclusive(const T& val, const T& low, const T& high)
+{
     return val > low && val < high;
 }
 
 template <typename T>
-inline bool outside(const T& val, const T& low, const T& high) {
+inline bool outside(const T& val, const T& low, const T& high)
+{
     return val < low || val > high;
 }
 
 template <typename T>
-inline bool outside_inclusive(const T& val, const T& low, const T& high) {
+inline bool outsideInclusive(const T& val, const T& low, const T& high)
+{
     return val <= low || val >= high;
 }
 
 template <typename T>
-inline bool clamp(T& val, const T& low, const T& high) {
+inline bool clamp(T& val, const T& low, const T& high)
+{
     bool limited = false;
-    if (val < low) {
+    if (val < low)
+    {
         val = low;
         limited = true;
-    } else if (val > high) {
+    }
+    else if (val > high)
+    {
         val = high;
         limited = true;
     }

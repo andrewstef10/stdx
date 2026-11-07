@@ -8,7 +8,8 @@ namespace stdx {
 /// @param value T reference to convert to const T
 /// @return Constant T reference
 template <typename T>
-constexpr const T& as_const(T& value) noexcept {
+constexpr const T& asConst(T& value) noexcept
+{
     return value;
 }
 

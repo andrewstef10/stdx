@@ -4,4 +4,6 @@
 #include <stdx/array.h>
 #include <stdx/array_list.h>
 #include <stdx/fixed_array_list.h>
+#include <stdx/num_utils.h>
 #include <stdx/span.h>
+#include <stdx/utilities.h>

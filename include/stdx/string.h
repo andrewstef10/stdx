@@ -176,7 +176,7 @@ bool contains(const char* str, char c);
 ///              characters to search for.
 /// @return true if any character from chars exists in `str`; otherwise false.
 /// @warning Passing a null pointer results in undefined behavior.
-bool contains_any(const char* str, const char* chars);
+bool containsAny(const char* str, const char* chars);
 
 /// @brief Removes leading trim characters from a null-terminated C-string.
 /// @details Does not allocate memory or modify characters.
@@ -191,8 +191,8 @@ bool contains_any(const char* str, const char* chars);
 ///                  Defaults to a space character.
 /// @return Pointer to the first character in `str` that is not contained in `trimChars`.
 /// @warning Passing a null pointer results in undefined behavior.
-const char* trim_front(const char* str, const char* trimChars = " ");
-char* trim_front(char* str, const char* trimChars = " ");
+const char* trimFront(const char* str, const char* trimChars = " ");
+char* trimFront(char* str, const char* trimChars = " ");
 
 /// @brief Removes trailing trim characters from a null-terminated C-string.
 /// @details Does not allocate memory. Replaces trailing characters found in `trimChars`
@@ -210,7 +210,7 @@ char* trim_front(char* str, const char* trimChars = " ");
 /// @return Pointer to `str`.
 /// @warning Passing a null pointer results in undefined behavior.
 /// @warning `len` must match the actual string length.
-char* trim_back(char* str, std::size_t len, const char* trimChars = " ");
+char* trimBack(char* str, std::size_t len, const char* trimChars = " ");
 
 /// @brief Removes leading and trailing trim characters from a null-terminated C-string.
 /// @details Does not allocate memory. Replaces trailing characters found in `trimChars`
@@ -239,51 +239,52 @@ char* trim(char* str, std::size_t len, const char* trimChars = " ");
  * @param N The initial capacity of this string allocated on the stack.
  */
 template <std::size_t N = DEFAULT_STRING_CAPACITY_BYTES>
-class string {
+class String
+{
   public:
     using iterator = char*;
     using const_iterator = const char*;
-    using reverse_iterator = stdx::reverse_iterator<iterator>;
-    using const_reverse_iterator = stdx::reverse_iterator<const_iterator>;
+    using reverse_iterator = stdx::ReverseIterator<iterator>;
+    using const_reverse_iterator = stdx::ReverseIterator<const_iterator>;
 
     /**
      * @brief Default constructor.
      *
      * Creates an empty string.
      */
-    string();
+    String();
 
     /**
      * @brief Copy constructor.
      *
      * @param other string to copy.
      */
-    string(const string& other);
+    String(const String& other);
     template <std::size_t M>
-    string(const string<M>& other);
+    String(const String<M>& other);
 
     /**
      * @brief C string constructor.
      *
      * @param cstr C string.
      */
-    string(const char* cstr);
+    String(const char* cstr);
 
     /**
      * @brief Character constructor.
      *
      * @param c A character.
      */
-    string(char c);
+    String(char c);
 
     /**
      * @brief Destructor.
      */
-    ~string();
+    ~String();
 
     /// @brief Move constructor
     /// @param
-    string(string&&) = default;
+    String(String&&) = default;
 
     /**
      * @brief Assigns a new value to the string, replacing its current contents.
@@ -291,13 +292,15 @@ class string {
      * @param other string object to copy if different from *this.
      * @return Reference to this string object
      */
-    string& operator=(const string& other) {
-        assign(other.c_str(), other.size());
+    String& operator=(const String& other)
+    {
+        assign(other.cStr(), other.size());
         return *this;
     }
     template <std::size_t M>
-    string& operator=(const string<M>& other) {
-        assign(other.c_str(), other.size());
+    String& operator=(const String<M>& other)
+    {
+        assign(other.cStr(), other.size());
         return *this;
     }
 
@@ -308,7 +311,8 @@ class string {
      * string.
      * @return Reference to this string object
      */
-    string& operator=(const char* cstr) {
+    String& operator=(const char* cstr)
+    {
         assign(cstr, strlen(cstr));
         return *this;
     }
@@ -319,12 +323,12 @@ class string {
      * @param c A character. The string value is set to a single copy of this character.
      * @return Reference to this string object
      */
-    string& operator=(char c);
+    String& operator=(char c);
 
     /// @brief Move assignment operator
     /// @param
     /// @return Reference to this string object
-    string& operator=(string&&) = default;
+    String& operator=(String&&) = default;
 
     //////////////////////// Capacity ////////////////////////
 
@@ -336,7 +340,10 @@ class string {
      *
      * @return The number of bytes in the string.
      */
-    std::size_t size() const { return m_size; }
+    std::size_t size() const
+    {
+        return m_size;
+    }
 
     /**
      * @brief Return size of allocated storage
@@ -347,14 +354,20 @@ class string {
      *
      * @return The size of the storage capacity currently allocated for the string.
      */
-    std::size_t capacity() const { return m_capacity; }
+    std::size_t capacity() const
+    {
+        return m_capacity;
+    }
 
     /**
      * @brief Returns whether the string is empty (i.e. whether its length is 0).
      *
      * @return true if the string length is 0, false otherwise.
      */
-    bool empty() const { return m_size == 0; }
+    bool empty() const
+    {
+        return m_size == 0;
+    }
 
     //////////////////////// Element Access ////////////////////////
 
@@ -366,7 +379,10 @@ class string {
      *
      * @return A pointer to the c-string representation of the string object's value.
      */
-    const char* c_str() const { return get_data(); }
+    const char* cStr() const
+    {
+        return getData();
+    }
 
     /**
      * @brief Returns a reference to the character at specified location pos if pos < size(), or if pos == size()
@@ -376,39 +392,81 @@ class string {
      * @param pos Position of the character to return
      * @return Reference to char at position pos
      */
-    char& operator[](std::size_t pos) { return get_data()[pos]; }
-    const char& operator[](std::size_t pos) const { return get_data()[pos]; }
+    char& operator[](std::size_t pos)
+    {
+        return getData()[pos];
+    }
+    const char& operator[](std::size_t pos) const
+    {
+        return getData()[pos];
+    }
 
     //////////////////////// Iterators ////////////////////////
 
     /// @brief Returns a contiguous iterator to the first element of *this.
     /// If *this is empty, the returned iterator will be equal to end().
     /// @return contiguous iterator to the first element.
-    iterator begin() { return iterator(get_data()); }
-    const_iterator begin() const { return const_iterator(get_data()); }
-    const_iterator cbegin() const { return const_iterator(get_data()); }
+    iterator begin()
+    {
+        return iterator(getData());
+    }
+    const_iterator begin() const
+    {
+        return const_iterator(getData());
+    }
+    const_iterator cbegin() const
+    {
+        return const_iterator(getData());
+    }
 
     /// @brief Returns a contiguous iterator past the last element of *this.
     /// This returned iterator only acts as a sentinel. It is not guaranteed to be dereferenceable.
     /// @return contiguous iterator past the last element.
-    iterator end() { return iterator(get_data() + m_size); }
-    const_iterator end() const { return const_iterator(get_data() + m_size); }
-    const_iterator cend() const { return const_iterator(get_data() + m_size); }
+    iterator end()
+    {
+        return iterator(getData() + m_size);
+    }
+    const_iterator end() const
+    {
+        return const_iterator(getData() + m_size);
+    }
+    const_iterator cend() const
+    {
+        return const_iterator(getData() + m_size);
+    }
 
     /// @brief Returns a reverse contiguous iterator to the first element of the reversed *this. It corresponds to the
     /// last element of the non-reversed *this. If *this is empty, the returned iterator will be equal to end().
     /// @return Reverse contiguous iterator to the first element.
-    reverse_iterator rbegin() { return reverse_iterator(get_data() + m_size); }
-    const_reverse_iterator rbegin() const { return const_reverse_iterator(get_data() + m_size); }
-    const_reverse_iterator crbegin() const { return const_reverse_iterator(get_data() + m_size); }
+    reverse_iterator rbegin()
+    {
+        return reverse_iterator(getData() + m_size);
+    }
+    const_reverse_iterator rbegin() const
+    {
+        return const_reverse_iterator(getData() + m_size);
+    }
+    const_reverse_iterator crbegin() const
+    {
+        return const_reverse_iterator(getData() + m_size);
+    }
 
     /// @brief Returns a reverse contiguous iterator past the last element of the reversed *this. It corresponds to the
     /// element preceding the first element of the non-reversed *this. This returned iterator only acts as a sentinel.
     /// It is not guaranteed to be dereferenceable.
     /// @return Reverse contiguous iterator to the element following the last element.
-    reverse_iterator rend() { return reverse_iterator(get_data()); }
-    const_reverse_iterator rend() const { return const_reverse_iterator(get_data()); }
-    const_reverse_iterator crend() const { return const_reverse_iterator(get_data()); }
+    reverse_iterator rend()
+    {
+        return reverse_iterator(getData());
+    }
+    const_reverse_iterator rend() const
+    {
+        return const_reverse_iterator(getData());
+    }
+    const_reverse_iterator crend() const
+    {
+        return const_reverse_iterator(getData());
+    }
 
     //////////////////////// Modifiers ////////////////////////
 
@@ -420,13 +478,15 @@ class string {
      * @param other A string object, whose value is copied at the end.
      * @return Reference to this string object
      */
-    string& operator+=(const string<N>& other) {
-        append(other.c_str(), other.size());
+    String& operator+=(const String<N>& other)
+    {
+        append(other.cStr(), other.size());
         return *this;
     }
     template <std::size_t M>
-    string& operator+=(const string<M>& other) {
-        append(other.c_str(), other.size());
+    String& operator+=(const String<M>& other)
+    {
+        append(other.cStr(), other.size());
         return *this;
     }
 
@@ -438,7 +498,8 @@ class string {
      * @param cstr Pointer to a null-terminated sequence of characters. The sequence is copied at the end of the string.
      * @return Reference to this string object
      */
-    string& operator+=(const char* cstr) {
+    String& operator+=(const char* cstr)
+    {
         append(cstr, strlen(cstr));
         return *this;
     }
@@ -451,7 +512,7 @@ class string {
      * @param c A character, which is appended to the current value of the string.
      * @return Reference to this string object
      */
-    string& operator+=(char c);
+    String& operator+=(char c);
 
     /**
      * @brief Erases the contents of the string, which becomes an empty string (with a length of 0 characters).
@@ -462,12 +523,12 @@ class string {
     std::size_t m_size;     // length of the string excluding the null terminator
     std::size_t m_capacity; // number of bytes currently allocated for the string excluding the null terminator
 
-    union string_data {
+    union StringData {
         // initial stack allocated memory for this string
-        char stack_buffer[N + 1];
+        char stackBuffer[N + 1];
 
         // pointer to strings memory after capacity has grown
-        char* heap_ptr;
+        char* heapPtr;
     } m_data;
 
     /**
@@ -475,8 +536,14 @@ class string {
      *
      * @returns Pointer to the string's character buffer
      */
-    char* get_data() { return m_capacity > N ? m_data.heap_ptr : m_data.stack_buffer; }
-    const char* get_data() const { return m_capacity > N ? m_data.heap_ptr : m_data.stack_buffer; }
+    char* getData()
+    {
+        return m_capacity > N ? m_data.heapPtr : m_data.stackBuffer;
+    }
+    const char* getData() const
+    {
+        return m_capacity > N ? m_data.heapPtr : m_data.stackBuffer;
+    }
 
     /**
      * @brief Delete any dynamically allocated memory for this class
@@ -490,7 +557,7 @@ class string {
      * @param minimumSize
      * @returns The new capacity in bytes that should be allocated to fit minimumSize bytes of data.
      */
-    size_t calculate_new_capacity(std::size_t minimumSize) const;
+    size_t calculateNewCapacity(std::size_t minimumSize) const;
 
     /**
      * @brief Set this string equal to a C string
@@ -525,9 +592,9 @@ class string {
  * @return True if lhs and rhs are equal, false otherwise.
  */
 template <std::size_t N>
-bool operator==(const string<N>& lhs, const string<N>& rhs);
+bool operator==(const String<N>& lhs, const String<N>& rhs);
 template <std::size_t N, std::size_t M>
-bool operator==(const string<N>& lhs, const string<M>& rhs);
+bool operator==(const String<N>& lhs, const String<M>& rhs);
 
 /**
  * @brief C string Equality Operator
@@ -537,9 +604,10 @@ bool operator==(const string<N>& lhs, const string<M>& rhs);
  * @return True if lhs and rhs are equal, false otherwise.
  */
 template <std::size_t N>
-bool operator==(const string<N>& lhs, const char* rhs);
+bool operator==(const String<N>& lhs, const char* rhs);
 template <std::size_t N>
-inline bool operator==(const char* lhs, const string<N>& rhs) {
+inline bool operator==(const char* lhs, const String<N>& rhs)
+{
     return rhs == lhs;
 }
 
@@ -551,9 +619,10 @@ inline bool operator==(const char* lhs, const string<N>& rhs) {
  * @return True if lhs and rhs are equal, false otherwise.
  */
 template <std::size_t N>
-bool operator==(const string<N>& lhs, char rhs);
+bool operator==(const String<N>& lhs, char rhs);
 template <std::size_t N>
-inline bool operator==(char lhs, const string<N>& rhs) {
+inline bool operator==(char lhs, const String<N>& rhs)
+{
     return rhs == lhs;
 }
 
@@ -565,11 +634,13 @@ inline bool operator==(char lhs, const string<N>& rhs) {
  * @return True if lhs and rhs are equal, false otherwise.
  */
 template <std::size_t N>
-inline bool operator!=(const string<N>& lhs, const string<N>& rhs) {
+inline bool operator!=(const String<N>& lhs, const String<N>& rhs)
+{
     return !(lhs == rhs);
 }
 template <std::size_t N, std::size_t M>
-inline bool operator!=(const string<N>& lhs, const string<M>& rhs) {
+inline bool operator!=(const String<N>& lhs, const String<M>& rhs)
+{
     return !(lhs == rhs);
 }
 
@@ -581,11 +652,13 @@ inline bool operator!=(const string<N>& lhs, const string<M>& rhs) {
  * @return True if lhs and rhs are equal, false otherwise.
  */
 template <std::size_t N>
-inline bool operator!=(const string<N>& lhs, const char* rhs) {
+inline bool operator!=(const String<N>& lhs, const char* rhs)
+{
     return !(lhs == rhs);
 }
 template <std::size_t N>
-inline bool operator!=(const char* lhs, const string<N>& rhs) {
+inline bool operator!=(const char* lhs, const String<N>& rhs)
+{
     return !(rhs == lhs);
 }
 
@@ -597,81 +670,115 @@ inline bool operator!=(const char* lhs, const string<N>& rhs) {
  * @return True if lhs and rhs are equal, false otherwise.
  */
 template <std::size_t N>
-inline bool operator!=(const string<N>& lhs, char rhs) {
+inline bool operator!=(const String<N>& lhs, char rhs)
+{
     return !(lhs == rhs);
 }
 template <std::size_t N>
-inline bool operator!=(char lhs, const string<N>& rhs) {
+inline bool operator!=(char lhs, const String<N>& rhs)
+{
     return !(rhs == lhs);
 }
 
 //////////////////////// Inline string Implementation ////////////////////////
 
 template <std::size_t N>
-inline string<N>::string() : m_size(0), m_capacity(N), m_data{{'\0'}} {}
+inline String<N>::String()
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
+}
 
 template <std::size_t N>
-inline string<N>::string(const string<N>& other) : m_size(0), m_capacity(N), m_data{{'\0'}} {
-    assign(other.c_str(), other.size());
+inline String<N>::String(const String<N>& other)
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
+    assign(other.cStr(), other.size());
 }
 
 template <std::size_t N>
 template <std::size_t M>
-inline string<N>::string(const string<M>& other) : m_size(0), m_capacity(N), m_data{{'\0'}} {
-    assign(other.c_str(), other.size());
+inline String<N>::String(const String<M>& other)
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
+    assign(other.cStr(), other.size());
 }
 
 template <std::size_t N>
-inline string<N>::string(const char* cstr) : m_size(0), m_capacity(N), m_data{{'\0'}} {
+inline String<N>::String(const char* cstr)
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
     assign(cstr, strlen(cstr));
 }
 
 template <std::size_t N>
-inline string<N>::string(char c) : m_size(0), m_capacity(N), m_data{{'\0'}} {
+inline String<N>::String(char c)
+    : m_size(0)
+    , m_capacity(N)
+    , m_data{{'\0'}}
+{
     char buff[] = {c, '\0'};
     assign(buff, 1);
 }
 
 template <std::size_t N>
-inline string<N>::~string() {
+inline String<N>::~String()
+{
     deallocate();
 }
 
 template <std::size_t N>
-inline string<N>& string<N>::operator=(char c) {
+inline String<N>& String<N>::operator=(char c)
+{
     char buff[] = {c, '\0'};
     assign(buff, 1);
     return *this;
 }
 
 template <std::size_t N>
-inline string<N>& string<N>::operator+=(char c) {
+inline String<N>& String<N>::operator+=(char c)
+{
     char buff[] = {c, '\0'};
     append(buff, 1);
     return *this;
 }
 
 template <std::size_t N>
-inline void string<N>::clear() {
+inline void String<N>::clear()
+{
     m_size = 0;
-    get_data()[0] = '\0';
+    getData()[0] = '\0';
 }
 
 template <std::size_t N>
-inline void string<N>::deallocate() {
-    if (m_capacity > N) {
-        delete[] m_data.heap_ptr;
-        m_data.heap_ptr = 0;
+inline void String<N>::deallocate()
+{
+    if (m_capacity > N)
+    {
+        delete[] m_data.heapPtr;
+        m_data.heapPtr = 0;
     }
 }
 
 template <std::size_t N>
-inline size_t string<N>::calculate_new_capacity(std::size_t minimumSize) const {
+inline size_t String<N>::calculateNewCapacity(std::size_t minimumSize) const
+{
     size_t newCapacity = m_capacity;
-    while (newCapacity < minimumSize) {
-        if (newCapacity == 0) {
+    while (newCapacity < minimumSize)
+    {
+        if (newCapacity == 0)
+        {
             newCapacity = 1;
-        } else {
+        }
+        else
+        {
             newCapacity *= 2;
         }
     }
@@ -679,33 +786,37 @@ inline size_t string<N>::calculate_new_capacity(std::size_t minimumSize) const {
 }
 
 template <std::size_t N>
-inline void string<N>::assign(const char* cstr, std::size_t cstrLength) {
-    if (cstrLength > m_capacity) {
+inline void String<N>::assign(const char* cstr, std::size_t cstrLength)
+{
+    if (cstrLength > m_capacity)
+    {
         // need to allocate more memory
         deallocate();
-        m_capacity = calculate_new_capacity(cstrLength);
-        m_data.heap_ptr = new char[m_capacity + 1];
+        m_capacity = calculateNewCapacity(cstrLength);
+        m_data.heapPtr = new char[m_capacity + 1];
     }
 
     m_size = cstrLength;
-    char* data = get_data();
+    char* data = getData();
     memcpy(data, cstr, cstrLength); // assign all but the null term
     data[m_size] = '\0';
 }
 
 template <std::size_t N>
-inline void string<N>::append(const char* cstr, std::size_t cstrLength) {
-    char* data = get_data();
-    if (m_size + cstrLength > m_capacity) {
+inline void String<N>::append(const char* cstr, std::size_t cstrLength)
+{
+    char* data = getData();
+    if (m_size + cstrLength > m_capacity)
+    {
         // Need to allocate more memory.
-        size_t newCapacity = calculate_new_capacity(m_size + cstrLength);
+        size_t newCapacity = calculateNewCapacity(m_size + cstrLength);
         char* tempData = new char[newCapacity + 1];
         memcpy(tempData, data, m_size); // copy current string. No need to copy null term (we are appending)
 
         deallocate();
         m_capacity = newCapacity;
-        m_data.heap_ptr = tempData;
-        data = m_data.heap_ptr;
+        m_data.heapPtr = tempData;
+        data = m_data.heapPtr;
     }
 
     memcpy(data + m_size, cstr, cstrLength); // append other string excluding the null term
@@ -714,29 +825,35 @@ inline void string<N>::append(const char* cstr, std::size_t cstrLength) {
 }
 
 template <std::size_t N>
-inline bool operator==(const string<N>& lhs, const string<N>& rhs) {
-    if (lhs.size() != rhs.size()) {
+inline bool operator==(const String<N>& lhs, const String<N>& rhs)
+{
+    if (lhs.size() != rhs.size())
+    {
         return false;
     }
-    return memcmp(lhs.c_str(), rhs.c_str(), lhs.size() + 1) == 0;
+    return memcmp(lhs.cStr(), rhs.cStr(), lhs.size() + 1) == 0;
 }
 
 template <std::size_t N, std::size_t M>
-inline bool operator==(const string<N>& lhs, const string<M>& rhs) {
-    if (lhs.size() != rhs.size()) {
+inline bool operator==(const String<N>& lhs, const String<M>& rhs)
+{
+    if (lhs.size() != rhs.size())
+    {
         return false;
     }
-    return memcmp(lhs.c_str(), rhs.c_str(), lhs.size() + 1) == 0;
+    return memcmp(lhs.cStr(), rhs.cStr(), lhs.size() + 1) == 0;
 }
 
 template <std::size_t N>
-inline bool operator==(const string<N>& lhs, const char* rhs) {
-    return memcmp(lhs.c_str(), rhs, lhs.size() + 1) == 0;
+inline bool operator==(const String<N>& lhs, const char* rhs)
+{
+    return memcmp(lhs.cStr(), rhs, lhs.size() + 1) == 0;
 }
 
 template <std::size_t N>
-inline bool operator==(const string<N>& lhs, char rhs) {
-    return lhs.size() == 1 && lhs.c_str()[0] == rhs;
+inline bool operator==(const String<N>& lhs, char rhs)
+{
+    return lhs.size() == 1 && lhs.cStr()[0] == rhs;
 }
 } // namespace stdx
 

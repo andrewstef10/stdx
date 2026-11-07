@@ -10,47 +10,74 @@
 #include "support/contiguous_container_test_suite.h"
 #include "support/list_test_suite.h"
 
-namespace StdxTest {
+namespace stdx_test {
 
 // ===== Test Helpers =====
 
 namespace {
 
-struct Point {
+struct Point
+{
     int x, y;
-    Point(int x, int y) : x(x), y(y) {}
+    Point(int x, int y)
+        : x(x)
+        , y(y)
+    {
+    }
 };
 
-struct MoveOnly {
+struct MoveOnly
+{
     int value;
-    explicit MoveOnly(int v) : value(v) {}
+    explicit MoveOnly(int v)
+        : value(v)
+    {
+    }
     MoveOnly(const MoveOnly&) = delete;
     MoveOnly& operator=(const MoveOnly&) = delete;
     MoveOnly(MoveOnly&&) noexcept = default;
     MoveOnly& operator=(MoveOnly&&) noexcept = default;
 };
 
-struct DestructorCounter {
+struct DestructorCounter
+{
     int* count;
-    explicit DestructorCounter(int* c) : count(c) {}
+    explicit DestructorCounter(int* c)
+        : count(c)
+    {
+    }
     DestructorCounter(const DestructorCounter&) = default;
     DestructorCounter& operator=(const DestructorCounter&) = default;
-    ~DestructorCounter() {
+    ~DestructorCounter()
+    {
         if (count)
             ++(*count);
     }
 };
 
-struct ConstructionCounter {
+struct ConstructionCounter
+{
     static int direct_constructions;
     static int copy_constructions;
     static int move_constructions;
 
     int value;
 
-    explicit ConstructionCounter(int v) : value(v) { ++direct_constructions; }
-    ConstructionCounter(const ConstructionCounter& o) : value(o.value) { ++copy_constructions; }
-    ConstructionCounter(ConstructionCounter&& o) noexcept : value(o.value) { ++move_constructions; }
+    explicit ConstructionCounter(int v)
+        : value(v)
+    {
+        ++direct_constructions;
+    }
+    ConstructionCounter(const ConstructionCounter& o)
+        : value(o.value)
+    {
+        ++copy_constructions;
+    }
+    ConstructionCounter(ConstructionCounter&& o) noexcept
+        : value(o.value)
+    {
+        ++move_constructions;
+    }
     ConstructionCounter& operator=(const ConstructionCounter&) = default;
     ConstructionCounter& operator=(ConstructionCounter&&) = default;
 };
@@ -63,143 +90,156 @@ int ConstructionCounter::move_constructions = 0;
 
 // Instantiate general contiguous container test cases.
 // Covers indexing and iteration as well as basic size tests.
-using FixedArrayListTypes = ::testing::Types<stdx::fixed_array_list<int, 3>, stdx::fixed_array_list<int, 10>>;
+using FixedArrayListTypes = ::testing::Types<stdx::FixedArrayList<int, 3>, stdx::FixedArrayList<int, 10>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(FixedArrayListContiguousContainerTests, ContiguousContainerTest, FixedArrayListTypes);
 
 // Instantiate general list container test cases. Uses a larger fixed capacity than FixedArrayListTypes since several
 // ListTest cases grow a container past TestValues<T>::SIZE (up to SIZE + 2 elements).
-using FixedArrayListListTypes = ::testing::Types<stdx::fixed_array_list<int, 8>>;
+using FixedArrayListListTypes = ::testing::Types<stdx::FixedArrayList<int, 8>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(FixedArrayListListTests, ListTest, FixedArrayListListTypes);
 
 // ===== Constructor / Assignment Tests =====
 
-TEST(FixedArrayListConstructorTest, DefaultConstructorIsEmpty) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListConstructorTest, DefaultConstructorIsEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
     EXPECT_EQ(0u, v.size());
     EXPECT_TRUE(v.empty());
 }
 
-TEST(FixedArrayListConstructorTest, DefaultConstructorCapacityIsN) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListConstructorTest, DefaultConstructorCapacityIsN)
+{
+    stdx::FixedArrayList<int, 5> v;
     EXPECT_EQ(5u, v.capacity());
-    EXPECT_EQ(5u, v.max_size());
+    EXPECT_EQ(5u, v.maxSize());
 }
 
-TEST(FixedArrayListConstructorTest, CopyConstructorFromEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    stdx::fixed_array_list<int, 4> dst(src);
+TEST(FixedArrayListConstructorTest, CopyConstructorFromEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    stdx::FixedArrayList<int, 4> dst(src);
     EXPECT_EQ(0u, dst.size());
     EXPECT_TRUE(dst.empty());
 }
 
-TEST(FixedArrayListConstructorTest, CopyConstructorFromNonEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    src.push_back(1);
-    src.push_back(2);
-    src.push_back(3);
+TEST(FixedArrayListConstructorTest, CopyConstructorFromNonEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    src.pushBack(1);
+    src.pushBack(2);
+    src.pushBack(3);
 
-    stdx::fixed_array_list<int, 4> dst(src);
+    stdx::FixedArrayList<int, 4> dst(src);
     ASSERT_EQ(3u, dst.size());
     EXPECT_EQ(1, dst[0]);
     EXPECT_EQ(2, dst[1]);
     EXPECT_EQ(3, dst[2]);
 }
 
-TEST(FixedArrayListConstructorTest, CopyConstructorIsDeepCopy) {
-    stdx::fixed_array_list<int, 4> src;
-    src.push_back(10);
-    src.push_back(20);
+TEST(FixedArrayListConstructorTest, CopyConstructorIsDeepCopy)
+{
+    stdx::FixedArrayList<int, 4> src;
+    src.pushBack(10);
+    src.pushBack(20);
 
-    stdx::fixed_array_list<int, 4> dst(src);
+    stdx::FixedArrayList<int, 4> dst(src);
     dst[0] = 99;
 
     EXPECT_EQ(10, src[0]);
     EXPECT_EQ(99, dst[0]);
 }
 
-TEST(FixedArrayListConstructorTest, CopyConstructorFromFull) {
-    stdx::fixed_array_list<int, 3> src;
-    src.push_back(1);
-    src.push_back(2);
-    src.push_back(3);
+TEST(FixedArrayListConstructorTest, CopyConstructorFromFull)
+{
+    stdx::FixedArrayList<int, 3> src;
+    src.pushBack(1);
+    src.pushBack(2);
+    src.pushBack(3);
 
-    stdx::fixed_array_list<int, 3> dst(src);
+    stdx::FixedArrayList<int, 3> dst(src);
     ASSERT_EQ(3u, dst.size());
     EXPECT_EQ(1, dst[0]);
     EXPECT_EQ(2, dst[1]);
     EXPECT_EQ(3, dst[2]);
 }
 
-TEST(FixedArrayListConstructorTest, MoveConstructorFromEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    stdx::fixed_array_list<int, 4> dst(std::move(src));
+TEST(FixedArrayListConstructorTest, MoveConstructorFromEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    stdx::FixedArrayList<int, 4> dst(std::move(src));
     EXPECT_EQ(0u, dst.size());
     EXPECT_TRUE(dst.empty());
 }
 
-TEST(FixedArrayListConstructorTest, MoveConstructorFromNonEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    src.push_back(1);
-    src.push_back(2);
-    src.push_back(3);
+TEST(FixedArrayListConstructorTest, MoveConstructorFromNonEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    src.pushBack(1);
+    src.pushBack(2);
+    src.pushBack(3);
 
-    stdx::fixed_array_list<int, 4> dst(std::move(src));
+    stdx::FixedArrayList<int, 4> dst(std::move(src));
     ASSERT_EQ(3u, dst.size());
     EXPECT_EQ(1, dst[0]);
     EXPECT_EQ(2, dst[1]);
     EXPECT_EQ(3, dst[2]);
 }
 
-TEST(FixedArrayListConstructorTest, MoveConstructorLeavesSourceEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    src.push_back(1);
-    src.push_back(2);
+TEST(FixedArrayListConstructorTest, MoveConstructorLeavesSourceEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    src.pushBack(1);
+    src.pushBack(2);
 
-    stdx::fixed_array_list<int, 4> dst(std::move(src));
+    stdx::FixedArrayList<int, 4> dst(std::move(src));
     EXPECT_TRUE(src.empty());
     EXPECT_EQ(0u, src.size());
 }
 
-TEST(FixedArrayListConstructorTest, MoveConstructorWithMoveOnlyType) {
-    stdx::fixed_array_list<MoveOnly, 3> src;
-    src.emplace_back(42);
-    src.emplace_back(99);
+TEST(FixedArrayListConstructorTest, MoveConstructorWithMoveOnlyType)
+{
+    stdx::FixedArrayList<MoveOnly, 3> src;
+    src.emplaceBack(42);
+    src.emplaceBack(99);
 
-    stdx::fixed_array_list<MoveOnly, 3> dst(std::move(src));
+    stdx::FixedArrayList<MoveOnly, 3> dst(std::move(src));
     ASSERT_EQ(2u, dst.size());
     EXPECT_EQ(42, dst[0].value);
     EXPECT_EQ(99, dst[1].value);
 }
 
-TEST(FixedArrayListConstructorTest, CopyAssignmentFromEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    stdx::fixed_array_list<int, 4> dst;
+TEST(FixedArrayListConstructorTest, CopyAssignmentFromEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    stdx::FixedArrayList<int, 4> dst;
     dst = src;
     EXPECT_EQ(0u, dst.size());
     EXPECT_TRUE(dst.empty());
 }
 
-TEST(FixedArrayListConstructorTest, CopyAssignmentFromNonEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    src.push_back(10);
-    src.push_back(20);
+TEST(FixedArrayListConstructorTest, CopyAssignmentFromNonEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    src.pushBack(10);
+    src.pushBack(20);
 
-    stdx::fixed_array_list<int, 4> dst;
+    stdx::FixedArrayList<int, 4> dst;
     dst = src;
     ASSERT_EQ(2u, dst.size());
     EXPECT_EQ(10, dst[0]);
     EXPECT_EQ(20, dst[1]);
 }
 
-TEST(FixedArrayListConstructorTest, CopyAssignmentOverwritesExisting) {
-    stdx::fixed_array_list<int, 5> src;
-    src.push_back(10);
-    src.push_back(20);
+TEST(FixedArrayListConstructorTest, CopyAssignmentOverwritesExisting)
+{
+    stdx::FixedArrayList<int, 5> src;
+    src.pushBack(10);
+    src.pushBack(20);
 
-    stdx::fixed_array_list<int, 5> dst;
-    dst.push_back(99);
-    dst.push_back(88);
-    dst.push_back(77);
+    stdx::FixedArrayList<int, 5> dst;
+    dst.pushBack(99);
+    dst.pushBack(88);
+    dst.pushBack(77);
 
     dst = src;
     ASSERT_EQ(2u, dst.size());
@@ -207,11 +247,12 @@ TEST(FixedArrayListConstructorTest, CopyAssignmentOverwritesExisting) {
     EXPECT_EQ(20, dst[1]);
 }
 
-TEST(FixedArrayListConstructorTest, CopyAssignmentIsDeepCopy) {
-    stdx::fixed_array_list<int, 4> src;
-    src.push_back(5);
+TEST(FixedArrayListConstructorTest, CopyAssignmentIsDeepCopy)
+{
+    stdx::FixedArrayList<int, 4> src;
+    src.pushBack(5);
 
-    stdx::fixed_array_list<int, 4> dst;
+    stdx::FixedArrayList<int, 4> dst;
     dst = src;
     dst[0] = 42;
 
@@ -219,32 +260,35 @@ TEST(FixedArrayListConstructorTest, CopyAssignmentIsDeepCopy) {
     EXPECT_EQ(42, dst[0]);
 }
 
-TEST(FixedArrayListConstructorTest, CopyAssignmentSelfAssignment) {
-    stdx::fixed_array_list<int, 4> v;
-    v.push_back(1);
-    v.push_back(2);
-    stdx::fixed_array_list<int, 4> self = v;
+TEST(FixedArrayListConstructorTest, CopyAssignmentSelfAssignment)
+{
+    stdx::FixedArrayList<int, 4> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    stdx::FixedArrayList<int, 4> self = v;
     v = self;
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(1, v[0]);
     EXPECT_EQ(2, v[1]);
 }
 
-TEST(FixedArrayListConstructorTest, MoveAssignmentFromEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    stdx::fixed_array_list<int, 4> dst;
+TEST(FixedArrayListConstructorTest, MoveAssignmentFromEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    stdx::FixedArrayList<int, 4> dst;
     dst = std::move(src);
     EXPECT_EQ(0u, dst.size());
     EXPECT_TRUE(dst.empty());
 }
 
-TEST(FixedArrayListConstructorTest, MoveAssignmentFromNonEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    src.push_back(1);
-    src.push_back(2);
-    src.push_back(3);
+TEST(FixedArrayListConstructorTest, MoveAssignmentFromNonEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    src.pushBack(1);
+    src.pushBack(2);
+    src.pushBack(3);
 
-    stdx::fixed_array_list<int, 4> dst;
+    stdx::FixedArrayList<int, 4> dst;
     dst = std::move(src);
     ASSERT_EQ(3u, dst.size());
     EXPECT_EQ(1, dst[0]);
@@ -252,93 +296,101 @@ TEST(FixedArrayListConstructorTest, MoveAssignmentFromNonEmpty) {
     EXPECT_EQ(3, dst[2]);
 }
 
-TEST(FixedArrayListConstructorTest, MoveAssignmentLeavesSourceEmpty) {
-    stdx::fixed_array_list<int, 4> src;
-    src.push_back(1);
-    src.push_back(2);
+TEST(FixedArrayListConstructorTest, MoveAssignmentLeavesSourceEmpty)
+{
+    stdx::FixedArrayList<int, 4> src;
+    src.pushBack(1);
+    src.pushBack(2);
 
-    stdx::fixed_array_list<int, 4> dst;
+    stdx::FixedArrayList<int, 4> dst;
     dst = std::move(src);
 
     EXPECT_TRUE(src.empty());
     EXPECT_EQ(0u, src.size());
 }
 
-TEST(FixedArrayListConstructorTest, MoveAssignmentOverwritesExisting) {
-    stdx::fixed_array_list<int, 4> src;
-    src.push_back(7);
+TEST(FixedArrayListConstructorTest, MoveAssignmentOverwritesExisting)
+{
+    stdx::FixedArrayList<int, 4> src;
+    src.pushBack(7);
 
-    stdx::fixed_array_list<int, 4> dst;
-    dst.push_back(1);
-    dst.push_back(2);
+    stdx::FixedArrayList<int, 4> dst;
+    dst.pushBack(1);
+    dst.pushBack(2);
     dst = std::move(src);
 
     ASSERT_EQ(1u, dst.size());
     EXPECT_EQ(7, dst[0]);
 }
 
-TEST(FixedArrayListConstructorTest, DestructorCallsElementDestructors) {
+TEST(FixedArrayListConstructorTest, DestructorCallsElementDestructors)
+{
     int count = 0;
     {
-        stdx::fixed_array_list<DestructorCounter, 3> v;
-        v.emplace_back(&count);
-        v.emplace_back(&count);
+        stdx::FixedArrayList<DestructorCounter, 3> v;
+        v.emplaceBack(&count);
+        v.emplaceBack(&count);
         EXPECT_EQ(0, count);
     }
     EXPECT_EQ(2, count);
 }
 
-TEST(FixedArrayListConstructorTest, MoveConstructorDestroysSourceElements) {
+TEST(FixedArrayListConstructorTest, MoveConstructorDestroysSourceElements)
+{
     int srcCount = 0;
     int dstCount = 0;
     {
-        stdx::fixed_array_list<DestructorCounter, 3> src;
-        src.emplace_back(&srcCount);
-        src.emplace_back(&srcCount);
+        stdx::FixedArrayList<DestructorCounter, 3> src;
+        src.emplaceBack(&srcCount);
+        src.emplaceBack(&srcCount);
 
-        stdx::fixed_array_list<DestructorCounter, 3> dst(std::move(src));
+        stdx::FixedArrayList<DestructorCounter, 3> dst(std::move(src));
         // src's moved-from elements must be destroyed as part of the move, not leaked
         EXPECT_EQ(2, srcCount);
 
         // Repoint dst's elements so their destructors count separately at scope exit
-        for (auto& e : dst) {
+        for (auto& e : dst)
+        {
             e.count = &dstCount;
         }
     }
     EXPECT_EQ(2, dstCount);
 }
 
-TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceElements) {
+TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceElements)
+{
     int srcCount = 0;
     {
-        stdx::fixed_array_list<DestructorCounter, 3> src;
-        src.emplace_back(&srcCount);
-        src.emplace_back(&srcCount);
+        stdx::FixedArrayList<DestructorCounter, 3> src;
+        src.emplaceBack(&srcCount);
+        src.emplaceBack(&srcCount);
 
-        stdx::fixed_array_list<DestructorCounter, 3> dst;
+        stdx::FixedArrayList<DestructorCounter, 3> dst;
         dst = std::move(src);
         // src's moved-from elements must be destroyed as part of the move, not leaked
         EXPECT_EQ(2, srcCount);
 
         // Detach dst's elements so the outer scope exit doesn't add to srcCount
-        for (auto& e : dst) {
+        for (auto& e : dst)
+        {
             e.count = nullptr;
         }
     }
     EXPECT_EQ(2, srcCount);
 }
 
-TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceElementsWhenDestinationSmaller) {
+TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceElementsWhenDestinationSmaller)
+{
     int srcCount = 0;
     int dstCount = 0;
     {
-        stdx::fixed_array_list<DestructorCounter, 4> src;
-        src.emplace_back(&srcCount);
-        src.emplace_back(&srcCount);
-        src.emplace_back(&srcCount);
+        stdx::FixedArrayList<DestructorCounter, 4> src;
+        src.emplaceBack(&srcCount);
+        src.emplaceBack(&srcCount);
+        src.emplaceBack(&srcCount);
 
-        stdx::fixed_array_list<DestructorCounter, 4> dst;
-        dst.emplace_back(&dstCount);
+        stdx::FixedArrayList<DestructorCounter, 4> dst;
+        dst.emplaceBack(&dstCount);
 
         dst = std::move(src);
         // All of src's moved-from elements must be destroyed: both the one that was move-assigned
@@ -348,7 +400,8 @@ TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceElementsWhenDest
         EXPECT_EQ(0, dstCount);
         ASSERT_EQ(3u, dst.size());
 
-        for (auto& e : dst) {
+        for (auto& e : dst)
+        {
             e.count = nullptr;
         }
     }
@@ -356,17 +409,18 @@ TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceElementsWhenDest
     EXPECT_EQ(0, dstCount);
 }
 
-TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceAndExcessDestinationElements) {
+TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceAndExcessDestinationElements)
+{
     int srcCount = 0;
     int dstCount = 0;
     {
-        stdx::fixed_array_list<DestructorCounter, 4> src;
-        src.emplace_back(&srcCount);
+        stdx::FixedArrayList<DestructorCounter, 4> src;
+        src.emplaceBack(&srcCount);
 
-        stdx::fixed_array_list<DestructorCounter, 4> dst;
-        dst.emplace_back(&dstCount);
-        dst.emplace_back(&dstCount);
-        dst.emplace_back(&dstCount);
+        stdx::FixedArrayList<DestructorCounter, 4> dst;
+        dst.emplaceBack(&dstCount);
+        dst.emplaceBack(&dstCount);
+        dst.emplaceBack(&dstCount);
 
         dst = std::move(src);
         // src's moved-from element must be destroyed as part of the move
@@ -375,7 +429,8 @@ TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceAndExcessDestina
         EXPECT_EQ(2, dstCount);
         ASSERT_EQ(1u, dst.size());
 
-        for (auto& e : dst) {
+        for (auto& e : dst)
+        {
             e.count = nullptr;
         }
     }
@@ -385,166 +440,187 @@ TEST(FixedArrayListConstructorTest, MoveAssignmentDestroysSourceAndExcessDestina
 
 // ===== Element Access Tests =====
 
-TEST(FixedArrayListElementAccessTest, AtValidIndex) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
-    v.push_back(30);
+TEST(FixedArrayListElementAccessTest, AtValidIndex)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
+    v.pushBack(30);
     EXPECT_EQ(10, v.at(0));
     EXPECT_EQ(20, v.at(1));
     EXPECT_EQ(30, v.at(2));
 }
 
-TEST(FixedArrayListElementAccessTest, AtConstValidIndex) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
-    const stdx::fixed_array_list<int, 5>& cv = v;
+TEST(FixedArrayListElementAccessTest, AtConstValidIndex)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
+    const stdx::FixedArrayList<int, 5>& cv = v;
     EXPECT_EQ(10, cv.at(0));
     EXPECT_EQ(20, cv.at(1));
 }
 
-TEST(FixedArrayListElementAccessTest, AtReturnsReference) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(5);
+TEST(FixedArrayListElementAccessTest, AtReturnsReference)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(5);
     v.at(0) = 99;
     EXPECT_EQ(99, v.at(0));
 }
 
-TEST(FixedArrayListElementAccessTest, AtBoundaryLastElement) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListElementAccessTest, AtBoundaryLastElement)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     EXPECT_EQ(3, v.at(2));
     EXPECT_THROW(v.at(3), std::out_of_range);
 }
 
-TEST(FixedArrayListElementAccessTest, AtOutOfRange) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
+TEST(FixedArrayListElementAccessTest, AtOutOfRange)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
     EXPECT_THROW(v.at(1), std::out_of_range);
     EXPECT_THROW(v.at(100), std::out_of_range);
 }
 
-TEST(FixedArrayListElementAccessTest, AtConstOutOfRange) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    const stdx::fixed_array_list<int, 5>& cv = v;
+TEST(FixedArrayListElementAccessTest, AtConstOutOfRange)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    const stdx::FixedArrayList<int, 5>& cv = v;
     EXPECT_THROW(cv.at(1), std::out_of_range);
     EXPECT_THROW(cv.at(99), std::out_of_range);
 }
 
-TEST(FixedArrayListElementAccessTest, AtOnEmptyContainerThrows) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListElementAccessTest, AtOnEmptyContainerThrows)
+{
+    stdx::FixedArrayList<int, 5> v;
     EXPECT_THROW(v.at(0), std::out_of_range);
 }
 
-TEST(FixedArrayListElementAccessTest, SubscriptOperator) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListElementAccessTest, SubscriptOperator)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     EXPECT_EQ(1, v[0]);
     EXPECT_EQ(2, v[1]);
     EXPECT_EQ(3, v[2]);
 }
 
-TEST(FixedArrayListElementAccessTest, SubscriptOperatorConst) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
-    const stdx::fixed_array_list<int, 5>& cv = v;
+TEST(FixedArrayListElementAccessTest, SubscriptOperatorConst)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
+    const stdx::FixedArrayList<int, 5>& cv = v;
     EXPECT_EQ(10, cv[0]);
     EXPECT_EQ(20, cv[1]);
 }
 
-TEST(FixedArrayListElementAccessTest, SubscriptOperatorReturnsReference) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(5);
+TEST(FixedArrayListElementAccessTest, SubscriptOperatorReturnsReference)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(5);
     v[0] = 42;
     EXPECT_EQ(42, v[0]);
 }
 
-TEST(FixedArrayListElementAccessTest, DataPointerNonNullAfterPushBack) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
+TEST(FixedArrayListElementAccessTest, DataPointerNonNullAfterPushBack)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
     EXPECT_NE(nullptr, v.data());
 }
 
-TEST(FixedArrayListElementAccessTest, DataPointerConsistentWithSubscript) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
+TEST(FixedArrayListElementAccessTest, DataPointerConsistentWithSubscript)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
     EXPECT_EQ(&v[0], v.data());
     EXPECT_EQ(10, v.data()[0]);
     EXPECT_EQ(20, v.data()[1]);
 }
 
-TEST(FixedArrayListElementAccessTest, DataPointerConst) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(5);
-    const stdx::fixed_array_list<int, 5>& cv = v;
+TEST(FixedArrayListElementAccessTest, DataPointerConst)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(5);
+    const stdx::FixedArrayList<int, 5>& cv = v;
     EXPECT_NE(nullptr, cv.data());
     EXPECT_EQ(5, *cv.data());
 }
 
-TEST(FixedArrayListElementAccessTest, FrontElement) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListElementAccessTest, FrontElement)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     EXPECT_EQ(1, v.front());
 }
 
-TEST(FixedArrayListElementAccessTest, FrontElementConst) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(42);
-    v.push_back(99);
-    const stdx::fixed_array_list<int, 5>& cv = v;
+TEST(FixedArrayListElementAccessTest, FrontElementConst)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(42);
+    v.pushBack(99);
+    const stdx::FixedArrayList<int, 5>& cv = v;
     EXPECT_EQ(42, cv.front());
 }
 
-TEST(FixedArrayListElementAccessTest, FrontReturnsReference) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(5);
+TEST(FixedArrayListElementAccessTest, FrontReturnsReference)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(5);
     v.front() = 99;
     EXPECT_EQ(99, v.front());
 }
 
-TEST(FixedArrayListElementAccessTest, BackElement) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListElementAccessTest, BackElement)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     EXPECT_EQ(3, v.back());
 }
 
-TEST(FixedArrayListElementAccessTest, BackElementConst) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(100);
-    const stdx::fixed_array_list<int, 5>& cv = v;
+TEST(FixedArrayListElementAccessTest, BackElementConst)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(100);
+    const stdx::FixedArrayList<int, 5>& cv = v;
     EXPECT_EQ(100, cv.back());
 }
 
-TEST(FixedArrayListElementAccessTest, BackReturnsReference) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(5);
+TEST(FixedArrayListElementAccessTest, BackReturnsReference)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(5);
     v.back() = 77;
     EXPECT_EQ(77, v.back());
 }
 
-TEST(FixedArrayListElementAccessTest, FrontAndBackSameWhenSizeOne) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(7);
+TEST(FixedArrayListElementAccessTest, FrontAndBackSameWhenSizeOne)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(7);
     EXPECT_EQ(v.front(), v.back());
     EXPECT_EQ(&v.front(), &v.back());
 }
 
-TEST(FixedArrayListElementAccessTest, FrontAndBackDistinctWhenSizeTwo) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListElementAccessTest, FrontAndBackDistinctWhenSizeTwo)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
     EXPECT_EQ(1, v.front());
     EXPECT_EQ(2, v.back());
     EXPECT_NE(&v.front(), &v.back());
@@ -552,83 +628,94 @@ TEST(FixedArrayListElementAccessTest, FrontAndBackDistinctWhenSizeTwo) {
 
 // ===== Capacity Tests =====
 
-TEST(FixedArrayListCapacityTest, EmptyOnDefault) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListCapacityTest, EmptyOnDefault)
+{
+    stdx::FixedArrayList<int, 5> v;
     EXPECT_TRUE(v.empty());
 }
 
-TEST(FixedArrayListCapacityTest, NotEmptyAfterPushBack) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
+TEST(FixedArrayListCapacityTest, NotEmptyAfterPushBack)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
     EXPECT_FALSE(v.empty());
 }
 
-TEST(FixedArrayListCapacityTest, EmptyAfterClear) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListCapacityTest, EmptyAfterClear)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
     v.clear();
     EXPECT_TRUE(v.empty());
 }
 
-TEST(FixedArrayListCapacityTest, SizeDefault) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListCapacityTest, SizeDefault)
+{
+    stdx::FixedArrayList<int, 5> v;
     EXPECT_EQ(0u, v.size());
 }
 
-TEST(FixedArrayListCapacityTest, SizeAfterPushBack) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
+TEST(FixedArrayListCapacityTest, SizeAfterPushBack)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
     EXPECT_EQ(1u, v.size());
-    v.push_back(2);
+    v.pushBack(2);
     EXPECT_EQ(2u, v.size());
-    v.push_back(3);
+    v.pushBack(3);
     EXPECT_EQ(3u, v.size());
 }
 
-TEST(FixedArrayListCapacityTest, SizeAfterPopBack) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.pop_back();
+TEST(FixedArrayListCapacityTest, SizeAfterPopBack)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.popBack();
     EXPECT_EQ(1u, v.size());
-    v.pop_back();
+    v.popBack();
     EXPECT_EQ(0u, v.size());
 }
 
-TEST(FixedArrayListCapacityTest, CapacityAlwaysN) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListCapacityTest, CapacityAlwaysN)
+{
+    stdx::FixedArrayList<int, 5> v;
     EXPECT_EQ(5u, v.capacity());
-    v.push_back(1);
+    v.pushBack(1);
     EXPECT_EQ(5u, v.capacity());
-    v.push_back(2);
+    v.pushBack(2);
     EXPECT_EQ(5u, v.capacity());
 }
 
-TEST(FixedArrayListCapacityTest, CapacityUnchangedAfterClear) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListCapacityTest, CapacityUnchangedAfterClear)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
     v.clear();
     EXPECT_EQ(5u, v.capacity());
 }
 
-TEST(FixedArrayListCapacityTest, MaxSizeAlwaysN) {
-    stdx::fixed_array_list<int, 7> v;
-    EXPECT_EQ(7u, v.max_size());
-    v.push_back(1);
-    EXPECT_EQ(7u, v.max_size());
+TEST(FixedArrayListCapacityTest, MaxSizeAlwaysN)
+{
+    stdx::FixedArrayList<int, 7> v;
+    EXPECT_EQ(7u, v.maxSize());
+    v.pushBack(1);
+    EXPECT_EQ(7u, v.maxSize());
 }
 
-TEST(FixedArrayListCapacityTest, MaxSizeEqualsCapacity) {
-    stdx::fixed_array_list<int, 4> v;
-    EXPECT_EQ(v.max_size(), v.capacity());
+TEST(FixedArrayListCapacityTest, MaxSizeEqualsCapacity)
+{
+    stdx::FixedArrayList<int, 4> v;
+    EXPECT_EQ(v.maxSize(), v.capacity());
 }
 
-TEST(FixedArrayListCapacityTest, DifferentNValues) {
-    stdx::fixed_array_list<int, 1> v1;
-    stdx::fixed_array_list<int, 10> v10;
-    stdx::fixed_array_list<int, 100> v100;
+TEST(FixedArrayListCapacityTest, DifferentNValues)
+{
+    stdx::FixedArrayList<int, 1> v1;
+    stdx::FixedArrayList<int, 10> v10;
+    stdx::FixedArrayList<int, 100> v100;
     EXPECT_EQ(1u, v1.capacity());
     EXPECT_EQ(10u, v10.capacity());
     EXPECT_EQ(100u, v100.capacity());
@@ -636,182 +723,204 @@ TEST(FixedArrayListCapacityTest, DifferentNValues) {
 
 // ===== Modifier Tests =====
 
-TEST(FixedArrayListModifierTest, PushBackCopyIncreasesSize) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListModifierTest, PushBackCopyIncreasesSize)
+{
+    stdx::FixedArrayList<int, 5> v;
     int val = 42;
-    v.push_back(val);
+    v.pushBack(val);
     EXPECT_EQ(1u, v.size());
     EXPECT_EQ(42, v[0]);
     EXPECT_EQ(42, val);
 }
 
-TEST(FixedArrayListModifierTest, PushBackCopyMultiple) {
-    stdx::fixed_array_list<int, 5> v;
-    for (int i = 0; i < 5; ++i) {
-        v.push_back(i);
+TEST(FixedArrayListModifierTest, PushBackCopyMultiple)
+{
+    stdx::FixedArrayList<int, 5> v;
+    for (int i = 0; i < 5; ++i)
+    {
+        v.pushBack(i);
     }
     ASSERT_EQ(5u, v.size());
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i)
+    {
         EXPECT_EQ(i, v[i]);
     }
 }
 
-TEST(FixedArrayListModifierTest, PushBackMove) {
-    stdx::fixed_array_list<std::string, 5> v;
+TEST(FixedArrayListModifierTest, PushBackMove)
+{
+    stdx::FixedArrayList<std::string, 5> v;
     std::string s = "hello";
-    v.push_back(std::move(s));
+    v.pushBack(std::move(s));
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ("hello", v[0]);
 }
 
-TEST(FixedArrayListModifierTest, PushBackMoveSourceEmptied) {
-    stdx::fixed_array_list<std::string, 5> v;
+TEST(FixedArrayListModifierTest, PushBackMoveSourceEmptied)
+{
+    stdx::FixedArrayList<std::string, 5> v;
     std::string s = "hello";
-    v.push_back(std::move(s));
+    v.pushBack(std::move(s));
     EXPECT_TRUE(s.empty());
 }
 
-TEST(FixedArrayListModifierTest, PushBackCopyAtCapacityThrows) {
-    stdx::fixed_array_list<int, 3> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, PushBackCopyAtCapacityThrows)
+{
+    stdx::FixedArrayList<int, 3> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     int val = 4;
-    EXPECT_THROW(v.push_back(val), std::length_error);
+    EXPECT_THROW(v.pushBack(val), std::length_error);
 }
 
-TEST(FixedArrayListModifierTest, PushBackMoveAtCapacityThrows) {
-    stdx::fixed_array_list<std::string, 2> v;
-    v.push_back(std::string("a"));
-    v.push_back(std::string("b"));
-    EXPECT_THROW(v.push_back(std::string("c")), std::length_error);
+TEST(FixedArrayListModifierTest, PushBackMoveAtCapacityThrows)
+{
+    stdx::FixedArrayList<std::string, 2> v;
+    v.pushBack(std::string("a"));
+    v.pushBack(std::string("b"));
+    EXPECT_THROW(v.pushBack(std::string("c")), std::length_error);
 }
 
-TEST(FixedArrayListModifierTest, PushBackThrowDoesNotChangeSize) {
-    stdx::fixed_array_list<int, 2> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListModifierTest, PushBackThrowDoesNotChangeSize)
+{
+    stdx::FixedArrayList<int, 2> v;
+    v.pushBack(1);
+    v.pushBack(2);
     int val = 3;
-    EXPECT_THROW(v.push_back(val), std::length_error);
+    EXPECT_THROW(v.pushBack(val), std::length_error);
     EXPECT_EQ(2u, v.size());
 }
 
-TEST(FixedArrayListModifierTest, PopBackReducesSize) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.pop_back();
+TEST(FixedArrayListModifierTest, PopBackReducesSize)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.popBack();
     EXPECT_EQ(1u, v.size());
 }
 
-TEST(FixedArrayListModifierTest, PopBackRemovesLastElement) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-    v.pop_back();
+TEST(FixedArrayListModifierTest, PopBackRemovesLastElement)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.popBack();
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(1, v[0]);
     EXPECT_EQ(2, v[1]);
 }
 
-TEST(FixedArrayListModifierTest, PopBackToEmpty) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(42);
-    v.pop_back();
+TEST(FixedArrayListModifierTest, PopBackToEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(42);
+    v.popBack();
     EXPECT_EQ(0u, v.size());
     EXPECT_TRUE(v.empty());
 }
 
-TEST(FixedArrayListModifierTest, PopBackCallsDestructor) {
+TEST(FixedArrayListModifierTest, PopBackCallsDestructor)
+{
     int count = 0;
-    stdx::fixed_array_list<DestructorCounter, 3> v;
-    v.emplace_back(&count);
-    v.emplace_back(&count);
+    stdx::FixedArrayList<DestructorCounter, 3> v;
+    v.emplaceBack(&count);
+    v.emplaceBack(&count);
     EXPECT_EQ(0, count);
-    v.pop_back();
+    v.popBack();
     EXPECT_EQ(1, count);
-    v.pop_back();
+    v.popBack();
     EXPECT_EQ(2, count);
 }
 
-TEST(FixedArrayListModifierTest, PopBackThenPushBack) {
-    stdx::fixed_array_list<int, 3> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-    v.pop_back();
-    v.push_back(99);
+TEST(FixedArrayListModifierTest, PopBackThenPushBack)
+{
+    stdx::FixedArrayList<int, 3> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.popBack();
+    v.pushBack(99);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(1, v[0]);
     EXPECT_EQ(2, v[1]);
     EXPECT_EQ(99, v[2]);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceBackIntoEmpty) {
-    stdx::fixed_array_list<int, 5> v;
-    v.emplace_back(42);
+TEST(FixedArrayListModifierTest, EmplaceBackIntoEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.emplaceBack(42);
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ(42, v[0]);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceBackIncreasesSize) {
-    stdx::fixed_array_list<int, 5> v;
-    v.emplace_back(1);
-    v.emplace_back(2);
-    v.emplace_back(3);
+TEST(FixedArrayListModifierTest, EmplaceBackIncreasesSize)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.emplaceBack(1);
+    v.emplaceBack(2);
+    v.emplaceBack(3);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(1, v[0]);
     EXPECT_EQ(2, v[1]);
     EXPECT_EQ(3, v[2]);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceBackWithMultipleArgs) {
-    stdx::fixed_array_list<Point, 5> v;
-    v.emplace_back(3, 7);
+TEST(FixedArrayListModifierTest, EmplaceBackWithMultipleArgs)
+{
+    stdx::FixedArrayList<Point, 5> v;
+    v.emplaceBack(3, 7);
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ(3, v[0].x);
     EXPECT_EQ(7, v[0].y);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceBackConstructsInPlace) {
-    stdx::fixed_array_list<MoveOnly, 3> v;
-    v.emplace_back(99);
+TEST(FixedArrayListModifierTest, EmplaceBackConstructsInPlace)
+{
+    stdx::FixedArrayList<MoveOnly, 3> v;
+    v.emplaceBack(99);
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ(99, v[0].value);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceBackNoCopyOrMove) {
+TEST(FixedArrayListModifierTest, EmplaceBackNoCopyOrMove)
+{
     ConstructionCounter::direct_constructions = 0;
     ConstructionCounter::copy_constructions = 0;
     ConstructionCounter::move_constructions = 0;
 
-    stdx::fixed_array_list<ConstructionCounter, 5> v;
-    v.emplace_back(5);
+    stdx::FixedArrayList<ConstructionCounter, 5> v;
+    v.emplaceBack(5);
 
     EXPECT_EQ(1, ConstructionCounter::direct_constructions);
     EXPECT_EQ(0, ConstructionCounter::copy_constructions);
     EXPECT_EQ(0, ConstructionCounter::move_constructions);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceBackAtCapacityThrows) {
-    stdx::fixed_array_list<int, 2> v;
-    v.emplace_back(1);
-    v.emplace_back(2);
-    EXPECT_THROW(v.emplace_back(3), std::length_error);
+TEST(FixedArrayListModifierTest, EmplaceBackAtCapacityThrows)
+{
+    stdx::FixedArrayList<int, 2> v;
+    v.emplaceBack(1);
+    v.emplaceBack(2);
+    EXPECT_THROW(v.emplaceBack(3), std::length_error);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceBackWithStringArgs) {
-    stdx::fixed_array_list<std::string, 3> v;
-    v.emplace_back(3, 'z');
+TEST(FixedArrayListModifierTest, EmplaceBackWithStringArgs)
+{
+    stdx::FixedArrayList<std::string, 3> v;
+    v.emplaceBack(3, 'z');
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ("zzz", v[0]);
 }
 
-TEST(FixedArrayListModifierTest, InsertAtBeginCopy) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, InsertAtBeginCopy)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(2);
+    v.pushBack(3);
     auto it = v.insert(v.begin(), 1);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -821,10 +930,11 @@ TEST(FixedArrayListModifierTest, InsertAtBeginCopy) {
     EXPECT_EQ(v.begin(), it);
 }
 
-TEST(FixedArrayListModifierTest, InsertAtEndCopy) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListModifierTest, InsertAtEndCopy)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
     auto it = v.insert(v.end(), 3);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -833,10 +943,11 @@ TEST(FixedArrayListModifierTest, InsertAtEndCopy) {
     EXPECT_EQ(3, *it);
 }
 
-TEST(FixedArrayListModifierTest, InsertAtMiddleCopy) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, InsertAtMiddleCopy)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(3);
     auto it = v.insert(v.begin() + 1, 2);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -845,17 +956,19 @@ TEST(FixedArrayListModifierTest, InsertAtMiddleCopy) {
     EXPECT_EQ(2, *it);
 }
 
-TEST(FixedArrayListModifierTest, InsertIntoEmptyCopy) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListModifierTest, InsertIntoEmptyCopy)
+{
+    stdx::FixedArrayList<int, 5> v;
     auto it = v.insert(v.end(), 42);
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ(42, v[0]);
     EXPECT_EQ(42, *it);
 }
 
-TEST(FixedArrayListModifierTest, InsertAtBeginMove) {
-    stdx::fixed_array_list<std::string, 5> v;
-    v.push_back("world");
+TEST(FixedArrayListModifierTest, InsertAtBeginMove)
+{
+    stdx::FixedArrayList<std::string, 5> v;
+    v.pushBack("world");
     std::string s = "hello";
     auto it = v.insert(v.begin(), std::move(s));
     ASSERT_EQ(2u, v.size());
@@ -864,9 +977,10 @@ TEST(FixedArrayListModifierTest, InsertAtBeginMove) {
     EXPECT_EQ("hello", *it);
 }
 
-TEST(FixedArrayListModifierTest, InsertAtEndMove) {
-    stdx::fixed_array_list<std::string, 5> v;
-    v.push_back("hello");
+TEST(FixedArrayListModifierTest, InsertAtEndMove)
+{
+    stdx::FixedArrayList<std::string, 5> v;
+    v.pushBack("hello");
     std::string s = "world";
     auto it = v.insert(v.end(), std::move(s));
     ASSERT_EQ(2u, v.size());
@@ -875,10 +989,11 @@ TEST(FixedArrayListModifierTest, InsertAtEndMove) {
     EXPECT_EQ("world", *it);
 }
 
-TEST(FixedArrayListModifierTest, InsertAtMiddleMove) {
-    stdx::fixed_array_list<std::string, 5> v;
-    v.push_back("a");
-    v.push_back("c");
+TEST(FixedArrayListModifierTest, InsertAtMiddleMove)
+{
+    stdx::FixedArrayList<std::string, 5> v;
+    v.pushBack("a");
+    v.pushBack("c");
     std::string s = "b";
     auto it = v.insert(v.begin() + 1, std::move(s));
     ASSERT_EQ(3u, v.size());
@@ -888,27 +1003,30 @@ TEST(FixedArrayListModifierTest, InsertAtMiddleMove) {
     EXPECT_EQ("b", *it);
 }
 
-TEST(FixedArrayListModifierTest, InsertCopyAtCapacityThrows) {
-    stdx::fixed_array_list<int, 3> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, InsertCopyAtCapacityThrows)
+{
+    stdx::FixedArrayList<int, 3> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     int val = 4;
     EXPECT_THROW(v.insert(v.begin(), val), std::length_error);
 }
 
-TEST(FixedArrayListModifierTest, InsertMoveAtCapacityThrows) {
-    stdx::fixed_array_list<std::string, 2> v;
-    v.push_back("a");
-    v.push_back("b");
+TEST(FixedArrayListModifierTest, InsertMoveAtCapacityThrows)
+{
+    stdx::FixedArrayList<std::string, 2> v;
+    v.pushBack("a");
+    v.pushBack("b");
     EXPECT_THROW(v.insert(v.begin(), std::string("c")), std::length_error);
 }
 
-TEST(FixedArrayListModifierTest, InsertSelfReferenceWithSpareCapacity) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
-    v.push_back(30);
+TEST(FixedArrayListModifierTest, InsertSelfReferenceWithSpareCapacity)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
+    v.pushBack(30);
     // value aliases an element already in the container
     auto it = v.insert(v.begin(), v[2]);
     ASSERT_EQ(4u, v.size());
@@ -928,18 +1046,20 @@ TEST(FixedArrayListModifierTest, InsertSelfReferenceWithSpareCapacity) {
     EXPECT_EQ(20, *it);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceIntoEmpty) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListModifierTest, EmplaceIntoEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
     auto it = v.emplace(v.end(), 42);
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ(42, v[0]);
     EXPECT_EQ(42, *it);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceAtBegin) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, EmplaceAtBegin)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(2);
+    v.pushBack(3);
     auto it = v.emplace(v.begin(), 1);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -949,20 +1069,22 @@ TEST(FixedArrayListModifierTest, EmplaceAtBegin) {
     EXPECT_EQ(v.begin(), it);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceAtEnd) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListModifierTest, EmplaceAtEnd)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
     auto it = v.emplace(v.end(), 3);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(3, v[2]);
     EXPECT_EQ(3, *it);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceAtMiddle) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, EmplaceAtMiddle)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(3);
     auto it = v.emplace(v.begin() + 1, 2);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -971,9 +1093,10 @@ TEST(FixedArrayListModifierTest, EmplaceAtMiddle) {
     EXPECT_EQ(2, *it);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceWithMultipleArgs) {
-    stdx::fixed_array_list<Point, 5> v;
-    v.emplace_back(1, 2);
+TEST(FixedArrayListModifierTest, EmplaceWithMultipleArgs)
+{
+    stdx::FixedArrayList<Point, 5> v;
+    v.emplaceBack(1, 2);
     auto it = v.emplace(v.begin(), 10, 20);
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(10, v[0].x);
@@ -984,18 +1107,20 @@ TEST(FixedArrayListModifierTest, EmplaceWithMultipleArgs) {
     EXPECT_EQ(20, it->y);
 }
 
-TEST(FixedArrayListModifierTest, EmplaceAtCapacityThrows) {
-    stdx::fixed_array_list<int, 2> v;
-    v.emplace_back(1);
-    v.emplace_back(2);
+TEST(FixedArrayListModifierTest, EmplaceAtCapacityThrows)
+{
+    stdx::FixedArrayList<int, 2> v;
+    v.emplaceBack(1);
+    v.emplaceBack(2);
     EXPECT_THROW(v.emplace(v.begin(), 3), std::length_error);
 }
 
-TEST(FixedArrayListModifierTest, EraseFirst) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, EraseFirst)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     auto it = v.erase(v.begin());
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(2, v[0]);
@@ -1004,11 +1129,12 @@ TEST(FixedArrayListModifierTest, EraseFirst) {
     EXPECT_EQ(2, *it);
 }
 
-TEST(FixedArrayListModifierTest, EraseLast) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, EraseLast)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     auto it = v.erase(v.end() - 1);
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -1016,11 +1142,12 @@ TEST(FixedArrayListModifierTest, EraseLast) {
     EXPECT_EQ(v.end(), it);
 }
 
-TEST(FixedArrayListModifierTest, EraseMiddle) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, EraseMiddle)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     auto it = v.erase(v.begin() + 1);
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -1028,51 +1155,56 @@ TEST(FixedArrayListModifierTest, EraseMiddle) {
     EXPECT_EQ(3, *it);
 }
 
-TEST(FixedArrayListModifierTest, EraseOnlyElement) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(42);
+TEST(FixedArrayListModifierTest, EraseOnlyElement)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(42);
     auto it = v.erase(v.begin());
     EXPECT_EQ(0u, v.size());
     EXPECT_TRUE(v.empty());
     EXPECT_EQ(v.end(), it);
 }
 
-TEST(FixedArrayListModifierTest, EraseCallsDestructor) {
+TEST(FixedArrayListModifierTest, EraseCallsDestructor)
+{
     int count = 0;
-    stdx::fixed_array_list<DestructorCounter, 3> v;
-    v.emplace_back(&count);
-    v.emplace_back(&count);
-    v.emplace_back(&count);
+    stdx::FixedArrayList<DestructorCounter, 3> v;
+    v.emplaceBack(&count);
+    v.emplaceBack(&count);
+    v.emplaceBack(&count);
     v.erase(v.begin());
     EXPECT_EQ(1, count);
 }
 
-TEST(FixedArrayListModifierTest, EraseRangeEmpty) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListModifierTest, EraseRangeEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
     auto it = v.erase(v.begin() + 1, v.begin() + 1);
     EXPECT_EQ(2u, v.size());
     EXPECT_EQ(v.begin() + 1, it);
 }
 
-TEST(FixedArrayListModifierTest, EraseRangeAll) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, EraseRangeAll)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     auto it = v.erase(v.begin(), v.end());
     EXPECT_EQ(0u, v.size());
     EXPECT_EQ(v.end(), it);
 }
 
-TEST(FixedArrayListModifierTest, EraseRangePartial) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-    v.push_back(4);
-    v.push_back(5);
+TEST(FixedArrayListModifierTest, EraseRangePartial)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.pushBack(4);
+    v.pushBack(5);
     auto it = v.erase(v.begin() + 1, v.begin() + 3);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -1081,12 +1213,13 @@ TEST(FixedArrayListModifierTest, EraseRangePartial) {
     EXPECT_EQ(4, *it);
 }
 
-TEST(FixedArrayListModifierTest, EraseRangeFromBegin) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-    v.push_back(4);
+TEST(FixedArrayListModifierTest, EraseRangeFromBegin)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.pushBack(4);
     auto it = v.erase(v.begin(), v.begin() + 2);
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(3, v[0]);
@@ -1095,12 +1228,13 @@ TEST(FixedArrayListModifierTest, EraseRangeFromBegin) {
     EXPECT_EQ(3, *it);
 }
 
-TEST(FixedArrayListModifierTest, EraseRangeToEnd) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-    v.push_back(4);
+TEST(FixedArrayListModifierTest, EraseRangeToEnd)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.pushBack(4);
     auto it = v.erase(v.begin() + 2, v.end());
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -1108,89 +1242,97 @@ TEST(FixedArrayListModifierTest, EraseRangeToEnd) {
     EXPECT_EQ(v.end(), it);
 }
 
-TEST(FixedArrayListModifierTest, EraseRangeAllowsSubsequentInsert) {
-    stdx::fixed_array_list<int, 3> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, EraseRangeAllowsSubsequentInsert)
+{
+    stdx::FixedArrayList<int, 3> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     v.erase(v.begin(), v.end());
     EXPECT_TRUE(v.empty());
-    v.push_back(99);
+    v.pushBack(99);
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ(99, v[0]);
 }
 
-TEST(FixedArrayListModifierTest, ClearEmptyContainer) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListModifierTest, ClearEmptyContainer)
+{
+    stdx::FixedArrayList<int, 5> v;
     v.clear();
     EXPECT_EQ(0u, v.size());
     EXPECT_TRUE(v.empty());
 }
 
-TEST(FixedArrayListModifierTest, ClearNonEmpty) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, ClearNonEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     v.clear();
     EXPECT_EQ(0u, v.size());
     EXPECT_TRUE(v.empty());
 }
 
-TEST(FixedArrayListModifierTest, ClearPreservesCapacity) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, ClearPreservesCapacity)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     v.clear();
     EXPECT_EQ(5u, v.capacity());
 }
 
-TEST(FixedArrayListModifierTest, ClearCallsDestructors) {
+TEST(FixedArrayListModifierTest, ClearCallsDestructors)
+{
     int count = 0;
-    stdx::fixed_array_list<DestructorCounter, 3> v;
-    v.emplace_back(&count);
-    v.emplace_back(&count);
-    v.emplace_back(&count);
+    stdx::FixedArrayList<DestructorCounter, 3> v;
+    v.emplaceBack(&count);
+    v.emplaceBack(&count);
+    v.emplaceBack(&count);
     EXPECT_EQ(0, count);
     v.clear();
     EXPECT_EQ(3, count);
 }
 
-TEST(FixedArrayListModifierTest, ClearThenPushBack) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListModifierTest, ClearThenPushBack)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
     v.clear();
-    v.push_back(99);
+    v.pushBack(99);
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ(99, v[0]);
 }
 
-TEST(FixedArrayListModifierTest, ClearAllowsRefillToCapacity) {
-    stdx::fixed_array_list<int, 3> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListModifierTest, ClearAllowsRefillToCapacity)
+{
+    stdx::FixedArrayList<int, 3> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     v.clear();
-    v.push_back(10);
-    v.push_back(20);
-    v.push_back(30);
+    v.pushBack(10);
+    v.pushBack(20);
+    v.pushBack(30);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(10, v[0]);
     EXPECT_EQ(20, v[1]);
     EXPECT_EQ(30, v[2]);
 }
 
-TEST(FixedArrayListModifierTest, SwapTwoNonEmpty) {
-    stdx::fixed_array_list<int, 5> a;
-    a.push_back(1);
-    a.push_back(2);
+TEST(FixedArrayListModifierTest, SwapTwoNonEmpty)
+{
+    stdx::FixedArrayList<int, 5> a;
+    a.pushBack(1);
+    a.pushBack(2);
 
-    stdx::fixed_array_list<int, 5> b;
-    b.push_back(10);
-    b.push_back(20);
-    b.push_back(30);
+    stdx::FixedArrayList<int, 5> b;
+    b.pushBack(10);
+    b.pushBack(20);
+    b.pushBack(30);
 
     a.swap(b);
 
@@ -1204,12 +1346,13 @@ TEST(FixedArrayListModifierTest, SwapTwoNonEmpty) {
     EXPECT_EQ(2, b[1]);
 }
 
-TEST(FixedArrayListModifierTest, SwapWithEmpty) {
-    stdx::fixed_array_list<int, 5> a;
-    a.push_back(1);
-    a.push_back(2);
+TEST(FixedArrayListModifierTest, SwapWithEmpty)
+{
+    stdx::FixedArrayList<int, 5> a;
+    a.pushBack(1);
+    a.pushBack(2);
 
-    stdx::fixed_array_list<int, 5> b;
+    stdx::FixedArrayList<int, 5> b;
 
     a.swap(b);
 
@@ -1219,21 +1362,23 @@ TEST(FixedArrayListModifierTest, SwapWithEmpty) {
     EXPECT_EQ(2, b[1]);
 }
 
-TEST(FixedArrayListModifierTest, SwapTwoEmptyContainers) {
-    stdx::fixed_array_list<int, 5> a;
-    stdx::fixed_array_list<int, 5> b;
+TEST(FixedArrayListModifierTest, SwapTwoEmptyContainers)
+{
+    stdx::FixedArrayList<int, 5> a;
+    stdx::FixedArrayList<int, 5> b;
     a.swap(b);
     EXPECT_TRUE(a.empty());
     EXPECT_TRUE(b.empty());
 }
 
-TEST(FixedArrayListModifierTest, SwapBothContainersUsableAfterSwap) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    b.push_back(2);
+TEST(FixedArrayListModifierTest, SwapBothContainersUsableAfterSwap)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    b.pushBack(2);
     a.swap(b);
-    a.push_back(3);
-    b.push_back(4);
+    a.pushBack(3);
+    b.pushBack(4);
     ASSERT_EQ(2u, a.size());
     ASSERT_EQ(2u, b.size());
     EXPECT_EQ(2, a[0]);
@@ -1242,13 +1387,14 @@ TEST(FixedArrayListModifierTest, SwapBothContainersUsableAfterSwap) {
     EXPECT_EQ(4, b[1]);
 }
 
-TEST(FixedArrayListModifierTest, SwapMoveOnlyType) {
-    stdx::fixed_array_list<MoveOnly, 3> a;
-    a.emplace_back(1);
-    a.emplace_back(2);
+TEST(FixedArrayListModifierTest, SwapMoveOnlyType)
+{
+    stdx::FixedArrayList<MoveOnly, 3> a;
+    a.emplaceBack(1);
+    a.emplaceBack(2);
 
-    stdx::fixed_array_list<MoveOnly, 3> b;
-    b.emplace_back(10);
+    stdx::FixedArrayList<MoveOnly, 3> b;
+    b.emplaceBack(10);
 
     a.swap(b);
 
@@ -1261,99 +1407,114 @@ TEST(FixedArrayListModifierTest, SwapMoveOnlyType) {
 
 // ===== Iterator Tests =====
 
-TEST(FixedArrayListIteratorTest, BeginEqualsEndWhenEmpty) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListIteratorTest, BeginEqualsEndWhenEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
     EXPECT_EQ(v.begin(), v.end());
 }
 
-TEST(FixedArrayListIteratorTest, BeginNotEqualsEndWhenNonEmpty) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
+TEST(FixedArrayListIteratorTest, BeginNotEqualsEndWhenNonEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
     EXPECT_NE(v.begin(), v.end());
 }
 
-TEST(FixedArrayListIteratorTest, BeginPointsToFirstElement) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(42);
-    v.push_back(7);
+TEST(FixedArrayListIteratorTest, BeginPointsToFirstElement)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(42);
+    v.pushBack(7);
     EXPECT_EQ(42, *v.begin());
 }
 
-TEST(FixedArrayListIteratorTest, EndIsOnePastLast) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListIteratorTest, EndIsOnePastLast)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
     EXPECT_EQ(2, *(v.end() - 1));
 }
 
-TEST(FixedArrayListIteratorTest, ForwardIteration) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListIteratorTest, ForwardIteration)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
 
     int expected = 1;
-    for (auto it = v.begin(); it != v.end(); ++it) {
+    for (auto it = v.begin(); it != v.end(); ++it)
+    {
         EXPECT_EQ(expected++, *it);
     }
     EXPECT_EQ(4, expected);
 }
 
-TEST(FixedArrayListIteratorTest, RangeBasedForLoop) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
-    v.push_back(30);
+TEST(FixedArrayListIteratorTest, RangeBasedForLoop)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
+    v.pushBack(30);
 
     int sum = 0;
-    for (int x : v) {
+    for (int x : v)
+    {
         sum += x;
     }
     EXPECT_EQ(60, sum);
 }
 
-TEST(FixedArrayListIteratorTest, ConstBeginEnd) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(5);
-    const stdx::fixed_array_list<int, 5>& cv = v;
+TEST(FixedArrayListIteratorTest, ConstBeginEnd)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(5);
+    const stdx::FixedArrayList<int, 5>& cv = v;
     EXPECT_NE(cv.begin(), cv.end());
     EXPECT_EQ(5, *cv.begin());
 }
 
-TEST(FixedArrayListIteratorTest, ConstBeginEqualsEndWhenEmpty) {
-    const stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListIteratorTest, ConstBeginEqualsEndWhenEmpty)
+{
+    const stdx::FixedArrayList<int, 5> v;
     EXPECT_EQ(v.begin(), v.end());
 }
 
-TEST(FixedArrayListIteratorTest, CBeginCEnd) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(3);
-    v.push_back(4);
+TEST(FixedArrayListIteratorTest, CBeginCEnd)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(3);
+    v.pushBack(4);
     EXPECT_EQ(3, *v.cbegin());
     EXPECT_NE(v.cbegin(), v.cend());
 }
 
-TEST(FixedArrayListIteratorTest, CBeginEqualsCBeginConst) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    const stdx::fixed_array_list<int, 5>& cv = v;
+TEST(FixedArrayListIteratorTest, CBeginEqualsCBeginConst)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    const stdx::FixedArrayList<int, 5>& cv = v;
     EXPECT_EQ(v.cbegin(), cv.begin());
     EXPECT_EQ(v.cend(), cv.end());
 }
 
-TEST(FixedArrayListIteratorTest, ReverseIterationEmpty) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListIteratorTest, ReverseIterationEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
     EXPECT_EQ(v.rbegin(), v.rend());
 }
 
-TEST(FixedArrayListIteratorTest, ReverseIteration) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListIteratorTest, ReverseIteration)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
 
     std::vector<int> result;
-    for (auto it = v.rbegin(); it != v.rend(); ++it) {
+    for (auto it = v.rbegin(); it != v.rend(); ++it)
+    {
         result.push_back(*it);
     }
     ASSERT_EQ(3u, result.size());
@@ -1362,11 +1523,12 @@ TEST(FixedArrayListIteratorTest, ReverseIteration) {
     EXPECT_EQ(1, result[2]);
 }
 
-TEST(FixedArrayListIteratorTest, ConstReverseIteration) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
-    const stdx::fixed_array_list<int, 5>& cv = v;
+TEST(FixedArrayListIteratorTest, ConstReverseIteration)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
+    const stdx::FixedArrayList<int, 5>& cv = v;
 
     auto it = cv.rbegin();
     EXPECT_EQ(20, *it);
@@ -1376,13 +1538,15 @@ TEST(FixedArrayListIteratorTest, ConstReverseIteration) {
     EXPECT_EQ(cv.rend(), it);
 }
 
-TEST(FixedArrayListIteratorTest, CRBeginCREnd) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListIteratorTest, CRBeginCREnd)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
 
     std::vector<int> result;
-    for (auto it = v.crbegin(); it != v.crend(); ++it) {
+    for (auto it = v.crbegin(); it != v.crend(); ++it)
+    {
         result.push_back(*it);
     }
     ASSERT_EQ(2u, result.size());
@@ -1390,13 +1554,15 @@ TEST(FixedArrayListIteratorTest, CRBeginCREnd) {
     EXPECT_EQ(1, result[1]);
 }
 
-TEST(FixedArrayListIteratorTest, MutableIteratorAllowsWrite) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListIteratorTest, MutableIteratorAllowsWrite)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
 
-    for (auto it = v.begin(); it != v.end(); ++it) {
+    for (auto it = v.begin(); it != v.end(); ++it)
+    {
         *it *= 2;
     }
     EXPECT_EQ(2, v[0]);
@@ -1406,164 +1572,182 @@ TEST(FixedArrayListIteratorTest, MutableIteratorAllowsWrite) {
 
 // ===== Comparison Tests =====
 
-TEST(FixedArrayListComparisonTest, EqualsTwoEmpty) {
-    stdx::fixed_array_list<int, 5> a, b;
+TEST(FixedArrayListComparisonTest, EqualsTwoEmpty)
+{
+    stdx::FixedArrayList<int, 5> a, b;
     EXPECT_TRUE(a.equals(b));
     EXPECT_TRUE(a == b);
     EXPECT_FALSE(a != b);
 }
 
-TEST(FixedArrayListComparisonTest, EqualsSameElements) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    a.push_back(2);
-    a.push_back(3);
-    b.push_back(1);
-    b.push_back(2);
-    b.push_back(3);
+TEST(FixedArrayListComparisonTest, EqualsSameElements)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    a.pushBack(2);
+    a.pushBack(3);
+    b.pushBack(1);
+    b.pushBack(2);
+    b.pushBack(3);
     EXPECT_TRUE(a.equals(b));
     EXPECT_TRUE(a == b);
 }
 
-TEST(FixedArrayListComparisonTest, EqualsNotEqualElements) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    a.push_back(2);
-    b.push_back(1);
-    b.push_back(3);
+TEST(FixedArrayListComparisonTest, EqualsNotEqualElements)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    a.pushBack(2);
+    b.pushBack(1);
+    b.pushBack(3);
     EXPECT_FALSE(a.equals(b));
     EXPECT_FALSE(a == b);
     EXPECT_TRUE(a != b);
 }
 
-TEST(FixedArrayListComparisonTest, EqualsNotEqualSizesASmaller) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    a.push_back(2);
-    b.push_back(1);
-    b.push_back(2);
-    b.push_back(3);
+TEST(FixedArrayListComparisonTest, EqualsNotEqualSizesASmaller)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    a.pushBack(2);
+    b.pushBack(1);
+    b.pushBack(2);
+    b.pushBack(3);
     EXPECT_FALSE(a.equals(b));
     EXPECT_FALSE(a == b);
 }
 
-TEST(FixedArrayListComparisonTest, EqualsNotEqualSizesALarger) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    a.push_back(2);
-    a.push_back(3);
-    b.push_back(1);
-    b.push_back(2);
+TEST(FixedArrayListComparisonTest, EqualsNotEqualSizesALarger)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    a.pushBack(2);
+    a.pushBack(3);
+    b.pushBack(1);
+    b.pushBack(2);
     EXPECT_FALSE(a.equals(b));
     EXPECT_FALSE(a == b);
 }
 
-TEST(FixedArrayListComparisonTest, EqualsEmptyVsNonEmpty) {
-    stdx::fixed_array_list<int, 5> a, b;
-    b.push_back(1);
+TEST(FixedArrayListComparisonTest, EqualsEmptyVsNonEmpty)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    b.pushBack(1);
     EXPECT_FALSE(a.equals(b));
     EXPECT_FALSE(b.equals(a));
 }
 
-TEST(FixedArrayListComparisonTest, LessThanLexicographic) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    a.push_back(2);
-    a.push_back(3);
-    b.push_back(1);
-    b.push_back(2);
-    b.push_back(4);
-    EXPECT_TRUE(a.less_than(b));
+TEST(FixedArrayListComparisonTest, LessThanLexicographic)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    a.pushBack(2);
+    a.pushBack(3);
+    b.pushBack(1);
+    b.pushBack(2);
+    b.pushBack(4);
+    EXPECT_TRUE(a.lessThan(b));
     EXPECT_TRUE(a < b);
     EXPECT_FALSE(b < a);
 }
 
-TEST(FixedArrayListComparisonTest, LessThanBySize) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    a.push_back(2);
-    b.push_back(1);
-    b.push_back(2);
-    b.push_back(3);
-    EXPECT_TRUE(a.less_than(b));
+TEST(FixedArrayListComparisonTest, LessThanBySize)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    a.pushBack(2);
+    b.pushBack(1);
+    b.pushBack(2);
+    b.pushBack(3);
+    EXPECT_TRUE(a.lessThan(b));
     EXPECT_TRUE(a < b);
     EXPECT_FALSE(b < a);
 }
 
-TEST(FixedArrayListComparisonTest, LessThanEqualIsNotLess) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    a.push_back(2);
-    b.push_back(1);
-    b.push_back(2);
-    EXPECT_FALSE(a.less_than(b));
+TEST(FixedArrayListComparisonTest, LessThanEqualIsNotLess)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    a.pushBack(2);
+    b.pushBack(1);
+    b.pushBack(2);
+    EXPECT_FALSE(a.lessThan(b));
     EXPECT_FALSE(a < b);
 }
 
-TEST(FixedArrayListComparisonTest, LessThanBothEmpty) {
-    stdx::fixed_array_list<int, 5> a, b;
-    EXPECT_FALSE(a.less_than(b));
+TEST(FixedArrayListComparisonTest, LessThanBothEmpty)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    EXPECT_FALSE(a.lessThan(b));
     EXPECT_FALSE(a < b);
 }
 
-TEST(FixedArrayListComparisonTest, LessThanFirstElementDecides) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    b.push_back(2);
+TEST(FixedArrayListComparisonTest, LessThanFirstElementDecides)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    b.pushBack(2);
     EXPECT_TRUE(a < b);
     EXPECT_FALSE(b < a);
 }
 
-TEST(FixedArrayListComparisonTest, GreaterThan) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(5);
-    b.push_back(3);
+TEST(FixedArrayListComparisonTest, GreaterThan)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(5);
+    b.pushBack(3);
     EXPECT_TRUE(a > b);
     EXPECT_FALSE(b > a);
 }
 
-TEST(FixedArrayListComparisonTest, GreaterThanEqualNotGreater) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    b.push_back(1);
+TEST(FixedArrayListComparisonTest, GreaterThanEqualNotGreater)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    b.pushBack(1);
     EXPECT_FALSE(a > b);
     EXPECT_FALSE(b > a);
 }
 
-TEST(FixedArrayListComparisonTest, LessOrEqualWhenEqual) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    b.push_back(1);
+TEST(FixedArrayListComparisonTest, LessOrEqualWhenEqual)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    b.pushBack(1);
     EXPECT_TRUE(a <= b);
     EXPECT_TRUE(b <= a);
 }
 
-TEST(FixedArrayListComparisonTest, LessOrEqualWhenLess) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    b.push_back(2);
+TEST(FixedArrayListComparisonTest, LessOrEqualWhenLess)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    b.pushBack(2);
     EXPECT_TRUE(a <= b);
     EXPECT_FALSE(b <= a);
 }
 
-TEST(FixedArrayListComparisonTest, GreaterOrEqualWhenEqual) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(1);
-    b.push_back(1);
+TEST(FixedArrayListComparisonTest, GreaterOrEqualWhenEqual)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(1);
+    b.pushBack(1);
     EXPECT_TRUE(a >= b);
     EXPECT_TRUE(b >= a);
 }
 
-TEST(FixedArrayListComparisonTest, GreaterOrEqualWhenGreater) {
-    stdx::fixed_array_list<int, 5> a, b;
-    a.push_back(3);
-    b.push_back(2);
+TEST(FixedArrayListComparisonTest, GreaterOrEqualWhenGreater)
+{
+    stdx::FixedArrayList<int, 5> a, b;
+    a.pushBack(3);
+    b.pushBack(2);
     EXPECT_TRUE(a >= b);
     EXPECT_FALSE(b >= a);
 }
 
-TEST(FixedArrayListComparisonTest, AllOperatorsEmptyContainers) {
-    stdx::fixed_array_list<int, 5> a, b;
+TEST(FixedArrayListComparisonTest, AllOperatorsEmptyContainers)
+{
+    stdx::FixedArrayList<int, 5> a, b;
     EXPECT_TRUE(a == b);
     EXPECT_FALSE(a != b);
     EXPECT_FALSE(a < b);
@@ -1574,41 +1758,47 @@ TEST(FixedArrayListComparisonTest, AllOperatorsEmptyContainers) {
 
 // ===== Member Types Tests =====
 
-TEST(FixedArrayListMemberTypesTest, SizeType) {
-    static_assert(std::is_same<stdx::fixed_array_list<int, 5>::size_type, std::size_t>::value, "");
+TEST(FixedArrayListMemberTypesTest, SizeType)
+{
+    static_assert(std::is_same<stdx::FixedArrayList<int, 5>::size_type, std::size_t>::value, "");
 }
 
-TEST(FixedArrayListMemberTypesTest, Reference) {
-    static_assert(std::is_same<stdx::fixed_array_list<int, 5>::reference, int&>::value, "");
-    static_assert(std::is_same<stdx::fixed_array_list<double, 5>::reference, double&>::value, "");
+TEST(FixedArrayListMemberTypesTest, Reference)
+{
+    static_assert(std::is_same<stdx::FixedArrayList<int, 5>::reference, int&>::value, "");
+    static_assert(std::is_same<stdx::FixedArrayList<double, 5>::reference, double&>::value, "");
 }
 
-TEST(FixedArrayListMemberTypesTest, ConstReference) {
-    static_assert(std::is_same<stdx::fixed_array_list<int, 5>::const_reference, const int&>::value, "");
+TEST(FixedArrayListMemberTypesTest, ConstReference)
+{
+    static_assert(std::is_same<stdx::FixedArrayList<int, 5>::const_reference, const int&>::value, "");
 }
 
-TEST(FixedArrayListMemberTypesTest, ReferenceIsActuallyMutable) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    stdx::fixed_array_list<int, 5>::reference ref = v[0];
+TEST(FixedArrayListMemberTypesTest, ReferenceIsActuallyMutable)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    stdx::FixedArrayList<int, 5>::reference ref = v[0];
     ref = 42;
     EXPECT_EQ(42, v[0]);
 }
 
-TEST(FixedArrayListMemberTypesTest, ConstReferenceFromConstContainer) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(7);
-    const stdx::fixed_array_list<int, 5>& cv = v;
-    stdx::fixed_array_list<int, 5>::const_reference cref = cv[0];
+TEST(FixedArrayListMemberTypesTest, ConstReferenceFromConstContainer)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(7);
+    const stdx::FixedArrayList<int, 5>& cv = v;
+    stdx::FixedArrayList<int, 5>::const_reference cref = cv[0];
     EXPECT_EQ(7, cref);
 }
 
 // ===== Non-Default-Constructible Type Tests =====
 
-TEST(FixedArrayListNonDefaultConstructibleTest, EmplaceBackPoint) {
-    stdx::fixed_array_list<Point, 5> v;
-    v.emplace_back(1, 2);
-    v.emplace_back(3, 4);
+TEST(FixedArrayListNonDefaultConstructibleTest, EmplaceBackPoint)
+{
+    stdx::FixedArrayList<Point, 5> v;
+    v.emplaceBack(1, 2);
+    v.emplaceBack(3, 4);
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(1, v[0].x);
     EXPECT_EQ(2, v[0].y);
@@ -1616,16 +1806,18 @@ TEST(FixedArrayListNonDefaultConstructibleTest, EmplaceBackPoint) {
     EXPECT_EQ(4, v[1].y);
 }
 
-TEST(FixedArrayListNonDefaultConstructibleTest, MoveOnlyPushBack) {
-    stdx::fixed_array_list<MoveOnly, 3> v;
-    v.push_back(MoveOnly(1));
-    v.push_back(MoveOnly(2));
+TEST(FixedArrayListNonDefaultConstructibleTest, MoveOnlyPushBack)
+{
+    stdx::FixedArrayList<MoveOnly, 3> v;
+    v.pushBack(MoveOnly(1));
+    v.pushBack(MoveOnly(2));
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(1, v[0].value);
     EXPECT_EQ(2, v[1].value);
 }
 
-TEST(FixedArrayListNonDefaultConstructibleTest, MoveOnlyCopyConstructorIsDeleted) {
+TEST(FixedArrayListNonDefaultConstructibleTest, MoveOnlyCopyConstructorIsDeleted)
+{
     static_assert(!std::is_copy_constructible<MoveOnly>::value, "");
 }
 
@@ -1633,12 +1825,22 @@ TEST(FixedArrayListNonDefaultConstructibleTest, MoveOnlyCopyConstructorIsDeleted
 
 namespace {
 
-struct ResizeDestructorCounter {
+struct ResizeDestructorCounter
+{
     static int destructions;
     int value;
-    ResizeDestructorCounter() : value(0) {}
-    explicit ResizeDestructorCounter(int v) : value(v) {}
-    ~ResizeDestructorCounter() { ++destructions; }
+    ResizeDestructorCounter()
+        : value(0)
+    {
+    }
+    explicit ResizeDestructorCounter(int v)
+        : value(v)
+    {
+    }
+    ~ResizeDestructorCounter()
+    {
+        ++destructions;
+    }
     ResizeDestructorCounter(const ResizeDestructorCounter&) = default;
     ResizeDestructorCounter& operator=(const ResizeDestructorCounter&) = default;
     ResizeDestructorCounter(ResizeDestructorCounter&&) noexcept = default;
@@ -1650,11 +1852,12 @@ int ResizeDestructorCounter::destructions = 0;
 
 // --- resize(count) ---
 
-TEST(FixedArrayListResizeTest, ResizeSameSizeIsNoop) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListResizeTest, ResizeSameSizeIsNoop)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     v.resize(3);
     EXPECT_EQ(3u, v.size());
     EXPECT_EQ(5u, v.capacity());
@@ -1663,25 +1866,28 @@ TEST(FixedArrayListResizeTest, ResizeSameSizeIsNoop) {
     EXPECT_EQ(3, v[2]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeToZeroFromEmpty) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListResizeTest, ResizeToZeroFromEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
     v.resize(0);
     EXPECT_EQ(0u, v.size());
     EXPECT_TRUE(v.empty());
 }
 
-TEST(FixedArrayListResizeTest, ResizeToZeroFromNonEmpty) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListResizeTest, ResizeToZeroFromNonEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     v.resize(0);
     EXPECT_EQ(0u, v.size());
     EXPECT_TRUE(v.empty());
 }
 
-TEST(FixedArrayListResizeTest, ResizeLargerFromEmpty) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListResizeTest, ResizeLargerFromEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
     v.resize(3);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(0, v[0]);
@@ -1689,20 +1895,22 @@ TEST(FixedArrayListResizeTest, ResizeLargerFromEmpty) {
     EXPECT_EQ(0, v[2]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeLargerPreservesExistingElements) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
+TEST(FixedArrayListResizeTest, ResizeLargerPreservesExistingElements)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
     v.resize(4);
     ASSERT_EQ(4u, v.size());
     EXPECT_EQ(10, v[0]);
     EXPECT_EQ(20, v[1]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeLargerDefaultInitializesNewElements) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
+TEST(FixedArrayListResizeTest, ResizeLargerDefaultInitializesNewElements)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
     v.resize(5);
     ASSERT_EQ(5u, v.size());
     EXPECT_EQ(0, v[2]);
@@ -1710,36 +1918,39 @@ TEST(FixedArrayListResizeTest, ResizeLargerDefaultInitializesNewElements) {
     EXPECT_EQ(0, v[4]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeSmallerReducesSize) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-    v.push_back(4);
-    v.push_back(5);
+TEST(FixedArrayListResizeTest, ResizeSmallerReducesSize)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.pushBack(4);
+    v.pushBack(5);
     v.resize(2);
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(1, v[0]);
     EXPECT_EQ(2, v[1]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeSmallerCapacityRemainsN) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListResizeTest, ResizeSmallerCapacityRemainsN)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     v.resize(1);
     EXPECT_EQ(1u, v.size());
     EXPECT_EQ(5u, v.capacity());
 }
 
-TEST(FixedArrayListResizeTest, ResizeSmallerDestroysRemovedElements) {
+TEST(FixedArrayListResizeTest, ResizeSmallerDestroysRemovedElements)
+{
     ResizeDestructorCounter::destructions = 0;
     {
-        stdx::fixed_array_list<ResizeDestructorCounter, 5> v;
-        v.emplace_back(1);
-        v.emplace_back(2);
-        v.emplace_back(3);
+        stdx::FixedArrayList<ResizeDestructorCounter, 5> v;
+        v.emplaceBack(1);
+        v.emplaceBack(2);
+        v.emplaceBack(3);
         ResizeDestructorCounter::destructions = 0;
         v.resize(1);
         EXPECT_EQ(2, ResizeDestructorCounter::destructions);
@@ -1748,9 +1959,10 @@ TEST(FixedArrayListResizeTest, ResizeSmallerDestroysRemovedElements) {
     }
 }
 
-TEST(FixedArrayListResizeTest, ResizeLargerWithNonTrivialTypeDefaultInserted) {
-    stdx::fixed_array_list<std::string, 5> v;
-    v.push_back("hello");
+TEST(FixedArrayListResizeTest, ResizeLargerWithNonTrivialTypeDefaultInserted)
+{
+    stdx::FixedArrayList<std::string, 5> v;
+    v.pushBack("hello");
     v.resize(3);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ("hello", v[0]);
@@ -1758,20 +1970,22 @@ TEST(FixedArrayListResizeTest, ResizeLargerWithNonTrivialTypeDefaultInserted) {
     EXPECT_EQ("", v[2]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeSmallerWithNonTrivialType) {
-    stdx::fixed_array_list<std::string, 5> v;
-    v.push_back("a");
-    v.push_back("b");
-    v.push_back("c");
+TEST(FixedArrayListResizeTest, ResizeSmallerWithNonTrivialType)
+{
+    stdx::FixedArrayList<std::string, 5> v;
+    v.pushBack("a");
+    v.pushBack("b");
+    v.pushBack("c");
     v.resize(1);
     ASSERT_EQ(1u, v.size());
     EXPECT_EQ("a", v[0]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeThenPushBackWorks) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListResizeTest, ResizeThenPushBackWorks)
+{
+    stdx::FixedArrayList<int, 5> v;
     v.resize(3);
-    v.push_back(99);
+    v.pushBack(99);
     ASSERT_EQ(4u, v.size());
     EXPECT_EQ(0, v[0]);
     EXPECT_EQ(0, v[1]);
@@ -1779,11 +1993,12 @@ TEST(FixedArrayListResizeTest, ResizeThenPushBackWorks) {
     EXPECT_EQ(99, v[3]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeSmallerThenLargerDefaultInitializesNewElements) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
-    v.push_back(30);
+TEST(FixedArrayListResizeTest, ResizeSmallerThenLargerDefaultInitializesNewElements)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
+    v.pushBack(30);
     v.resize(1);
     v.resize(3);
     ASSERT_EQ(3u, v.size());
@@ -1792,34 +2007,38 @@ TEST(FixedArrayListResizeTest, ResizeSmallerThenLargerDefaultInitializesNewEleme
     EXPECT_EQ(0, v[2]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeToExactCapacitySucceeds) {
-    stdx::fixed_array_list<int, 4> v;
-    v.push_back(1);
+TEST(FixedArrayListResizeTest, ResizeToExactCapacitySucceeds)
+{
+    stdx::FixedArrayList<int, 4> v;
+    v.pushBack(1);
     v.resize(4);
     EXPECT_EQ(4u, v.size());
     EXPECT_EQ(4u, v.capacity());
 }
 
-TEST(FixedArrayListResizeTest, ResizeExceedsCapacityThrows) {
-    stdx::fixed_array_list<int, 3> v;
+TEST(FixedArrayListResizeTest, ResizeExceedsCapacityThrows)
+{
+    stdx::FixedArrayList<int, 3> v;
     EXPECT_THROW(v.resize(4), std::length_error);
 }
 
-TEST(FixedArrayListResizeTest, ResizeExceedsCapacityDoesNotChangeSize) {
-    stdx::fixed_array_list<int, 3> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListResizeTest, ResizeExceedsCapacityDoesNotChangeSize)
+{
+    stdx::FixedArrayList<int, 3> v;
+    v.pushBack(1);
+    v.pushBack(2);
     EXPECT_THROW(v.resize(4), std::length_error);
     EXPECT_EQ(2u, v.size());
 }
 
 // --- resize(count, value) ---
 
-TEST(FixedArrayListResizeTest, ResizeWithValueSameSizeIsNoop) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListResizeTest, ResizeWithValueSameSizeIsNoop)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     v.resize(3, 99);
     EXPECT_EQ(3u, v.size());
     EXPECT_EQ(1, v[0]);
@@ -1827,17 +2046,19 @@ TEST(FixedArrayListResizeTest, ResizeWithValueSameSizeIsNoop) {
     EXPECT_EQ(3, v[2]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueToZeroFromNonEmpty) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListResizeTest, ResizeWithValueToZeroFromNonEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
     v.resize(0, 99);
     EXPECT_EQ(0u, v.size());
     EXPECT_TRUE(v.empty());
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueLargerFromEmpty) {
-    stdx::fixed_array_list<int, 5> v;
+TEST(FixedArrayListResizeTest, ResizeWithValueLargerFromEmpty)
+{
+    stdx::FixedArrayList<int, 5> v;
     v.resize(3, 42);
     ASSERT_EQ(3u, v.size());
     EXPECT_EQ(42, v[0]);
@@ -1845,10 +2066,11 @@ TEST(FixedArrayListResizeTest, ResizeWithValueLargerFromEmpty) {
     EXPECT_EQ(42, v[2]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueLargerPreservesExistingElements) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
+TEST(FixedArrayListResizeTest, ResizeWithValueLargerPreservesExistingElements)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
     v.resize(5, 99);
     ASSERT_EQ(5u, v.size());
     EXPECT_EQ(10, v[0]);
@@ -1858,35 +2080,38 @@ TEST(FixedArrayListResizeTest, ResizeWithValueLargerPreservesExistingElements) {
     EXPECT_EQ(99, v[4]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueSmallerReducesSize) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-    v.push_back(4);
+TEST(FixedArrayListResizeTest, ResizeWithValueSmallerReducesSize)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.pushBack(4);
     v.resize(2, 99);
     ASSERT_EQ(2u, v.size());
     EXPECT_EQ(1, v[0]);
     EXPECT_EQ(2, v[1]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueSmallerCapacityRemainsN) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
+TEST(FixedArrayListResizeTest, ResizeWithValueSmallerCapacityRemainsN)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
     v.resize(1, 99);
     EXPECT_EQ(1u, v.size());
     EXPECT_EQ(5u, v.capacity());
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueSmallerDestroysRemovedElements) {
+TEST(FixedArrayListResizeTest, ResizeWithValueSmallerDestroysRemovedElements)
+{
     ResizeDestructorCounter::destructions = 0;
     {
-        stdx::fixed_array_list<ResizeDestructorCounter, 5> v;
-        v.emplace_back(1);
-        v.emplace_back(2);
-        v.emplace_back(3);
+        stdx::FixedArrayList<ResizeDestructorCounter, 5> v;
+        v.emplaceBack(1);
+        v.emplaceBack(2);
+        v.emplaceBack(3);
         ResizeDestructorCounter filler{0};
         ResizeDestructorCounter::destructions = 0;
         v.resize(1, filler);
@@ -1896,9 +2121,10 @@ TEST(FixedArrayListResizeTest, ResizeWithValueSmallerDestroysRemovedElements) {
     }
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueWithString) {
-    stdx::fixed_array_list<std::string, 5> v;
-    v.push_back("hello");
+TEST(FixedArrayListResizeTest, ResizeWithValueWithString)
+{
+    stdx::FixedArrayList<std::string, 5> v;
+    v.pushBack("hello");
     v.resize(4, "world");
     ASSERT_EQ(4u, v.size());
     EXPECT_EQ("hello", v[0]);
@@ -1907,9 +2133,10 @@ TEST(FixedArrayListResizeTest, ResizeWithValueWithString) {
     EXPECT_EQ("world", v[3]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueToExactCapacitySucceeds) {
-    stdx::fixed_array_list<int, 4> v;
-    v.push_back(1);
+TEST(FixedArrayListResizeTest, ResizeWithValueToExactCapacitySucceeds)
+{
+    stdx::FixedArrayList<int, 4> v;
+    v.pushBack(1);
     v.resize(4, 7);
     EXPECT_EQ(4u, v.size());
     EXPECT_EQ(7, v[1]);
@@ -1917,24 +2144,27 @@ TEST(FixedArrayListResizeTest, ResizeWithValueToExactCapacitySucceeds) {
     EXPECT_EQ(7, v[3]);
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueExceedsCapacityThrows) {
-    stdx::fixed_array_list<int, 3> v;
+TEST(FixedArrayListResizeTest, ResizeWithValueExceedsCapacityThrows)
+{
+    stdx::FixedArrayList<int, 3> v;
     EXPECT_THROW(v.resize(4, 99), std::length_error);
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueExceedsCapacityDoesNotChangeSize) {
-    stdx::fixed_array_list<int, 3> v;
-    v.push_back(1);
-    v.push_back(2);
+TEST(FixedArrayListResizeTest, ResizeWithValueExceedsCapacityDoesNotChangeSize)
+{
+    stdx::FixedArrayList<int, 3> v;
+    v.pushBack(1);
+    v.pushBack(2);
     EXPECT_THROW(v.resize(4, 99), std::length_error);
     EXPECT_EQ(2u, v.size());
 }
 
-TEST(FixedArrayListResizeTest, ResizeWithValueSmallerThenLargerUsesValue) {
-    stdx::fixed_array_list<int, 5> v;
-    v.push_back(10);
-    v.push_back(20);
-    v.push_back(30);
+TEST(FixedArrayListResizeTest, ResizeWithValueSmallerThenLargerUsesValue)
+{
+    stdx::FixedArrayList<int, 5> v;
+    v.pushBack(10);
+    v.pushBack(20);
+    v.pushBack(30);
     v.resize(1, 0);
     v.resize(3, 55);
     ASSERT_EQ(3u, v.size());
@@ -1943,4 +2173,4 @@ TEST(FixedArrayListResizeTest, ResizeWithValueSmallerThenLargerUsesValue) {
     EXPECT_EQ(55, v[2]);
 }
 
-} // namespace StdxTest
+} // namespace stdx_test

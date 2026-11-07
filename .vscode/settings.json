@@ -22,5 +22,11 @@
     "editor.insertSpaces": true,
     "editor.inlayHints.enabled": "offUnlessPressed",
     "files.insertFinalNewline": true,
-    "files.trimFinalNewlines": true
+    "files.trimFinalNewlines": true,
+    "files.associations": {
+        ".clang-format": "yaml",
+        ".clang-tidy": "yaml",
+        ".clangd": "yaml"
+    },
+    "C_Cpp.intelliSenseEngine": "disabled"
 }
